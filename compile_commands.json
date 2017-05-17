@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/home/ilya/code/jetshow",
+  "command": "/usr/bin/c++    -I/usr/include/eigen3 -I/home/ilya/code/jetshow/, -I/home/ilya/code/jetshow/include  -g   -std=gnu++11 -o CMakeFiles/jetshow.dir/src/main.cpp.o -c /home/ilya/code/jetshow/src/main.cpp",
+  "file": "/home/ilya/code/jetshow/src/main.cpp"
+},
+{
+  "directory": "/home/ilya/code/jetshow",
+  "command": "/usr/bin/c++    -I/usr/include/eigen3 -I/home/ilya/code/jetshow/, -I/home/ilya/code/jetshow/include  -g   -std=gnu++11 -o CMakeFiles/jetshow.dir/src/bfields.cpp.o -c /home/ilya/code/jetshow/src/bfields.cpp",
+  "file": "/home/ilya/code/jetshow/src/bfields.cpp"
+},
+{
+  "directory": "/home/ilya/code/jetshow",
+  "command": "/usr/bin/c++    -I/usr/include/eigen3 -I/home/ilya/code/jetshow/, -I/home/ilya/code/jetshow/include  -g   -std=gnu++11 -o CMakeFiles/jetshow.dir/src/nfields.cpp.o -c /home/ilya/code/jetshow/src/nfields.cpp",
+  "file": "/home/ilya/code/jetshow/src/nfields.cpp"
+},
+{
+  "directory": "/home/ilya/code/jetshow",
+  "command": "/usr/bin/c++    -I/usr/include/eigen3 -I/home/ilya/code/jetshow/, -I/home/ilya/code/jetshow/include  -g   -std=gnu++11 -o CMakeFiles/jetshow.dir/src/vfields.cpp.o -c /home/ilya/code/jetshow/src/vfields.cpp",
+  "file": "/home/ilya/code/jetshow/src/vfields.cpp"
+},
+{
+  "directory": "/home/ilya/code/jetshow",
+  "command": "/usr/bin/c++    -I/usr/include/eigen3 -I/home/ilya/code/jetshow/, -I/home/ilya/code/jetshow/include  -g   -std=gnu++11 -o CMakeFiles/jetshow.dir/src/geometry.cpp.o -c /home/ilya/code/jetshow/src/geometry.cpp",
+  "file": "/home/ilya/code/jetshow/src/geometry.cpp"
+},
+{
+  "directory": "/home/ilya/code/jetshow",
+  "command": "/usr/bin/c++    -I/usr/include/eigen3 -I/home/ilya/code/jetshow/, -I/home/ilya/code/jetshow/include  -g   -std=gnu++11 -o CMakeFiles/jetshow.dir/src/jet.cpp.o -c /home/ilya/code/jetshow/src/jet.cpp",
+  "file": "/home/ilya/code/jetshow/src/jet.cpp"
+}
+]
