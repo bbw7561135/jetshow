@@ -1,7 +1,7 @@
 #include <iostream>
 #include <math.h>
 #include <Eigen/Eigen>
-#include <bfields.h>
+#include <Bfield.h>
 
 
 // fi-value of magnetic field in some point ``p``

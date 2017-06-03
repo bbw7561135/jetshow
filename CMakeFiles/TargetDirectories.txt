@@ -1,3 +1,0 @@
-/home/ilya/code/jetshow/CMakeFiles/rebuild_cache.dir
-/home/ilya/code/jetshow/CMakeFiles/edit_cache.dir
-/home/ilya/code/jetshow/CMakeFiles/jetshow.dir
