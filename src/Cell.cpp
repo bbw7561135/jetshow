@@ -1,7 +1,3 @@
-//
-// Created by ilya on 6/2/17.
-//
-
 #include "Cell.h"
 #include "linspace.h"
 
