@@ -5,5 +5,5 @@ include_directories("/usr/include/eigen3", "include")
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES src/main.cpp src/bfields.cpp src/nfields.cpp src/vfields.cpp src/geometry.cpp src/jet.cpp include/geometry.h include/jet.h include/vfields.h include/nfields.h)
+set(SOURCE_FILES src/main.cpp src/Bfield.cpp src/Cone.cpp include/Cone.h src/Geometry.cpp include/Geometry.h src/Ray.cpp include/Ray.h src/Intersection.cpp include/Intersection.h include/Cell.h src/Cell.cpp include/linspace.h)
 add_executable(jetshow ${SOURCE_FILES})
