@@ -8,35 +8,72 @@
 #include <Cell.h>
 
 
+
 using Eigen::Vector3d;
+using Eigen::Vector2d;
+using Eigen::Matrix2d;
+using Eigen::Matrix3d;
 using std::vector;
 
 const double pi = boost::math::constants::pi<double>();
 
-
 //int main() {
-//    Vector3d origin(0., 0., 0.);
-//    Vector3d direction(0., 0., 1.);
-//    double angle = pi/4.;
-//    std::cout << "Angle: " << angle << std::endl;
-//    Cone cone = Cone(origin, direction, angle);
-//    // There's two intersections
-////    Vector3d ray_direction(0., 1., 0.);
-////    Vector3d ray_origin(0., 1., 1.);
-//    // No intersections
-////    Vector3d ray_direction(0., 1., 0.);
-////    Vector3d ray_origin(1., 1., 0.);
-//    // One intersection
+//    Vector2d v(1., 2.), u(2., 2.);
+//    Matrix2d eye_matrix;
+//    eye_matrix << 1, 0,
+//                  0, 1;
+////    std::cout << u * v.transpose() << std::endl;
+////    std::cout << u.transpose() * v << std::endl;
+////    std::cout << eye_matrix << std::endl;
+//    std::cout << v.transpose() * eye_matrix * u << std::endl;
+//}
+
+//
+int main() {
+    Vector3d cone_origin(0., 0., 0.);
+    Vector3d cone_direction(0., 0., 1.);
+    double cone_angle = pi/4.;
+    std::cout << "Angle: " << cone_angle << std::endl;
+    Cone cone = Cone(cone_origin, cone_direction, cone_angle);
+    // There's two intersections
+//    Vector3d ray_direction(0., 1., 0.);
+//    Vector3d ray_origin(0., 1., 1.);
+    // No intersections
+//    Vector3d ray_direction(0., 1., 0.);
+//    Vector3d ray_origin(1., 1., 0.);
+    // Two intersection (one far away)
 //    Vector3d ray_direction(0., 1., 1.);
 //    Vector3d ray_origin(0., 1., 0.);
-//    Ray ray(ray_origin, ray_direction);
-//    Intersection intersect = cone.hit(ray);
-//    std::cout << "Has intersection?: " << intersect.has_intersection() << std::endl;
-////    for(auto i=0;i < intersect.points().size();i++) {
-////        std::cout << intersect.points()[i] << std::endl;
-////    }
-//    Print(intersect.points());
-//}
+    // One intersection
+    Vector3d ray_direction(0., 1., 0.);
+    Vector3d ray_origin(0., 1., 0.);
+    Ray ray(ray_origin, ray_direction);
+    Intersection intersect = cone.hit(ray);
+    std::cout << "Has intersection ?" << std::endl << intersect.has_intersection() << std::endl;
+    auto points = intersect.points();
+    Print(points);
+//    Matrix3d eye_matrix;
+//    eye_matrix << 1, 0, 0,
+//                  0, 1, 0,
+//                  0, 0, 1;
+//    // DP
+//    Vector3d delta = ray_origin - cone_origin;
+//    std::cout << delta << std::endl;
+//    // M
+//    Matrix3d M = cone_direction * cone_direction.transpose() - cos(cone_angle)*cos(cone_angle)*eye_matrix;
+//    std::cout << M << std::endl;
+//    double c2 = ray_direction.transpose() * M * ray_direction;
+//    double c1 = ray_direction.transpose() * M * delta;
+//    double c0 = delta.transpose() * M * delta;
+//    std::cout << "c2 = " << c2 << " c1 = " << c1 << " c0 = " << c0 << std::endl;
+//    double d = c1*c1 - c0*c2;
+//    std::cout << "d = " << d << std::endl;
+//    std::cout << "-c1-sqrt(d) = " << -c1 - sqrt(d) << std::endl;
+//    double t1 = (-c1 + sqrt(d)) / (c2);
+//    double t2 = (-c1 - sqrt(d)) / (c2);
+//    std::cout << "t1= " << t1 << " t2= " << t2 << std::endl;
+
+}
 
 //int main() {
 //    Vector3d v1(0, 0, 0);
@@ -46,19 +83,21 @@ const double pi = boost::math::constants::pi<double>();
 //    return 0;
 //}
 
-int main() {
-    Vector3d v1(0, 0, 0);
-    Vector3d v2(10, 10, 10);
-    std::vector<Vector3d> v = {v1, v2};
-    Cell cell = Cell(v);
-    std::vector<Cell> cells = cell.split_n(11);
-    for (size_t i=0; i != cells.size();++i) {
-        std::cout << "Cell number" << i << std::endl;
-        Print(cells[i].points());
-    }
-    return 0;
+//int main() {
+//    Vector3d v1(0, 0, 0);
+//    Vector3d v2(10, 10, 10);
+//    std::vector<Vector3d> v = {v1, v2};
+//    Cell cell = Cell(v);
+//    std::vector<Cell> cells = cell.split_n(11);
+//    for (size_t i=0; i != cells.size();++i) {
+//        std::cout << "Cell number" << i << std::endl;
+//        Print(cells[i].points());
+//    }
+//    return 0;
+//
+//}
 
-}
+
 
 //int main() {
 //    Vector3d origin = {0., 0., 0.};

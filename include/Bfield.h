@@ -5,6 +5,7 @@
 
 using Eigen::Vector3d;
 
+
 class BField
 {
 public:

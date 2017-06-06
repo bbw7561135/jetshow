@@ -12,23 +12,21 @@
 class Cone: public Geometry {
 public:
     Cone(Vector3d &origin, Vector3d &direction, double &angle);
-    Vector3d origin();
-    Vector3d direction();
-    double angle();
-    Intersection hit(Ray &ray);
+    Vector3d origin() const ;
+    Vector3d direction() const ;
+    double angle() const;
+    Intersection hit(Ray &ray) const override;
 
 private:
     Vector3d origin_;
     Vector3d direction_;
     double angle_;
-    Intersection getIntersection(double a, double b, double c, double d, Ray &ray);
+//    Intersection getIntersection(double a, double b, double d, Ray &ray);
 
 
 };
 
-void Print(const std::vector<Vector3d>& v);
+void Print(const std::vector<Vector3d>& v) const;
 
-
-void Print(const Vector3d& v);
 
 #endif //JETSHOW_CONE_H

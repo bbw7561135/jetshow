@@ -12,7 +12,7 @@ class Ray;
 
 class Geometry {
         public:
-        virtual Intersection  hit(Ray &ray) = 0;
+        virtual Intersection  hit(Ray &ray) const = 0;
 
 };
 

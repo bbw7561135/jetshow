@@ -9,6 +9,7 @@
 
 using std::min;
 using std::max;
+using Eigen::Matrix3d;
 
 
 Cone::Cone(Vector3d &neworigin, Vector3d &newdirection, double &newangle) {
@@ -19,61 +20,64 @@ Cone::Cone(Vector3d &neworigin, Vector3d &newdirection, double &newangle) {
 
 }
 
-Vector3d Cone::origin() {
+
+Vector3d Cone::origin() const {
     return origin_;
 }
 
-Vector3d Cone::direction() {
+
+Vector3d Cone::direction() const {
     return direction_;
 }
 
-double Cone::angle() {
+
+double Cone::angle() const {
     return angle_;
 }
 
 
-Intersection Cone::hit(Ray &ray) {
-//  (0,0,1)-(0,0,0)
-//    std::cout << "Ray origin:" << std::endl;
-//    std::cout << ray.origin() << std::endl;
-//    std::cout << "Cone origin:" << std::endl;
-//    std::cout << origin() << std::endl;
-    const Vector3d dp = ray.origin() - origin();
-//    std::cout << "dp:" << std::endl;
-//    std::cout << dp << std::endl;
-    Vector3d expr1 = ray.direction() - ray.direction().dot(direction()) * direction();
-    Vector3d expr2 = dp - dp.dot(direction()) * direction();
-    double a = pow(cos(angle()),2)*expr1.dot(expr2) - pow(sin(angle()),2)*pow(ray.direction().dot(direction()),2);
-    double b = 2.*pow(cos(angle()),2)*expr1.dot(expr2) - 2.*pow(sin(angle()),2)*ray.direction().dot(direction())*dp.dot(direction());
-    // TODO: Check line below - ``expr2.dot(expr2)``
-    double c = pow(cos(angle()),2)*expr2.dot(expr2) - pow(sin(angle()),2)*pow(dp.dot(direction()),2);
-    double d = b*b - 4.*a*c;
-    std::cout << "a: " << a << std::endl;
-    std::cout << "b: " << b << std::endl;
-    std::cout << "c: " << c << std::endl;
-    std::cout << "d: " << d << std::endl;
-
-    return getIntersection(a, b, c, d, ray);
-}
-
-Intersection Cone::getIntersection(double a, double b, double c, double d, Ray &ray) {
+Intersection Cone::hit(Ray &ray) const {
+    Vector3d ray_origin = ray.origin();
     Vector3d ray_direction = ray.direction();
-    // No intersection case
-    if (d < 0.) {
-        std::cout << "No intercestions" << std::endl;
-        vector<Vector3d> points;
-        return Intersection(ray_direction, points);
+    Vector3d cone_origin = origin();
+    Vector3d cone_direction = direction();
+    Matrix3d eye_matrix;
+    eye_matrix << 1, 0, 0,
+                  0, 1, 0,
+                  0, 0, 1;
+    double cone_angle = angle();
+    // DP
+    Vector3d delta = ray_origin - cone_origin;
+    // M
+    Matrix3d M = cone_direction * cone_direction.transpose() - cos(cone_angle)*cos(cone_angle)*eye_matrix;
+    double c2 = ray_direction.transpose() * M * ray_direction;
+    double c1 = ray_direction.transpose() * M * delta;
+    double c0 = delta.transpose() * M * delta;
+    std::cout << "c2 = " << c2 << " c1 = " << c1 << " c0 = " << c0 << std::endl;
 
-    }
 
-        // Ray goes along cone border
-    else if (a == 0.) {
+    if (c2 == 0.) {
         std::cout << "Along border" << std::endl;
         vector<Vector3d> points;
         return Intersection(ray_direction, points);
+    }
+
+    double d = c1*c1 - c0*c2;
+    if (d < 0) {
+        std::cout << "No intercestions, d = " << d << std::endl;
+        vector<Vector3d> points;
+        return Intersection(ray_direction, points);
+    }
+    else if (d == 0) {
+        std::cout << "One intersection" << std::endl;
+        double t = -c1/c2;
+        Vector3d point = ray.point(t);
+        vector<Vector3d> points = {point};
+        return Intersection(ray_direction, points);
     } else {
-        double t1 = (-b + sqrt(d)) / (2. * a);
-        double t2 = (-b - sqrt(d)) / (2. * a);
+        double eps = (c1 > 0 ? 1 : -1);
+        double t1 = (-c1 - eps*sqrt(c1*c1-c2*c0))/(c2);
+        double t2 = c0/(-c1 - eps*sqrt(c1*c1-c2*c0));
         std::cout << "t1: " << t1 << std::endl;
         std::cout << "t2: " << t2 << std::endl;
         Vector3d point_in = ray.point(min(t1, t2));
@@ -81,9 +85,11 @@ Intersection Cone::getIntersection(double a, double b, double c, double d, Ray &
         vector<Vector3d> points = {point_in, point_out};
         return Intersection(ray_direction, points);
     }
+
 }
 
-void Print(const std::vector<Vector3d>& v) {
+
+void Print(const std::vector<Vector3d>& v) const {
     for (unsigned i = 0; i < v.size(); i++) {
         std::cout << v[i] << std::endl;
     }
