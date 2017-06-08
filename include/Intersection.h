@@ -13,10 +13,10 @@ using std::vector;
 
 class Intersection {
 public:
-    Intersection(Vector3d &direction, vector<Vector3d> &points);
-    Vector3d direction();
+    Intersection(const Vector3d &direction, vector<Vector3d> &points);
+    const Vector3d& direction() const;
     vector<Vector3d> points();
-    bool has_intersection();
+    bool has_intersection() const;
 
 private:
     Vector3d direction_;

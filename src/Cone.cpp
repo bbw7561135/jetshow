@@ -21,33 +21,33 @@ Cone::Cone(Vector3d &neworigin, Vector3d &newdirection, double &newangle) {
 }
 
 
-Vector3d Cone::origin() const {
+const Vector3d& Cone::origin() const {
     return origin_;
 }
 
 
-Vector3d Cone::direction() const {
+const Vector3d& Cone::direction() const {
     return direction_;
 }
 
 
-double Cone::angle() const {
+const double Cone::angle() const {
     return angle_;
 }
 
 
 Intersection Cone::hit(Ray &ray) const {
-    Vector3d ray_origin = ray.origin();
-    Vector3d ray_direction = ray.direction();
-    Vector3d cone_origin = origin();
-    Vector3d cone_direction = direction();
+    const Vector3d& ray_origin = ray.origin();
+    const Vector3d& ray_direction = ray.direction();
+    const Vector3d& cone_origin = origin();
+    const Vector3d& cone_direction = direction();
     Matrix3d eye_matrix;
     eye_matrix << 1, 0, 0,
                   0, 1, 0,
                   0, 0, 1;
     double cone_angle = angle();
     // DP
-    Vector3d delta = ray_origin - cone_origin;
+    const Vector3d delta = ray_origin - cone_origin;
     // M
     Matrix3d M = cone_direction * cone_direction.transpose() - cos(cone_angle)*cos(cone_angle)*eye_matrix;
     double c2 = ray_direction.transpose() * M * ray_direction;
@@ -89,7 +89,7 @@ Intersection Cone::hit(Ray &ray) const {
 }
 
 
-void Print(const std::vector<Vector3d>& v) const {
+void Print(const std::vector<Vector3d>& v) {
     for (unsigned i = 0; i < v.size(); i++) {
         std::cout << v[i] << std::endl;
     }

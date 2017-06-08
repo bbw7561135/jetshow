@@ -19,10 +19,10 @@ Vector3d Ray::point(double t) {
     return origin_ + direction_*t;
 }
 
-Vector3d Ray::direction() {
+const Vector3d& Ray::direction() const {
     return direction_;
 }
 
-Vector3d Ray::origin() {
+const Vector3d& Ray::origin() const {
     return origin_;
 }

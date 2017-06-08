@@ -17,8 +17,8 @@ class Ray {
 public:
         Ray(Vector3d &origin, Vector3d &direction);
         Vector3d point(double t);
-        Vector3d origin();
-        Vector3d direction();
+        const Vector3d& origin() const;
+        const Vector3d& direction() const;
 
 protected:
         Vector3d origin_;

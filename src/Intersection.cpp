@@ -4,12 +4,12 @@
 
 #include "Intersection.h"
 
-Intersection::Intersection(Vector3d &newdirection, vector<Vector3d> &newpoints) {
+Intersection::Intersection(const Vector3d& newdirection, vector<Vector3d> &newpoints) {
     direction_ = newdirection;
     points_ = newpoints;
 }
 
-Vector3d Intersection::direction() {
+const Vector3d& Intersection::direction() const {
     return direction_;
 }
 
@@ -17,6 +17,6 @@ vector<Vector3d> Intersection::points() {
     return points_;
 }
 
-bool Intersection::has_intersection() {
+bool Intersection::has_intersection() const {
     return !points_.empty();
 }
