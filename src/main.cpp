@@ -6,6 +6,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <linspace.h>
 #include <Cell.h>
+#include "Cilinder.h"
 
 
 
@@ -30,11 +31,45 @@ const double pi = boost::math::constants::pi<double>();
 
 //
 int main() {
-    Vector3d cone_origin(0., 0., 0.);
-    Vector3d cone_direction(0., 0., 1.);
-    double cone_angle = pi/4.;
-    std::cout << "Angle: " << cone_angle << std::endl;
-    Cone cone = Cone(cone_origin, cone_direction, cone_angle);
+//    Vector3d cone_origin(0., 0., 0.);
+//    Vector3d cone_direction(0., 0., 1.);
+//    double cone_angle = pi/4.;
+//    std::cout << "Angle: " << cone_angle << std::endl;
+//    Cone cone = Cone(cone_origin, cone_direction, cone_angle);
+
+    Vector3d cilinder_origin(0., 0., 0.);
+    Vector3d cilinder_direction(0., 0., 1.);
+    double cilinder_radius = 1.;
+    Cilinder cilinder(cilinder_origin, cilinder_direction, cilinder_radius);
+
+    // No intersections
+//    Vector3d ray_direction(1., 0., 1.);
+//    Vector3d ray_origin(0., 2., 0.);
+
+    // Along border
+//    Vector3d ray_direction(0., 0., 1.);
+//    Vector3d ray_origin(0., 1., 0.);
+
+    // No interception. Along border internally
+//    Vector3d ray_direction(0., 0., 1.);
+//    Vector3d ray_origin(-0.1, 0.2, 0.);
+
+    // No interception. Along border externally
+//    Vector3d ray_direction(0., 0., 1.);
+//    Vector3d ray_origin(10., -0.2, 0.);
+
+    // Single interception
+    Vector3d ray_direction(1., 0., 0.);
+    Vector3d ray_origin(0., 1., 0.);
+
+    Ray ray(ray_origin, ray_direction);
+    Intersection intersect = cilinder.hit(ray);
+    std::cout << "Has intersection ?" << std::endl << intersect.has_intersection() << std::endl;
+    auto points = intersect.points();
+    Print(points);
+
+
+
     // There's two intersections
 //    Vector3d ray_direction(0., 1., 0.);
 //    Vector3d ray_origin(0., 1., 1.);
@@ -45,13 +80,13 @@ int main() {
 //    Vector3d ray_direction(0., 1., 1.);
 //    Vector3d ray_origin(0., 1., 0.);
     // One intersection
-    Vector3d ray_direction(0., 1., 0.);
-    Vector3d ray_origin(0., 1., 0.);
-    Ray ray(ray_origin, ray_direction);
-    Intersection intersect = cone.hit(ray);
-    std::cout << "Has intersection ?" << std::endl << intersect.has_intersection() << std::endl;
-    auto points = intersect.points();
-    Print(points);
+//    Vector3d ray_direction(0., 1., 0.);
+//    Vector3d ray_origin(0., 1., 0.);
+//    Ray ray(ray_origin, ray_direction);
+//    Intersection intersect = cone.hit(ray);
+//    std::cout << "Has intersection ?" << std::endl << intersect.has_intersection() << std::endl;
+//    auto points = intersect.points();
+//    Print(points);
 //    Matrix3d eye_matrix;
 //    eye_matrix << 1, 0, 0,
 //                  0, 1, 0,
