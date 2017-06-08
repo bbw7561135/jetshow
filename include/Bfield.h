@@ -6,23 +6,51 @@
 using Eigen::Vector3d;
 
 
-class BField
-{
+class BField {
 public:
-    BField(double z0, double fiValue0, double zValue0);
+    virtual Vector3d bf(const Vector3d &point) const = 0 ;
+};
 
-    Vector3d bf(Vector3d &p);
-    double fiValue(Vector3d &p);
-    double zValue(Vector3d &p);
-    double getZ0() { return z0;}
-    double getFiValue0() { return fiValue0;}
-    double getZValue0() { return zValue0;}
 
+class RadialConicalBField : public BField {
+public:
+    RadialConicalBField(double b_0, double n_b) ;
+    Vector3d bf(const Vector3d &point) const override ;
 
 private:
-    double z0;
-    double fiValue0;
-    double zValue0;
+    double b_0_;
+    double n_b_;
 };
+
+
+class SpiralConicalBField : public BField {
+public:
+    SpiralConicalBField(double b_0, double pitch_angle) ;
+    Vector3d bf(const Vector3d &point) const override ;
+
+private:
+    double b_0_;
+    double pitch_angle_;
+};
+
+// This is old code for helical field. Note that it is likely to be wrong.
+//class BField
+//{
+//public:
+//    BField(double z0, double fiValue0, double zValue0);
+//
+//    Vector3d bf(Vector3d &p);
+//    double fiValue(Vector3d &p);
+//    double zValue(Vector3d &p);
+//    double getZ0() { return z0;}
+//    double getFiValue0() { return fiValue0;}
+//    double getZValue0() { return zValue0;}
+//
+//
+//private:
+//    double z0;
+//    double fiValue0;
+//    double zValue0;
+//};
 
 #endif //JETSHOW_BFIELDS_H
