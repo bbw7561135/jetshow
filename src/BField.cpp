@@ -1,9 +1,21 @@
 #include <iostream>
 #include <math.h>
 #include <Eigen/Eigen>
-#include <Bfield.h>
+#include <boost/math/special_functions/bessel.hpp>
+#include <BField.h>
+
 
 using Eigen::Vector3d;
+
+
+ConstCylinderBField::ConstCylinderBField(double b_0, double n_b) : b_0_(b_0),
+                                                                   n_b_(n_b) {};
+
+Vector3d ConstCylinderBField::bf(const Vector3d &point) const {
+    return Vector3d(0.0, 0.0, b_0_*pow(point[2], -n_b_));
+}
+
+
 
 RadialConicalBField::RadialConicalBField(double b_0, double n_b) : b_0_(b_0),
                                                                    n_b_(n_b) {};
@@ -13,6 +25,16 @@ Vector3d RadialConicalBField::bf(const Vector3d &point) const {
     return Vector3d(b_0_*pow(r, -n_b_)*point[0]/r,
                     b_0_*pow(r, -n_b_)*point[1]/r,
                     b_0_*pow(r, -n_b_)*point[2]/r);
+}
+
+
+HelicalCylinderBField::HelicalCylinderField(double b_0, double pitch_angle) :
+        b_0_(b_0), pitch_angle_(pitch_angle) {};
+
+Vector3d HelicalCylinderBField::bf(const Vector3d &point) const {
+    return Vector3d(b_0_*tan(pitch_angle_*point[1]),
+                    -b_0_*tan(pitch_angle_*point[0]),
+                    b_0_);
 }
 
 
@@ -28,6 +50,23 @@ Vector3d SpiralConicalBField::bf(const Vector3d &point) const {
                     b_z*(y/z - x*tan(pitch_angle_)),
                     b_z);
 }
+
+
+ForceFreeCylindricalBField::ForceFreeCylindricalBField(double b_0, double mu) :
+        b_0_(b_0), mu_(mu) {};
+
+Vector3d ForceFreeCylindricalBField::bf(const Vector3d &point) const {
+    double x = point[0];
+    double y = point[1];
+    double r = point.norm();
+    double atan_term = atan(y/x);
+    double bessel_0 = boost::math::cyl_bessel_i(0, mu_);
+    double bessel_1 = boost::math::cyl_bessel_i(1, mu_);
+    return Vector3d(-b_0_*bessel_1*sin(atan_term),
+                    b_0_*bessel_1*sin(atan_term),
+                    b_0_*bessel_0);
+}
+
 
 
 // This is old code for helical field. Note that it is likely to be wrong.

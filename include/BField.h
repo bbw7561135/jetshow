@@ -12,14 +12,34 @@ public:
 };
 
 
+class ConstCylinderBField : public BField {
+public:
+    ConstCylinderBField(double b_0, double n_b) ;
+    Vector3d bf(const Vector3d &point) const override ;
+private:
+    double b_0_;
+    double n_b_;
+
+};
+
+
 class RadialConicalBField : public BField {
 public:
     RadialConicalBField(double b_0, double n_b) ;
     Vector3d bf(const Vector3d &point) const override ;
-
 private:
     double b_0_;
     double n_b_;
+};
+
+
+class HelicalCylinderBField : public BField {
+public:
+    HelicalCylinderField(double b_0, double pitch_angle) ;
+    Vector3d bf(const Vector3d &point) const override ;
+private:
+    double b_0_;
+    double pitch_angle_;
 };
 
 
@@ -27,10 +47,19 @@ class SpiralConicalBField : public BField {
 public:
     SpiralConicalBField(double b_0, double pitch_angle) ;
     Vector3d bf(const Vector3d &point) const override ;
-
 private:
     double b_0_;
     double pitch_angle_;
+};
+
+
+class ForceFreeCylindricalBField : public BField {
+public:
+    ForceFreeCylindricalBField(double b_0, double mu) ;
+    Vector3d bf(const Vector3d &point) const override ;
+private:
+    double b_0_;
+    double mu_;
 };
 
 // This is old code for helical field. Note that it is likely to be wrong.
