@@ -6,23 +6,33 @@
 #define JETSHOW_INTERCEPTION_H
 
 #include <Eigen/Eigen>
+#include "Ray.h"
+#include "Geometry.h"
 
 using Eigen::Vector3d;
-using std::vector;
+class Geometry;
+class Ray;
 
 
 class Intersection {
-public:
-    Intersection(const Vector3d &direction, vector<Vector3d> &points);
+  public:
+  // Ctor for finite intersections
+  Intersection(const Ray &ray, const Vector3d &point_in,
+               const Vector3d &point_out);
+  // Ctor for full infinite intersections
+  Intersection(const Ray &ray, const Geometry &geo);
+  // Ctor for half infinite intersections
+  Intersection(const Ray &ray, const Vector3d &point, const Geometry &geo);
+
     const Vector3d& direction() const;
-    vector<Vector3d> points();
-    bool has_intersection() const;
-
-private:
+    void set_direction(const Vector3d &direction);
+    void set_borders(const Vector3d &point_in, const Vector3d &point_out);
+    bool is_finite() const;
+    const std::pair<Vector3d, Vector3d> & get_path() const;
+  private:
     Vector3d direction_;
-    vector<Vector3d> points_;
-
+    bool is_finite_;
+    std::pair<Vector3d, Vector3d> borders_;
 };
-
 
 #endif //JETSHOW_INTERCEPTION_H

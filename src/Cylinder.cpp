@@ -25,8 +25,10 @@ double Cilinder::r() const {
     return r_;
 }
 
+bool Cinider::is_within(Vector3d& point) const {}
 
-Intersection Cilinder::hit(Ray &ray) const {
+
+std::list<Intersection> Cilinder::hit(Ray &ray) const {
     const Vector3d ray_origin = ray.origin();
     const Vector3d ray_direction = ray.direction();
     const Vector3d &cilinder_origin = origin();
@@ -46,8 +48,7 @@ Intersection Cilinder::hit(Ray &ray) const {
     double d = c1*c1 - c0*c2;
     if (d < 0) {
         std::cout << "No intercestions, d = " << d << std::endl;
-        vector<Vector3d> points;
-        return Intersection(ray_direction, points);
+        return std::list<Intersection>{};
     }
     else if (d > 0) {
         double eps = (c1 > 0 ? 1 : -1);
@@ -59,29 +60,28 @@ Intersection Cilinder::hit(Ray &ray) const {
         Vector3d point_in = ray.point(min(t1, t2));
         Vector3d point_out = ray.point(max(t1, t2));
         vector<Vector3d> points = {point_in, point_out};
-        return Intersection(ray_direction, points);
+        return std::list<Intersection>{Intersection(ray_direction, points)};
     } else {
         if (c2 == 1 && c1 ==0 && c0 == 0) {
             std::cout << "One intersection" << std::endl;
             double t = -c1/c2;
             Vector3d point = ray.point(t);
             vector<Vector3d> points = {point};
-            return Intersection(ray_direction, points);
+            return std::list<Intersection>{Intersection(ray_direction, points)};
         }
         else if (c2 ==0 && c1 == 0 && c0 == 0) {
             std::cout << "Along border" << std::endl;
             vector<Vector3d> points;
-            return Intersection(ray_direction, points);
+            return std::list<Intersection>{Intersection(ray_direction, points)};
         }
         else if (c2 == 0 && c1 == 0 && c0 > 0) {
             std::cout << "No interception. Externally along border" << std::endl;
-            vector<Vector3d> points;
-            return Intersection(ray_direction, points);
+            return std::list<Intersection>{};
         }
         else if (c2 == 0 && c1 == 0 && c0 <= 0) {
             std::cout << "No interception. Internally along border" << std::endl;
-            vector<Vector3d> points;
-            return Intersection(ray_direction, points);
+            vector<Vector3d> points{Vector3d{NAN, NAN, NAN}, Vector3d{NAN, NAN, NAN}};
+            return std::list<Intersection>{Intersection(ray_direction, points)};
         }
     }
 }

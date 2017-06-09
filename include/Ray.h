@@ -22,6 +22,7 @@ public:
 
 protected:
         Vector3d origin_;
+        // Direction from the observer
         Vector3d direction_;
 };
 

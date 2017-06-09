@@ -11,16 +11,21 @@
 
 class Cone: public Geometry {
 public:
-    Cone(Vector3d &origin, Vector3d &direction, double &angle);
+    Cone(const Vector3d &origin, const Vector3d &direction, const double &angle,
+         const double &scale);
     const Vector3d& origin() const ;
     const Vector3d& direction() const ;
     const double angle() const;
-    Intersection hit(Ray &ray) const override;
+    std::list<Intersection> hit(Ray &ray) const override;
+    bool is_within(Vector3d& point) const override;
+    double const big_scale() const override ;
 
 private:
     Vector3d origin_;
     Vector3d direction_;
     double angle_;
+    double cos_angle_;
+    double big_scale_;
 };
 
 void Print(const std::vector<Vector3d>& v);
