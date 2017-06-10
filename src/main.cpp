@@ -18,27 +18,20 @@ using std::vector;
 
 const double pi = boost::math::constants::pi<double>();
 
-//int main() {
-//    Vector2d v(1., 2.), u(2., 2.);
-//    Matrix2d eye_matrix;
-//    eye_matrix << 1, 0,
-//                  0, 1;
-////    std::cout << u * v.transpose() << std::endl;
-////    std::cout << u.transpose() * v << std::endl;
-////    std::cout << eye_matrix << std::endl;
-//    std::cout << v.transpose() * eye_matrix * u << std::endl;
-//}
-
-//
 int main() {
+//  Intersection intersection{};
+//  std::cout << intersection.direction() << std::endl;
+//  auto borders = intersection.get_path();
+//  std::cout << intersection.direction() << std::endl;
+//  std::cout << borders.first << std::endl;
     Vector3d cone_origin(0., 0., 0.);
     Vector3d cone_direction(0., 0., 1.);
     double cone_angle = pi/4.;
     double scale = 10.0;
     Cone cone = Cone(cone_origin, cone_direction, cone_angle, scale);
   // There's two intersections
-    Vector3d ray_direction(0., 1., 0.);
-    Vector3d ray_origin(0., 1., 1.);
+//    Vector3d ray_direction(0., 1., 0.);
+//    Vector3d ray_origin(0., 1., 1.);
   // No intersections
 //    Vector3d ray_direction(0., 1., 0.);
 //    Vector3d ray_origin(1., 1., 0.);
@@ -48,6 +41,10 @@ int main() {
   // One intersection
 //    Vector3d ray_direction(0., 1., 0.);
 //    Vector3d ray_origin(0., 1., 0.);
+    // Along border
+    Vector3d ray_origin(0., 0., 0.);
+    Vector3d ray_direction(0., 1., 1.);
+//
     Ray ray(ray_origin, ray_direction);
     std::list<Intersection> list_intersect = cone.hit(ray);
     std::cout << "Did ray traverse volume ?" << std::endl << !list_intersect.empty() << std::endl;
@@ -58,18 +55,18 @@ int main() {
     }
 
 
-
+      // Test ``is_within``
 //    Vector3d point{-2., 1., -5.};
 //    bool is_within = cone.is_within(point);
 //    std::cout << "Is within : " << is_within << std::endl;
 
     // This tests cylinder-ray intersections
-//    Vector3d cilinder_origin(0., 0., 0.);
-//    Vector3d cilinder_direction(0., 0., 1.);
-//    double cilinder_radius = 1.;
-//    Cylinder cilinder(cilinder_origin, cilinder_direction, cilinder_radius);
+//    Vector3d cylinder_origin(0., 0., 0.);
+//    Vector3d cylinder_direction(0., 0., 1.);
+//    double cylinder_radius = 1.;
+//    Cylinder cylinder(cylinder_origin, cylinder_direction, cylinder_radius);
 //    Vector3d point{0., 0., 2.};
-//    bool is_within = cilinder.is_within(point);
+//    bool is_within = cylinder.is_within(point);
 //    std::cout << "Is within : " << is_within << std::endl;
 
     // No intersections
@@ -91,13 +88,19 @@ int main() {
     // Single interception
 //    Vector3d ray_direction(1., 0., 0.);
 //    Vector3d ray_origin(0., 1., 0.);
+
+//    // Two intersections
+//    Vector3d ray_direction(0., 1., 0.);
+//    Vector3d ray_origin(0., 1., 0.);
 //
 //    Ray ray(ray_origin, ray_direction);
-//    std::list<Intersection> list_intersect = cilinder.hit(ray);
+//    std::list<Intersection> list_intersect = cylinder.hit(ray);
 //    std::cout << "Did ray traverse volume ?" << std::endl << !list_intersect.empty() << std::endl;
 //    if (!list_intersect.empty()) {
-//        auto points = list_intersect.front().points();
-//        Print(points);
+//        Intersection intersect = list_intersect.front();
+//        std::pair<Vector3d,Vector3d> borders = intersect.get_path();
+//        std::cout << "Borders : " << borders.first << " and " << borders.second << std::endl;
+//        std::cout << "Direction " << intersect.direction() << std::endl;
 //    }
     // End of cylinder-ray intersections
 

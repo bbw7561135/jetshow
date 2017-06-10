@@ -19,6 +19,7 @@ Cone::Cone(const Vector3d &neworigin, const Vector3d &newdirection,
     direction_.normalize();
     angle_ = newangle;
     cos_angle_ = cos(angle_);
+    big_scale_ = newscale;
 
 }
 
@@ -71,14 +72,13 @@ std::list<Intersection> Cone::hit(Ray &ray) const {
     std::cout << "c2 = " << c2 << " c1 = " << c1 << " c0 = " << c0 << std::endl;
 
     if (c2 == 0.) {
-        std::cout << "Along border" << std::endl;
-
+//        std::cout << "Along border" << std::endl;
         return std::list<Intersection>{Intersection(ray, *this)};
     }
 
     double d = c1*c1 - c0*c2;
     if (d < 0) {
-        std::cout << "No intercestions, d = " << d << std::endl;
+//        std::cout << "No intercestions, d = " << d << std::endl;
         return std::list<Intersection>{};
     }
     else if (d == 0) {
@@ -86,31 +86,31 @@ std::list<Intersection> Cone::hit(Ray &ray) const {
         // any of it's generating lines.
         double t = -c1/c2;
         Vector3d point = ray.point(t);
-        if (point == origin_) {
-            std::cout << "One intersection at apex" << std::endl;
+        if (point == origin_ && abs(ray.direction().dot(direction())) == cos_angle_) {
+//            std::cout << "One intersection at apex" << std::endl;
             return std::list<Intersection>{Intersection(ray, point, point)};
         } else {
-            std::cout << "One intersection and infinite path before/past" << std::endl;
-            return std::list<Intersection>{Intersection(ray, point, *this)};
+//            std::cout << "One intersection and infinite path before/past" << std::endl;
+            return std::list<Intersection>{Intersection(ray, *this)};
         }
     } else {
         // Infinite intersections only if ray parallel to ray direction.
         double eps = (c1 > 0 ? 1 : -1);
         double t1 = (-c1 - eps*sqrt(c1*c1-c2*c0))/(c2);
         double t2 = c0/(-c1 - eps*sqrt(c1*c1-c2*c0));
-        std::cout << "t1: " << t1 << std::endl;
-        std::cout << "t2: " << t2 << std::endl;
+//        std::cout << "t1: " << t1 << std::endl;
+//        std::cout << "t2: " << t2 << std::endl;
         Vector3d point_in = ray.point(min(t1, t2));
         Vector3d point_out = ray.point(max(t1, t2));
         double cos_ray_cone = ray_direction.dot(cone_direction);
         // TODO: Case of ray parallel to cone direction is very rare - can
         // safely ignore this case in cse of poor performance.
         if (abs(cos_ray_cone) != 1.) {
-            std::cout << "Two intersection - finite case" << std::endl;
+//            std::cout << "Two intersection - finite case" << std::endl;
             return std::list<Intersection>{Intersection(ray, point_in,
                                                         point_out)};
         } else {
-            std::cout << "Two intersection - two half-infinite cases" << std::endl;
+//            std::cout << "Two intersection - two half-infinite cases" << std::endl;
             return std::list<Intersection>{Intersection(ray, point_out, *this),
                                            Intersection(ray, point_in, *this)};
         }

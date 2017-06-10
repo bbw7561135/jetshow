@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Intersection.h"
 
 
@@ -12,10 +13,10 @@ void Intersection::set_direction(const Vector3d &direction) {
 
 void Intersection::set_borders(const Vector3d &point_in,
                                const Vector3d &point_out) {
-  borders_ = std::pair<Vector3d, Vector3d>{point_in, point_out};
+  borders_ = std::make_pair(point_in, point_out);
 }
 
-const std::pair<Vector3d, Vector3d> & Intersection::get_path() const {
+const std::pair<Vector3d, Vector3d>& Intersection::get_path() const {
   return borders_;
 }
 
@@ -23,35 +24,44 @@ const std::pair<Vector3d, Vector3d> & Intersection::get_path() const {
 Intersection::Intersection(const Ray &ray,
                            const Vector3d &new_point_in,
                            const Vector3d &new_point_out) {
-  set_direction(ray.direction());
-  set_borders(new_point_in, new_point_out);
+  init(ray, new_point_in, new_point_out);
   is_finite_ = 1;
 }
 
 // Ctor for full infinite intersections
-Intersection::Intersection(const Ray &ray, const Geometry &geo) {
+Intersection::Intersection(const Ray &ray, const Geometry &geo) : Intersection() {
   Vector3d diff = ray.origin() - geo.origin();
   Vector3d ref_point = diff - diff.dot(ray.direction()) * ray.direction();
-  Intersection(ray,
-               ref_point - geo.big_scale() * ray.direction(),
-               ref_point + geo.big_scale() * ray.direction());
+  Vector3d point_in = ref_point - geo.big_scale() * ray.direction();
+  Vector3d point_out = ref_point + geo.big_scale() * ray.direction();
+  init(ray, point_in, point_out);
   is_finite_ = 0;
 }
 
 // Ctor for half infinite intersections
 Intersection::Intersection(const Ray &ray, const Vector3d &point,
-                           const Geometry &geometry) {
+                           const Geometry &geometry) : Intersection() {
   // Check if ``ray`` was inside ``geometry`` before coming to ``point``.
   Vector3d check_point = point-ray.direction();
   if (geometry.is_within(check_point)) {
-      Intersection(ray, point-geometry.big_scale()*ray.direction(),
-                   point);
+      init(ray, point-geometry.big_scale()*ray.direction(), point);
+      is_finite_ = 0;
   } else {
-    Intersection(ray, point, point+geometry.big_scale()*ray.direction());
+      init(ray, point, point+geometry.big_scale()*ray.direction());
+      is_finite_ = 0;
   }
 }
 
 
 bool Intersection::is_finite() const {
   return is_finite_;
+}
+
+// Cause C++ can't ``call`` ctors inside ctor (internally created object will
+// be lost once exiting its scope)
+void Intersection::init(const Ray &ray,
+                        const Vector3d &point_in,
+                        const Vector3d &point_out) {
+  set_direction(ray.direction());
+  set_borders(point_in, point_out);
 }
