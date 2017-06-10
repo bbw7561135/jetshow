@@ -7,7 +7,7 @@
 
 #include <Eigen/Eigen>
 #include <vector>
-#include <unordered_map>
+#include <map>
 
 using Eigen::Vector3d;
 
@@ -21,7 +21,7 @@ private:
     std::vector<Vector3d> points_;
     Vector3d center_;
     double length_;
-    std::unordered_map<std::string,double> values_;
+    std::map<std::string,double> values_;
 
 };
 

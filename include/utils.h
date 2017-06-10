@@ -6,7 +6,6 @@
 #define JETSHOW_UTILS_H
 
 #include <math.h>
-#include <boost/>
 
 const double mas_to_rad = 4.8481368*pow(10., -9.);
 const double rad_to_mas = 1./mas_to_rad;
@@ -25,6 +24,20 @@ const double q_p = 4.8*pow(10.,-10.);
 const double c = 3.*pow(10.,10.);
 // Jy in cgc
 const double to_jy = pow(10.,23.);
+// pi
+const double pi = 3.1415926;
+
+
+double nu_p(double n);
+
+double nu_b(double b);
+
+double eta_0(double n, double b);
+
+double k_0(double nu, double n, double b);
+
+double eta_i(double nu, double n, double , double sin_theta, double s);
+
 
 
 

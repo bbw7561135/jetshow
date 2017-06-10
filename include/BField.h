@@ -35,7 +35,7 @@ private:
 
 class HelicalCylinderBField : public BField {
 public:
-    HelicalCylinderField(double b_0, double pitch_angle) ;
+    HelicalCylinderBField(double b_0, double pitch_angle) ;
     Vector3d bf(const Vector3d &point) const override ;
 private:
     double b_0_;

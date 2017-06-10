@@ -28,7 +28,7 @@ Vector3d RadialConicalBField::bf(const Vector3d &point) const {
 }
 
 
-HelicalCylinderBField::HelicalCylinderField(double b_0, double pitch_angle) :
+HelicalCylinderBField::HelicalCylinderBField(double b_0, double pitch_angle) :
         b_0_(b_0), pitch_angle_(pitch_angle) {};
 
 Vector3d HelicalCylinderBField::bf(const Vector3d &point) const {

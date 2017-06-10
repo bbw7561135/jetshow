@@ -21,6 +21,9 @@ class Geometry {
         virtual const double big_scale() const = 0;
         virtual std::list<Intersection> hit(Ray &ray) const = 0;
         virtual bool is_within(Vector3d& point) const = 0;
+        std::pair<Vector3d, Vector3d> full_infinite_path(Ray &ray) const;
+        std::pair<Vector3d, Vector3d> half_infinite_path(Ray &ray,
+                                                         const Vector3d &point) const;
 
 };
 

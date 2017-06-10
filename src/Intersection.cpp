@@ -28,6 +28,13 @@ Intersection::Intersection(const Ray &ray,
   is_finite_ = 1;
 }
 
+Intersection::Intersection(const Ray &ray,
+                           const std::pair<Vector3d, Vector3d> &borders) {
+  set_direction(ray.direction());
+  set_borders(borders.first, borders.second);
+}
+
+
 // Ctor for full infinite intersections
 Intersection::Intersection(const Ray &ray, const Geometry &geo) : Intersection() {
   Vector3d diff = ray.origin() - geo.origin();

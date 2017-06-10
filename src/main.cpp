@@ -30,8 +30,8 @@ int main() {
     double scale = 10.0;
     Cone cone = Cone(cone_origin, cone_direction, cone_angle, scale);
   // There's two intersections
-//    Vector3d ray_direction(0., 1., 0.);
-//    Vector3d ray_origin(0., 1., 1.);
+    Vector3d ray_direction(0., 1., 0.);
+    Vector3d ray_origin(0., 1., 1.);
   // No intersections
 //    Vector3d ray_direction(0., 1., 0.);
 //    Vector3d ray_origin(1., 1., 0.);
@@ -42,8 +42,8 @@ int main() {
 //    Vector3d ray_direction(0., 1., 0.);
 //    Vector3d ray_origin(0., 1., 0.);
     // Along border
-    Vector3d ray_origin(0., 0., 0.);
-    Vector3d ray_direction(0., 1., 1.);
+//    Vector3d ray_origin(0., 0., 0.);
+//    Vector3d ray_direction(0., 1., 1.);
 //
     Ray ray(ray_origin, ray_direction);
     std::list<Intersection> list_intersect = cone.hit(ray);
