@@ -24,6 +24,6 @@ Vector3d ConstCenralVField::v(const Vector3d &point) const {
     double z = point[2];
     double r = point.norm();
     double v_r = sqrt(1. - 1./(gamma_*gamma_));
-    return Eigen::Vector3d(v_r*x/r, v_r*y/r, v_r*z/r);
+    return Vector3d(v_r*x/r, v_r*y/r, v_r*z/r);
 };
 
