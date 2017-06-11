@@ -1,37 +1,58 @@
 #include <iostream>
-//#include <bfields.h>
+#include "BField.h"
+#include "VField.h"
 //#include "Ray.h"
 #include "Cone.h"
+#include "Jet.h"
+#include "utils.h"
 #include <math.h>
-#include <boost/math/constants/constants.hpp>
 #include <linspace.h>
 #include <Cell.h>
+#include <NField.h>
 #include "Cylinder.h"
 
 
 
 using Eigen::Vector3d;
-using Eigen::Vector2d;
-using Eigen::Matrix2d;
-using Eigen::Matrix3d;
 using std::vector;
 
-const double pi = boost::math::constants::pi<double>();
+
+void test_jet() {
+    // Create cone geometry of jet
+    Vector3d origin = {0., 0., 0.};
+    Vector3d direction = {0., 0., 1.};
+    double angle = pi/4.;
+    double scale = 10.;
+    Cone geometry(origin, direction, angle, scale);
+
+    RadialConicalBField bfield(0.001, 2.0);
+    ConstCenralVField vfield(10.);
+    BKNField nfield(1., 10.);
+
+    Jet bkjet(&geometry, &vfield, &bfield, &nfield);
+    Vector3d test_point{0., 0.3, 3.};
+    std::cout << bkjet.getV(test_point) << std::endl;
+    std::cout << bkjet.getN(test_point) << std::endl;
+    std::cout << bkjet.getB(test_point) << std::endl;
+}
+
 
 int main() {
+    test_jet();
+
 //  Intersection intersection{};
 //  std::cout << intersection.direction() << std::endl;
 //  auto borders = intersection.get_path();
 //  std::cout << intersection.direction() << std::endl;
 //  std::cout << borders.first << std::endl;
-    Vector3d cone_origin(0., 0., 0.);
-    Vector3d cone_direction(0., 0., 1.);
-    double cone_angle = pi/4.;
-    double scale = 10.0;
-    Cone cone = Cone(cone_origin, cone_direction, cone_angle, scale);
+//    Vector3d cone_origin(0., 0., 0.);
+//    Vector3d cone_direction(0., 0., 1.);
+//    double cone_angle = pi/4.;
+//    double scale = 10.0;
+//    Cone cone = Cone(cone_origin, cone_direction, cone_angle, scale);
   // There's two intersections
-    Vector3d ray_direction(0., 1., 0.);
-    Vector3d ray_origin(0., 1., 1.);
+//    Vector3d ray_direction(0., 1., 0.);
+//    Vector3d ray_origin(0., 1., 1.);
   // No intersections
 //    Vector3d ray_direction(0., 1., 0.);
 //    Vector3d ray_origin(1., 1., 0.);
@@ -45,14 +66,14 @@ int main() {
 //    Vector3d ray_origin(0., 0., 0.);
 //    Vector3d ray_direction(0., 1., 1.);
 //
-    Ray ray(ray_origin, ray_direction);
-    std::list<Intersection> list_intersect = cone.hit(ray);
-    std::cout << "Did ray traverse volume ?" << std::endl << !list_intersect.empty() << std::endl;
-    if (!list_intersect.empty()) {
-        Intersection intersect = list_intersect.front();
-        std::pair<Vector3d,Vector3d> borders = intersect.get_path();
-        std::cout << "Borders : " << borders.first << " and " << borders.second << std::endl;
-    }
+//    Ray ray(ray_origin, ray_direction);
+//    std::list<Intersection> list_intersect = cone.hit(ray);
+//    std::cout << "Did ray traverse volume ?" << std::endl << !list_intersect.empty() << std::endl;
+//    if (!list_intersect.empty()) {
+//        Intersection intersect = list_intersect.front();
+//        std::pair<Vector3d,Vector3d> borders = intersect.get_path();
+//        std::cout << "Borders : " << borders.first << " and " << borders.second << std::endl;
+//    }
 
 
       // Test ``is_within``
