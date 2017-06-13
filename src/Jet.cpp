@@ -32,7 +32,7 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     return k_i_prime/D;
 }
 
-double Jet::eta_i(Vector3d &point, Vector3d &n_los) {
+double Jet::getEtaI(Vector3d &point, Vector3d &n_los) {
     return 0;
 }
 
