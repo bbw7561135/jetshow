@@ -1,4 +1,5 @@
 #include <iostream>
+#include <boost/numeric/odeint.hpp>
 #include "BField.h"
 #include "VField.h"
 //#include "Ray.h"
@@ -15,7 +16,35 @@
 
 using Eigen::Vector3d;
 using std::vector;
+using namespace boost::numeric::odeint;
 
+
+class Rhs {
+ public:
+  Rhs(Jet* newjet, Vector3d &newpoint_in, Vector3d &newray_direction,
+      double newnu) {
+    jet = newjet;
+    point_in = newpoint_in;
+    ray_direction = newray_direction;
+    nu = newnu;
+  }
+  void operator() (const double &x, double &dxdt, const double t) {
+    Vector3d point = point_in + t * ray_direction;
+    std::cout << "calculating k_I at point " << point << std::endl;
+    dxdt = jet->getKI(point, ray_direction, nu);
+  }
+  void setPointIn(Vector3d &newpoint_in) {point_in = newpoint_in;}
+  void setRayDirection(Vector3d &newray_direction) {ray_direction = newray_direction;}
+ private:
+  Jet* jet;
+  Vector3d point_in;
+  Vector3d ray_direction;
+  double nu;
+};
+
+void write_cout(const double &x, const double t) {
+  std::cout << t << '\t' << x << std::endl;
+}
 
 void test_jet() {
     // Create cone geometry of jet
@@ -25,15 +54,41 @@ void test_jet() {
     double scale = 10.;
     Cone geometry(origin, direction, angle, scale);
 
-    RadialConicalBField bfield(0.001, 2.0);
+    RadialConicalBField bfield(0.1, 2.0);
     ConstCenralVField vfield(10.);
     BKNField nfield(1., 10.);
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
-    Vector3d test_point{0., 0.3, 3.};
-    std::cout << bkjet.getV(test_point) << std::endl;
-    std::cout << bkjet.getN(test_point) << std::endl;
-    std::cout << bkjet.getB(test_point) << std::endl;
+    // Test just one point
+//    Vector3d test_point{0., 0.3, 3.};
+//    std::cout << bkjet.getV(test_point) << std::endl;
+//    std::cout << bkjet.getN(test_point) << std::endl;
+//    std::cout << bkjet.getB(test_point) << std::endl;
+
+
+    // Get a ray
+    Vector3d ray_direction(0., 1., 0.);
+    Vector3d ray_origin(0., 1., 1.);
+    Ray ray(ray_origin, ray_direction);
+    std::list<Intersection> list_intersect = geometry.hit(ray);
+    Intersection intersect = list_intersect.front();
+    std::pair<Vector3d,Vector3d> borders = intersect.get_path();
+    Vector3d point_in = borders.first;
+    Vector3d point_out = borders.second;
+    double length = (point_out - point_in).norm();
+    double dt = length/100.;
+    double nu = 5.*pow(10., 9.);
+
+    Rhs rhs(&bkjet, point_in, ray_direction, nu);
+
+
+    typedef runge_kutta_dopri5< double > stepper_type;
+
+    // Here x - optical depth \tau
+    double x = 0.0;
+    integrate_adaptive(make_controlled(1E-18, 1E-18, stepper_type()), rhs, x,
+                       0.0 , length, dt, write_cout);
+
 }
 
 
