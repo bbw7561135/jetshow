@@ -39,6 +39,12 @@ double k_0(Vector3d &b, Vector3d &n_los, double nu, double n);
 // vector ``n_los`` and others measured in emission frame
 double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
+double eta_0(Vector3d &b, Vector3d &n_los, double nu, double n);
+
+// Emission coefficient for given vector of magnetic field ``b``, unit LOS
+// vector ``n_los`` and others measured in emission frame
+double eta_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
+
 // Lorentz factor for the velocity ``v``
 double getG(Vector3d &v);
 

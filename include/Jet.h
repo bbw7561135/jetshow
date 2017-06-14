@@ -28,7 +28,7 @@ public:
     double getKI(Vector3d &point, Vector3d &n_los, double nu);
     // Emission coefficient in ``point`` of the jet in the observer (lab)
     // frame. ``n`` is unit LOS vector in the observer frame.
-    double getEtaI(Vector3d &point, Vector3d &n_los);
+    double getEtaI(Vector3d &point, Vector3d &n_los, double nu);
 
 private:
     Geometry* geometry_;

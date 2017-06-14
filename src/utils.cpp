@@ -27,8 +27,18 @@ double k_0(Vector3d &b, Vector3d &n_los, double nu, double n) {
 
 double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
     double factor = pow(3., (s+1.)/2.)/(4.)*tgamma(s/4.+11./6.)*tgamma(s/4.+1./6.);
-    return k_0(b, n_los, nu, n) * pow(nu_b(b, n_los), s / 2.) * factor;
+    return k_0(b, n_los, nu, n) * pow(nu_b(b, n_los)/nu, s/2.) * factor;
 }
+
+double eta_0(Vector3d &b, Vector3d &n_los, double n) {
+    return pi*nu_p(n)*nu_p(n)*nu_b(b, n_los)*m_e/c;
+}
+
+double eta_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
+    double factor = pow(3., s/2.)/(2.*(s+1))*tgamma(s/4.+19./12.)*tgamma(s/4.-0.5);
+    return eta_0(b, n_los, n) * pow(nu_b(b, n_los)/nu, (s-1.)/2.) * factor;
+}
+
 
 double getG(Vector3d &v) {
     Vector3d beta = v/c;
@@ -52,3 +62,4 @@ Vector3d getBprime(Vector3d &b, Vector3d &v) {
     Vector3d result = b/gamma + gamma/((1.+gamma)*(c*c))*v*v.dot(b);
     return result;
 }
+
