@@ -14,9 +14,18 @@ System::System(Jet *newjet,
 
 void Tau::operator()(const double &x, double &dxdt, const double t) {
   Vector3d point = point_in + t * ray_direction;
-  //std::cout << "calculating k_I at point " << point << std::endl;
+//  std::cout << "calculating k_I at point " << point << std::endl;
   dxdt = jet->getKI(point, ray_direction, nu);
 }
+
+
+void I::operator()(const double &x, double &dxdt, const double t) {
+  Vector3d point = point_in + t * ray_direction;
+  //std::cout << "calculating transfer at point " << point << std::endl;
+  dxdt = jet->getEtaI(point, ray_direction, nu) +
+      jet->getKI(point, ray_direction, nu) * x;
+}
+
 
 void write_cout(const double &x, const double t) {
   std::cout << t << '\t' << x << std::endl;

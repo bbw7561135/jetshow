@@ -76,7 +76,7 @@ void test_jet() {
     Cone geometry(origin, direction, angle, scale);
 
     RadialConicalBField bfield(0.1, 2.0);
-    ConstCenralVField vfield(10.);
+    ConstCenralVField vfield(10.*c);
     BKNField nfield(1., 10.);
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
@@ -97,7 +97,8 @@ void test_jet() {
     Vector3d point_in = borders.first;
     Vector3d point_out = borders.second;
     double length = (point_out - point_in).norm();
-    double dt = length/3.;
+    double dt = length/100.;
+    std::cout << "Dt " << dt << std::endl;
     double nu = 5.*pow(10., 9.);
 
     // This is integration part
@@ -105,17 +106,26 @@ void test_jet() {
     typedef runge_kutta_dopri5< double > stepper_type;
     // Here x - optical depth \tau
     double x = 0.0;
-    integrate_adaptive(make_controlled(1E-12, 1E-12, stepper_type()), tau, x,
+    integrate_adaptive(make_controlled(1E-21, 1E-18, stepper_type()), tau, x,
                        0.0 , length, dt, write_cout);
+
+    Vector3d inv_direction = -1.*ray_direction;
+    I stokesI(&bkjet, point_out, inv_direction, nu);
+    // Here x - Stokes I intensity.
+    typedef runge_kutta_dopri5< double > stepper_type;
+
+    double stI = 0.0;
+    integrate_adaptive(make_controlled(1E-12, 1E-12, stepper_type()), stokesI,
+                       stI, 0.0 , length, dt, write_cout);
 
 }
 
 
 int main() {
-//    test_jet();
+    test_jet();
 //  test_pixel();
 //    test_image();
-    test_image_plane();
+//    test_image_plane();
 
 //  Intersection intersection{};
 //  std::cout << intersection.direction() << std::endl;

@@ -39,6 +39,15 @@ class Tau : public System {
 };
 
 
+class I : public System {
+ public:
+  I(Jet* newjet, Vector3d &newpoint_in, Vector3d &newray_direction,
+    double newnu) : System(newjet, newpoint_in, newray_direction, newnu) {};
+
+  void operator() (const double &x, double &dxdt, const double t) override;
+};
+
+
 // This debug-print integrands and ``time`` variable
 void write_cout(const double &x, const double t);
 
