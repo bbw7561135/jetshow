@@ -1,35 +1,33 @@
-//
-// Created by ilya on 6/5/17.
-//
-
 #ifndef JETSHOW_PIXEL_H
 #define JETSHOW_PIXEL_H
-//
-//#include <array>
-//#include <string>
-//#include <bits/unordered_map.h>
-//
-//using std::array;
-//using std::unordered_map;
-//using std::string;
-//
-//class Pixel {
-//public:
-//    Pixel(double size_, const array<double, 2> &coordinate_,
-//          const array<int, 2> &ij_,
-//          const unordered_map<string, double> &values_);
-//
-//    void scale_coordinates(double scale_x, double scale_y);
-//    void scale_coordinates(double scale);
-//
-//private:
-//    double size_;
-//    pair<double,double> coordinate_;
-//    pair<int,int> ij_;
-//    unordered_map<string,double> values_;
-//
-//
-//};
+
+#include <array>
+#include <string>
+#include <map>
+#include <Eigen/Eigen>
+
+using std::array;
+using std::map;
+using std::string;
+using std::pair;
+using Eigen::Vector3d;
+
+
+class Pixel {
+public:
+    Pixel(double size_, Vector3d &coordinate_, pair<int,int> &ij_);
+    Vector3d& getCoordinate();
+    double getValue(string value);
+    void scale_coordinates(double scale);
+
+private:
+    double size_;
+    Vector3d coordinate_;
+    pair<int,int> ij_;
+    map<string,double> values_;
+
+
+};
 
 
 #endif //JETSHOW_PIXEL_H

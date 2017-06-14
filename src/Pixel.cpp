@@ -1,22 +1,19 @@
-//
-// Created by ilya on 6/5/17.
-//
-
 #include "Pixel.h"
 
-//
-//Pixel::Pixel(double size, const array<double, 2> &coordinate,
-//             const array<int, 2> &ij,
-//             const unordered_map<string, double> &values): size_(size),
-//                                                            coordinate_(coordinate),
-//                                                            ij_(ij), values_(values){}
-//
-//void Pixel::scale_coordinates(double scale_x, double scale_y) {
-//    coordinate_[0] *= scale_x;
-//    coordinate_[1] *= scale_y;
-//}
-//
-//void Pixel::scale_coordinates(double scale) {
-//    coordinate_[0] *= scale;
-//    coordinate_[1] *= scale;
-//}
+using std::pair;
+
+
+Pixel::Pixel(double size, Vector3d &coordinate, pair<int,int> &ij): size_(size),
+                                                 coordinate_(coordinate),
+                                                 ij_(ij) {};
+
+void Pixel::scale_coordinates(double scale) {
+    coordinate_ *= scale;
+}
+Vector3d &Pixel::getCoordinate() {
+  return coordinate_;
+}
+
+double Pixel::getValue(string value) {
+  return values_[value];
+}

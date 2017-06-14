@@ -1,50 +1,71 @@
 #include <iostream>
 #include <boost/numeric/odeint.hpp>
+#include <ImagePlane.h>
+#include "Image.h"
+#include "System.h"
 #include "BField.h"
 #include "VField.h"
-//#include "Ray.h"
+#include "Ray.h"
 #include "Cone.h"
 #include "Jet.h"
 #include "utils.h"
-#include <math.h>
-#include <linspace.h>
-#include <Cell.h>
-#include <NField.h>
+#include "math.h"
+#include "linspace.h"
+#include "Cell.h"
+#include "NField.h"
 #include "Cylinder.h"
-
-
+#include "Pixel.h"
 
 using Eigen::Vector3d;
 using std::vector;
+using std::pair;
 using namespace boost::numeric::odeint;
 
 
-class Rhs {
- public:
-  Rhs(Jet* newjet, Vector3d &newpoint_in, Vector3d &newray_direction,
-      double newnu) {
-    jet = newjet;
-    point_in = newpoint_in;
-    ray_direction = newray_direction;
-    nu = newnu;
-  }
-  void operator() (const double &x, double &dxdt, const double t) {
-    Vector3d point = point_in + t * ray_direction;
-    std::cout << "calculating k_I at point " << point << std::endl;
-    dxdt = jet->getKI(point, ray_direction, nu);
-  }
-  void setPointIn(Vector3d &newpoint_in) {point_in = newpoint_in;}
-  void setRayDirection(Vector3d &newray_direction) {ray_direction = newray_direction;}
- private:
-  Jet* jet;
-  Vector3d point_in;
-  Vector3d ray_direction;
-  double nu;
-};
-
-void write_cout(const double &x, const double t) {
-  std::cout << t << '\t' << x << std::endl;
+void test_pixel() {
+  auto ij = std::make_pair(1, 10);
+  Vector3d coordinate{1., 2., 3.};
+  double size = 0.1;
+  Pixel pxl(0.1, coordinate, ij);
+  std::cout << "Pixel coordinate = " << pxl.getCoordinate() << std::endl;
+  pxl.scale_coordinates(100.);
+  std::cout << "New Pixel coordinate = " << pxl.getCoordinate() << std::endl;
 }
+
+void test_image() {
+  auto image_size = std::make_pair(10, 10);
+  double pixel_size = 0.1;
+  double pixel_scale = 100.;
+  Image image(image_size, pixel_size, pixel_scale);
+  vector<std::unique_ptr<Pixel>> pixels = std::move(image.getPixels());
+  for (int j = 0; j < image_size.first; ++j) {
+    std::cout << "j = " << j << std::endl;
+    for (int k = 0; k < image_size.second; ++k) {
+      std::cout << "k = " << k << std::endl;
+      auto pxl = pixels[j*image_size.first+k].get();
+      std::cout << "coordinate " << pxl->getCoordinate() << std::endl;
+    }
+  }
+}
+
+void test_image_plane() {
+  auto image_size = std::make_pair(10, 10);
+  double pixel_size = 0.1;
+  double pixel_scale = 100.;
+  double los_angle = pi/6.;
+  ImagePlane imagePlane(image_size, pixel_size, pixel_scale, los_angle);
+  vector<std::unique_ptr<Ray>> rays = std::move(imagePlane.getRays());
+  for (int j = 0; j < image_size.first; ++j) {
+    std::cout << "j = " << j << std::endl;
+    for (int k = 0; k < image_size.second; ++k) {
+      std::cout << "k = " << k << std::endl;
+      auto ray = rays[j*image_size.first+k].get();
+      std::cout << "Ray origin " << ray->origin() << std::endl;
+      std::cout << "Ray direction " << ray->direction() << std::endl;
+    }
+  }
+}
+
 
 void test_jet() {
     // Create cone geometry of jet
@@ -76,24 +97,25 @@ void test_jet() {
     Vector3d point_in = borders.first;
     Vector3d point_out = borders.second;
     double length = (point_out - point_in).norm();
-    double dt = length/100.;
+    double dt = length/3.;
     double nu = 5.*pow(10., 9.);
 
-    Rhs rhs(&bkjet, point_in, ray_direction, nu);
-
-
+    // This is integration part
+    Tau tau(&bkjet, point_in, ray_direction, nu);
     typedef runge_kutta_dopri5< double > stepper_type;
-
     // Here x - optical depth \tau
     double x = 0.0;
-    integrate_adaptive(make_controlled(1E-18, 1E-18, stepper_type()), rhs, x,
+    integrate_adaptive(make_controlled(1E-12, 1E-12, stepper_type()), tau, x,
                        0.0 , length, dt, write_cout);
 
 }
 
 
 int main() {
-    test_jet();
+//    test_jet();
+//  test_pixel();
+//    test_image();
+    test_image_plane();
 
 //  Intersection intersection{};
 //  std::cout << intersection.direction() << std::endl;
