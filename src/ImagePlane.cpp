@@ -11,7 +11,8 @@ ImagePlane::ImagePlane(pair<int,int> image_size, double pixel_size,
                        double pixel_scale,
                        double los_angle) : image_(image_size, pixel_size,
                                                   pixel_scale),
-                                           los_angle_(los_angle)  {
+                                           los_angle_(los_angle),
+                                           image_size(image_size) {
   direction_ = Vector3d{sin(los_angle), 0, -cos(los_angle)};
   // Initialize rays
   vector<std::unique_ptr<Pixel>> pixels = std::move(image_.getPixels());
@@ -32,4 +33,8 @@ vector<std::unique_ptr<Pixel>> &ImagePlane::getPixels() {
 
 vector<std::unique_ptr<Ray>> &ImagePlane::getRays() {
   return rays_;
+}
+
+vector<vector<double>> &ImagePlane::getImage(string value) {
+  return image_.getImage(value);
 }

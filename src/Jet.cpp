@@ -66,3 +66,8 @@ const Vector3d Jet::getV(const Vector3d &point) {
 const double Jet::getN(const Vector3d &point) {
     return nfield_->n(point);
 }
+
+
+std::list<Intersection> Jet::hit(Ray &ray) {
+  return geometry_->hit(ray);
+}

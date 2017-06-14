@@ -30,6 +30,8 @@ public:
     // frame. ``n`` is unit LOS vector in the observer frame.
     double getEtaI(Vector3d &point, Vector3d &n_los, double nu);
 
+    std::list<Intersection> hit(Ray& ray);
+
 private:
     Geometry* geometry_;
     VField* vfield_;

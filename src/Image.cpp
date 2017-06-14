@@ -21,7 +21,9 @@ vector<vector<double>>& Image::getImage(string value) {
 
 Image::Image(pair<int, int> image_size, double pixel_size,
              double pixel_scale):
-        image_size_(image_size), pixel_size_(pixel_size),
+        image_size_(image_size),
+        image_size(image_size),
+        pixel_size_(pixel_size),
         pixel_scale_(pixel_scale),
         num_of_pixels_(image_size_.first*image_size_.second),
         pixels_() {

@@ -24,6 +24,7 @@ public:
     explicit Image(pair<int, int> image_size, double pixel_size,
                    double pixel_scale);
     const int num_of_pixels_;
+    const pair<int,int> image_size;
     vector<vector<double>>& getImage(string value);
     Vector3d getCoordinate(int i, int j);
     Vector3d getScaledCoordinate(int i, int j);

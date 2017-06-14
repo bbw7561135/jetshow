@@ -106,7 +106,7 @@ void test_jet() {
     typedef runge_kutta_dopri5< double > stepper_type;
     // Here x - optical depth \tau
     double x = 0.0;
-    integrate_adaptive(make_controlled(1E-21, 1E-18, stepper_type()), tau, x,
+    integrate_adaptive(make_controlled(1E-21, 1E-18, 0.01, stepper_type()), tau, x,
                        0.0 , length, dt, write_cout);
 
     Vector3d inv_direction = -1.*ray_direction;

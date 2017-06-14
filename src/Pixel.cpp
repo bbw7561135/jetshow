@@ -17,3 +17,7 @@ Vector3d &Pixel::getCoordinate() {
 double Pixel::getValue(string value) {
   return values_[value];
 }
+
+void Pixel::setValue(string value, double newvalue) {
+  values_[value] = newvalue;
+}

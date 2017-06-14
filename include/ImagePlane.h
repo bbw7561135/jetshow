@@ -21,6 +21,8 @@ public:
                         double pixel_scale, double los_angle);
     vector<std::unique_ptr<Pixel>>& getPixels();
     vector<std::unique_ptr<Ray>>& getRays();
+    vector<vector<double>>& getImage(string value);
+    const pair<int,int> image_size;
 
 private:
     Image image_;
