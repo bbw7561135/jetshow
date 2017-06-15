@@ -16,7 +16,9 @@ void Tau::operator()(const double &x, double &dxdt, const double t) {
   Vector3d point = point_in + t * ray_direction;
 //  std::cout << "calculating k_I at point " << point << std::endl;
   dxdt = jet->getKI(point, ray_direction, nu);
+  std::cout << "Step at t = " << t << std::endl;
 }
+
 
 
 void I::operator()(const double &x, double &dxdt, const double t) {
@@ -29,4 +31,8 @@ void I::operator()(const double &x, double &dxdt, const double t) {
 
 void write_cout(const double &x, const double t) {
   std::cout << t << '\t' << x << std::endl;
+}
+
+bool check_opt_depth(double tau_max, const double &x) {
+  return x >= tau_max;
 }

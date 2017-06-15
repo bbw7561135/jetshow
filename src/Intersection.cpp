@@ -72,3 +72,11 @@ void Intersection::init(const Ray &ray,
   set_direction(ray.direction());
   set_borders(point_in, point_out);
 }
+
+void Intersection::set_point_in(const Vector3d point) {
+  borders_.first = point;
+}
+
+void Intersection::set_point_out(const Vector3d point) {
+  borders_.second = point;
+}

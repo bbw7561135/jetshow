@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/numeric/odeint.hpp>
 #include <ImagePlane.h>
+#include <Observation.h>
 #include "Image.h"
 #include "System.h"
 #include "BField.h"
@@ -15,6 +16,9 @@
 #include "NField.h"
 #include "Cylinder.h"
 #include "Pixel.h"
+#include <boost/range/algorithm.hpp>
+#include <memory>
+
 
 using Eigen::Vector3d;
 using std::vector;
@@ -100,26 +104,84 @@ void test_jet() {
     double dt = length/100.;
     std::cout << "Dt " << dt << std::endl;
     double nu = 5.*pow(10., 9.);
+    double tau_max = 1E-18;
+    double dt_max = 0.01;
 
     // This is integration part
-    Tau tau(&bkjet, point_in, ray_direction, nu);
+    Tau tau(&bkjet, point_in, ray_direction, nu, tau_max);
+//    OptDepthMax stopTau(tau_max);
     typedef runge_kutta_dopri5< double > stepper_type;
     // Here x - optical depth \tau
     double x = 0.0;
-    integrate_adaptive(make_controlled(1E-21, 1E-18, 0.01, stepper_type()), tau, x,
-                       0.0 , length, dt, write_cout);
+//    std::unique_ptr<double>
 
-    Vector3d inv_direction = -1.*ray_direction;
-    I stokesI(&bkjet, point_out, inv_direction, nu);
-    // Here x - Stokes I intensity.
-    typedef runge_kutta_dopri5< double > stepper_type;
 
-    double stI = 0.0;
-    integrate_adaptive(make_controlled(1E-12, 1E-12, stepper_type()), stokesI,
-                       stI, 0.0 , length, dt, write_cout);
+    // New part
+//    auto stepper = make_controlled(1E-21, 1E-18, dt_max,
+//                                   stepper_type());
+  // This stepper doesn't hold value in x (use iter.get_state())
+    auto stepper = make_dense_output(1E-21, 1E-18, dt_max,
+                                     stepper_type());
+    using namespace std::placeholders;
+    auto is_done = std::bind(check_opt_depth, tau_max, _1);
+    auto ode_range = make_adaptive_range(std::ref(stepper), tau, x, 0.0, length,
+                                       dt);
+    auto iter = std::find_if(ode_range.first, ode_range.second, is_done);
+
+    if (iter == ode_range.second) {
+      std::cout << "Tau less then tau_max" << std::endl;
+    // no threshold crossing -> return time after t_end and ic
+    }
+    std::cout << "Length " << length << std::endl;
+    std::cout << iter.get_state() << std::endl;
+    // This works only for make_dense_output()
+    std::cout << stepper.current_time() << std::endl;
+
+
+
+// Using instead of this:
+//    integrate_adaptive(make_controlled(1E-21, 1E-18, 0.01, stepper_type()), tau, x,
+//                       0.0 , length, dt, write_cout);
+
+
+//    Vector3d inv_direction = -1.*ray_direction;
+//    I stokesI(&bkjet, point_out, inv_direction, nu);
+//     Here x - Stokes I intensity.
+//    typedef runge_kutta_dopri5< double > stepper_type;
+//
+//    double stI = 0.0;
+//    integrate_adaptive(make_controlled(1E-12, 1E-12, stepper_type()), stokesI,
+//                       stI, 0.0 , length, dt, write_cout);
 
 }
 
+
+//void test_observations() {
+//    Vector3d origin = {0., 0., 0.};
+//    Vector3d direction = {0., 0., 1.};
+//    double angle = pi/6.;
+//    double scale = 10.;
+//    Cone geometry(origin, direction, angle, scale);
+//
+//    RadialConicalBField bfield(0.1, 2.0);
+//    ConstCenralVField vfield(10.*c);
+//    BKNField nfield(1., 10.);
+//
+//    Jet bkjet(&geometry, &vfield, &bfield, &nfield);
+//
+//    auto image_size = std::make_pair(10, 10);
+//    double pixel_size = 0.1;
+//    double pixel_scale = 100.;
+//    double los_angle = pi/3.;
+//    ImagePlane imagePlane(image_size, pixel_size, pixel_scale, los_angle);
+//
+//    double nu = 5.*pow(10., 9.);
+//    Observation observation(&bkjet, &imagePlane, nu);
+//    double tau_max = 100.;
+//    double dtau_max = 0.01;
+//    int n = 100;
+//
+//}
 
 int main() {
     test_jet();
