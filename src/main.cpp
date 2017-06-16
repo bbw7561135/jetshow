@@ -22,10 +22,6 @@
 #include <ctime>
 #include <chrono>
 
-
-
-
-
 using Eigen::Vector3d;
 using std::vector;
 using std::pair;
@@ -107,7 +103,7 @@ void test_jet() {
     Cone geometry(origin, direction, angle, scale);
 
     RadialConicalBField bfield(0.1, 2.0);
-    ConstCenralVField vfield(10.*c);
+    ConstCentralVField vfield(10.*c);
     BKNField nfield(1., 10.);
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
@@ -186,30 +182,35 @@ void test_jet() {
 void test_observations() {
     Vector3d origin = {0., 0., 0.};
     Vector3d direction = {0., 0., 1.};
-    double angle = pi/6.;
+    double angle = 0.1;
     double scale = 10.;
     Cone geometry(origin, direction, angle, scale);
 
-    RadialConicalBField bfield(0.1, 2.0);
-    ConstCenralVField vfield(10.*c);
-    BKNField nfield(1., 10.);
+    RadialConicalBField bfield(1., 2.0);
+    ConstCentralVField vfield(10.);
+    BKNField nfield(1., 100.);
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
 
-    auto image_size = std::make_pair(500, 500);
-    double pixel_size = 0.1;
-    double pixel_scale = 100.;
-    double los_angle = pi/3.;
-    ImagePlane imagePlane(image_size, pixel_size, pixel_scale, los_angle);
+    auto image_size = std::make_pair(50, 50);
+  	// Size of pixel in mas
+    double pixel_size = 0.01;
+		// Redshift
+		double z = 0.1;
+		// Number of parsecs in one mas - that will be pixel scale
+		auto pc_in_mas = mas_to_pc(z);
+    double los_angle = 0.2;
+    ImagePlane imagePlane(image_size, pixel_size, pc_in_mas, los_angle);
 
     double nu = 5.*pow(10., 9.);
     Observation observation(&bkjet, &imagePlane, nu);
     double tau_max = 100.;
-    double dt_max = 10.;
-		double tau_min = 1E-18;
+    double dt_max = 0.1;
+		double tau_min = 1E-4;
     int n = 100;
     observation.run(n, tau_max, dt_max, tau_min);
 }
+
 
 void test_erase() {
   std::list<double> a{10., 11., 12., 13., 14.};
@@ -230,6 +231,7 @@ void test_erase() {
     std::cout << " " << *it;}
   std::cout << std::endl;
   }
+
 
 void test_mpi() {
 		const int size = 12;
@@ -261,9 +263,9 @@ int main() {
 	std::clock_t start;
 	start = std::clock();
 //	test_mpi();
-//  test_observations();
+  test_observations();
 //  test_erase();
-	test_ctd();
+//	test_ctd();
 //    test_jet();
 //  test_pixel();
 //    test_image();

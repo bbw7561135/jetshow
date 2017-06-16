@@ -16,9 +16,9 @@ Vector3d ConstFlatVField::v(const Vector3d &point) const {
 }
 
 
-ConstCenralVField::ConstCenralVField(double gamma) : gamma_(gamma) {}
+ConstCentralVField::ConstCentralVField(double gamma) : gamma_(gamma) {}
 
-Vector3d ConstCenralVField::v(const Vector3d &point) const {
+Vector3d ConstCentralVField::v(const Vector3d &point) const {
     double x = point[0];
     double y = point[1];
     double z = point[2];

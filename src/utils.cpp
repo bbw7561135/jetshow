@@ -35,7 +35,7 @@ double eta_0(Vector3d &b, Vector3d &n_los, double n) {
 }
 
 double eta_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
-    double factor = pow(3., s/2.)/(2.*(s+1))*tgamma(s/4.+19./12.)*tgamma(s/4.-0.5);
+    double factor = pow(3., s/2.)/(2.*(s+1))*tgamma(s/4.+19./12.)*tgamma(s/4.-1./12.);
     return eta_0(b, n_los, n) * pow(nu_b(b, n_los)/nu, (s-1.)/2.) * factor;
 }
 

@@ -9,23 +9,23 @@
 using Eigen::Vector3d;
 
 
-const double mas_to_rad = 4.8481368*pow(10., -9.);
+const double mas_to_rad = 4.8481368*1E-9;
 const double rad_to_mas = 1./mas_to_rad;
 // Parsec [cm]
-const double pc = 3.0857*pow(10., 18.);
+const double pc = 3.0857*1E18;
 // Mass of electron [g]
-const double m_e = 9.109382*pow(10., -28.);
+const double m_e = 9.109382*1E-28;
 // Mass of proton [g]
-const double m_p = 1.672621*pow(10., -24.);
+const double m_p = 1.672621*1E-24;
 // Charge of electron [C]
 // const double q_e = 1.602176*pow(10.,-19.);
-const double q_e = 4.8*pow(10.,-10.);
+const double q_e = 4.8*1E-10;
 // Charge of proton [C]
-const double q_p = 4.8*pow(10.,-10.);
+const double q_p = 4.8*1E-10;
 // Speed of light [cm / s]
-const double c = 3.*pow(10.,10.);
+const double c = 3.*1E+10;
 // Jy in cgc
-const double to_jy = pow(10.,23.);
+const double to_jy = 1E+23;
 // pi
 const double pi = boost::math::constants::pi<double>();
 
@@ -79,10 +79,10 @@ double comoving_transfer_distance(double z, double H0=73., double omega_M=0.3,
 																  double omega_V=0.7);
 
 
-// Return scale factor that convert from parsecs to milliarcseconds
+// Return scale factor that converts from parsecs to milliarcseconds
 double pc_to_mas(double z);
 
-// Return scale factor that convert from milliarcseconds to parsecs.
+// Return scale factor that converts from milliarcseconds to parsecs.
 double mas_to_pc(double z);
 
 #endif //JETSHOW_UTILS_H

@@ -30,9 +30,9 @@ private:
 };
 
 
-class ConstCenralVField: public VField {
+class ConstCentralVField: public VField {
 public:
-    ConstCenralVField(double gamma);
+    ConstCentralVField(double gamma);
     Vector3d v(const Vector3d& point) const override;
 
 private:
