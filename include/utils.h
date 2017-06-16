@@ -78,4 +78,11 @@ public:
 double comoving_transfer_distance(double z, double H0=73., double omega_M=0.3,
 																  double omega_V=0.7);
 
+
+// Return scale factor that convert from parsecs to milliarcseconds
+double pc_to_mas(double z);
+
+// Return scale factor that convert from milliarcseconds to parsecs.
+double mas_to_pc(double z);
+
 #endif //JETSHOW_UTILS_H

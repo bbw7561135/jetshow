@@ -74,6 +74,18 @@ double comoving_transfer_distance(double z, double H0, double omega_M,
 	return result;
 }
 
+double pc_to_mas(double z) {
+	double d_a = comoving_transfer_distance(z)/(1.+z);
+	double angle_rads = 1./d_a;
+	return rad_to_mas*angle_rads;
+}
+
+double mas_to_pc(double z) {
+	double d_a = comoving_transfer_distance(z)/(1.+z);
+	return mas_to_rad*d_a;
+}
+
+
 Ctd::Ctd(double z, double H0, double omega_M, double omega_V) : z(z), H0(H0),
 																																omega_M(omega_M),
 																																omega_V(omega_V) {}
