@@ -1,6 +1,6 @@
 #include <Eigen/Eigen>
-#include <math.h>
 #include <memory>
+#include <math.h>
 #include "ImagePlane.h"
 
 using Eigen::Vector3d;
@@ -15,23 +15,24 @@ ImagePlane::ImagePlane(pair<int,int> image_size, double pixel_size,
                                            image_size(image_size) {
   direction_ = Vector3d{sin(los_angle), 0, -cos(los_angle)};
   // Initialize rays
-  vector<std::unique_ptr<Pixel>> pixels = std::move(image_.getPixels());
+  vector<Pixel>& pixels = image_.getPixels();
   for (int i = 0; i < image_size.first; ++i) {
     for (int j = 0; j < image_size.second; ++j) {
-      Vector3d coordinate = pixels[i*image_size.first+j].get()->getCoordinate();
+      Pixel pxl = pixels[i * image_size.first + j];
+      Vector3d& coordinate = pxl.getCoordinate();
       auto ij = std::make_pair(i, j);
-      auto ptr = std::make_unique<Ray>(coordinate, direction_);
-      rays_.push_back(std::move(ptr));
+      auto ray = Ray(coordinate, direction_);
+      rays_.push_back(std::move(ray));
     }
   }
 
 }
 
-vector<std::unique_ptr<Pixel>> &ImagePlane::getPixels() {
+vector<Pixel> &ImagePlane::getPixels() {
   return image_.getPixels();
 }
 
-vector<std::unique_ptr<Ray>> &ImagePlane::getRays() {
+vector<Ray> &ImagePlane::getRays() {
   return rays_;
 }
 

@@ -18,12 +18,19 @@
 #include "Pixel.h"
 #include <boost/range/algorithm.hpp>
 #include <memory>
+#include <mpi.h>
+#include <ctime>
+#include <chrono>
+
+
+
 
 
 using Eigen::Vector3d;
 using std::vector;
 using std::pair;
 using namespace boost::numeric::odeint;
+typedef std::chrono::high_resolution_clock Clock;
 
 
 void test_pixel() {
@@ -41,15 +48,25 @@ void test_image() {
   double pixel_size = 0.1;
   double pixel_scale = 100.;
   Image image(image_size, pixel_size, pixel_scale);
-  vector<std::unique_ptr<Pixel>> pixels = std::move(image.getPixels());
+  vector<Pixel>& pixels = image.getPixels();
   for (int j = 0; j < image_size.first; ++j) {
     std::cout << "j = " << j << std::endl;
     for (int k = 0; k < image_size.second; ++k) {
       std::cout << "k = " << k << std::endl;
-      auto pxl = pixels[j*image_size.first+k].get();
-      std::cout << "coordinate " << pxl->getCoordinate() << std::endl;
+      auto pxl = pixels[j*image_size.first+k];
+      std::cout << "coordinate " << pxl.getCoordinate() << std::endl;
     }
   }
+
+	vector<Pixel>& pixels2 = image.getPixels();
+	for (int j = 0; j < image_size.first; ++j) {
+		std::cout << "j = " << j << std::endl;
+		for (int k = 0; k < image_size.second; ++k) {
+			std::cout << "k = " << k << std::endl;
+			auto pxl = pixels2[j*image_size.first+k];
+			std::cout << "coordinate2 " << pxl.getCoordinate() << std::endl;
+		}
+	}
 }
 
 void test_image_plane() {
@@ -58,16 +75,26 @@ void test_image_plane() {
   double pixel_scale = 100.;
   double los_angle = pi/6.;
   ImagePlane imagePlane(image_size, pixel_size, pixel_scale, los_angle);
-  vector<std::unique_ptr<Ray>> rays = std::move(imagePlane.getRays());
+  vector<Ray>& rays = imagePlane.getRays();
   for (int j = 0; j < image_size.first; ++j) {
     std::cout << "j = " << j << std::endl;
     for (int k = 0; k < image_size.second; ++k) {
       std::cout << "k = " << k << std::endl;
-      auto ray = rays[j*image_size.first+k].get();
-      std::cout << "Ray origin " << ray->origin() << std::endl;
-      std::cout << "Ray direction " << ray->direction() << std::endl;
+      auto ray = rays[j*image_size.first+k];
+      std::cout << "Ray origin " << ray.origin() << std::endl;
+      std::cout << "Ray direction " << ray.direction() << std::endl;
     }
   }
+
+	vector<Pixel>& pxls = imagePlane.getPixels();
+	for (int j = 0; j < image_size.first; ++j) {
+		std::cout << "j = " << j << std::endl;
+		for (int k = 0; k < image_size.second; ++k) {
+			std::cout << "k = " << k << std::endl;
+			auto pxl = pxls[j*image_size.first+k];
+			std::cout << "Pixel Coordinate " << pxl.getCoordinate() << std::endl;
+		}
+	}
 }
 
 
@@ -169,7 +196,7 @@ void test_observations() {
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
 
-    auto image_size = std::make_pair(10, 10);
+    auto image_size = std::make_pair(500, 500);
     double pixel_size = 0.1;
     double pixel_scale = 100.;
     double los_angle = pi/3.;
@@ -178,9 +205,9 @@ void test_observations() {
     double nu = 5.*pow(10., 9.);
     Observation observation(&bkjet, &imagePlane, nu);
     double tau_max = 100.;
-    double dtau_max = 0.01;
+    double dt_max = 10.;
     int n = 100;
-    observation.run(n, tau_max, dtau_max);
+    observation.run(n, tau_max, dt_max);
 }
 
 void test_erase() {
@@ -203,13 +230,40 @@ void test_erase() {
   std::cout << std::endl;
   }
 
+void test_mpi() {
+		const int size = 12;
+		double sinTable[size];
+
+		#pragma omp parallel
+		{
+				// Code inside this region runs in parallel.
+				printf("Hello!\n");
+		}
+
+		#pragma omp parallel for
+		for(int n=0; n<size; ++n) {
+			std::cout <<  n << std::endl;
+			sinTable[n] = std::sin(2 * M_PI * n / size);
+		}
+};
+
 int main() {
-//  test_observations();
-  test_erase();
+	auto t1 = Clock::now();
+	std::clock_t start;
+	start = std::clock();
+//	test_mpi();
+  test_observations();
+//  test_erase();
 //    test_jet();
 //  test_pixel();
 //    test_image();
 //    test_image_plane();
+	std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
+	auto t2 = Clock::now();
+	std::cout << "Delta t2-t1: "
+						<< std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
+						<< " milliseconds" << std::endl;
+
 }
 
 //  Intersection intersection{};

@@ -16,22 +16,27 @@ Observation::Observation(Jet *newjet, ImagePlane *newimagePlane, double newnu) :
 };
 
 
-void Observation::run(int n, double tau_max, double dtau_max) {
+void Observation::run(int n, double tau_max, double dt_max) {
   auto image_size = getImageSize();
-	vector<std::unique_ptr<Pixel>> pixels = std::move(imagePlane->getPixels());
-	vector<std::unique_ptr<Ray>> rays = std::move(imagePlane->getRays());
+	vector<Pixel>& pixels = imagePlane->getPixels();
+	vector<Ray>& rays = imagePlane->getRays();
   // Cycle for each pixel+ray and make transfer for it. THIS CYCLE HAS TO BE
   // PARALLELIZED!
+	#pragma omp parallel for schedule(dynamic) collapse(2)
+	// Formally best:
+	// #pragma omp parallel for num_threads(4) schedule(dynamic) collapse(2)
   for (int j = 0; j < image_size.first; ++j) {
     for (int k = 0; k < image_size.second; ++k) {
       // This is debug printing out begins
       int n_pix = image_size.first*j + k + 1;
       std::cout << "Running on pixel # " << n_pix << std::endl;
       // This is debug printing out ends
-      auto ray = rays[j*image_size.first+k].get();
-      auto pxl = pixels[j*image_size.first+k].get();
-      auto ray_direction = ray->direction();
-      std::list<Intersection> list_intersect = jet->hit(*ray);
+      auto ray = rays[j*image_size.first+k];
+      auto pxl = pixels[j*image_size.first+k];
+			std::cout << "pxl coordinate : " << pxl.getCoordinate() << std::endl;
+
+			auto ray_direction = ray.direction();
+      std::list<Intersection> list_intersect = jet->hit(ray);
       if (list_intersect.empty()) {
         // This is debug printing out begins
         std::cout << "No intersections" << std::endl;
@@ -50,6 +55,7 @@ void Observation::run(int n, double tau_max, double dtau_max) {
           Vector3d point_in = borders.first;
           Vector3d point_out = borders.second;
           double length = (point_out - point_in).norm();
+					std::cout << "Length = " << length << std::endl;
           // FIXME: cast to double?
           double dt = length/n;
 
@@ -57,7 +63,7 @@ void Observation::run(int n, double tau_max, double dtau_max) {
           Tau tau(jet, point_in, ray_direction, nu, tau_max);
           double optDepth = background_tau;
           typedef runge_kutta_dopri5< double > stepper_type;
-          auto stepper = make_dense_output(1E-21, 1E-18, dtau_max,
+          auto stepper = make_dense_output(1E-12, 1E-12, dt_max,
                                            stepper_type());
 					using namespace std::placeholders;
 					auto is_done = std::bind(check_opt_depth, tau_max, _1);
@@ -118,9 +124,9 @@ void Observation::run(int n, double tau_max, double dtau_max) {
         }
         // Write values to pixel
 				std::string value ("tau");
-        pxl->setValue(value, background_tau);
+        pxl.setValue(value, background_tau);
 				value = "I";
-				pxl->setValue(value, background_I);
+				pxl.setValue(value, background_I);
       }
     }
   }
