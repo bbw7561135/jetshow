@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/numeric/odeint.hpp>
-#include <ImagePlane.h>
-#include <Observation.h>
+#include "ImagePlane.h"
+#include "Observation.h"
 #include "Image.h"
 #include "System.h"
 #include "BField.h"
@@ -156,38 +156,61 @@ void test_jet() {
 }
 
 
-//void test_observations() {
-//    Vector3d origin = {0., 0., 0.};
-//    Vector3d direction = {0., 0., 1.};
-//    double angle = pi/6.;
-//    double scale = 10.;
-//    Cone geometry(origin, direction, angle, scale);
-//
-//    RadialConicalBField bfield(0.1, 2.0);
-//    ConstCenralVField vfield(10.*c);
-//    BKNField nfield(1., 10.);
-//
-//    Jet bkjet(&geometry, &vfield, &bfield, &nfield);
-//
-//    auto image_size = std::make_pair(10, 10);
-//    double pixel_size = 0.1;
-//    double pixel_scale = 100.;
-//    double los_angle = pi/3.;
-//    ImagePlane imagePlane(image_size, pixel_size, pixel_scale, los_angle);
-//
-//    double nu = 5.*pow(10., 9.);
-//    Observation observation(&bkjet, &imagePlane, nu);
-//    double tau_max = 100.;
-//    double dtau_max = 0.01;
-//    int n = 100;
-//
-//}
+void test_observations() {
+    Vector3d origin = {0., 0., 0.};
+    Vector3d direction = {0., 0., 1.};
+    double angle = pi/6.;
+    double scale = 10.;
+    Cone geometry(origin, direction, angle, scale);
+
+    RadialConicalBField bfield(0.1, 2.0);
+    ConstCenralVField vfield(10.*c);
+    BKNField nfield(1., 10.);
+
+    Jet bkjet(&geometry, &vfield, &bfield, &nfield);
+
+    auto image_size = std::make_pair(10, 10);
+    double pixel_size = 0.1;
+    double pixel_scale = 100.;
+    double los_angle = pi/3.;
+    ImagePlane imagePlane(image_size, pixel_size, pixel_scale, los_angle);
+
+    double nu = 5.*pow(10., 9.);
+    Observation observation(&bkjet, &imagePlane, nu);
+    double tau_max = 100.;
+    double dtau_max = 0.01;
+    int n = 100;
+    observation.run(n, tau_max, dtau_max);
+}
+
+void test_erase() {
+  std::list<double> a{10., 11., 12., 13., 14.};
+
+  std::cout << "Before";
+  for (auto it = a.begin(); it != a.end(); it++) {
+    std::cout << " " << *it;}
+  std::cout << std::endl;
+
+  for (auto it = a.begin(); it != a.end(); ++it) {
+    if (*it > 11.5) {
+      it = a.erase(it++, a.end());
+    }
+  }
+
+  std::cout << "After";
+  for (auto it = a.begin(); it != a.end(); it++) {
+    std::cout << " " << *it;}
+  std::cout << std::endl;
+  }
 
 int main() {
-    test_jet();
+//  test_observations();
+  test_erase();
+//    test_jet();
 //  test_pixel();
 //    test_image();
 //    test_image_plane();
+}
 
 //  Intersection intersection{};
 //  std::cout << intersection.direction() << std::endl;
@@ -297,7 +320,6 @@ int main() {
 //    double t2 = (-c1 - sqrt(d)) / (c2);
 //    std::cout << "t1= " << t1 << " t2= " << t2 << std::endl;
 
-}
 
 //int main() {
 //    Vector3d v1(0, 0, 0);
