@@ -63,3 +63,21 @@ Vector3d getBprime(Vector3d &b, Vector3d &v) {
     return result;
 }
 
+
+double comoving_transfer_distance(double z, double H0, double omega_M,
+																	double omega_V) {
+	Ctd ctd(z);
+	double ctd_state = 0.0;
+	using namespace boost::numeric::odeint;
+	integrate<double>(ctd, ctd_state, 0., z, 0.00001);
+	double result = (100./H0) * 3. * pow(10., 9.) * ctd_state;
+	return result;
+}
+
+Ctd::Ctd(double z, double H0, double omega_M, double omega_V) : z(z), H0(H0),
+																																omega_M(omega_M),
+																																omega_V(omega_V) {}
+
+void Ctd::operator()(const double &x, double &dxdt, const double t) {
+	dxdt = pow(omega_M*(1.+t*t*t)+omega_V, -0.5);
+};

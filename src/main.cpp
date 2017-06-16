@@ -206,8 +206,9 @@ void test_observations() {
     Observation observation(&bkjet, &imagePlane, nu);
     double tau_max = 100.;
     double dt_max = 10.;
+		double tau_min = 1E-18;
     int n = 100;
-    observation.run(n, tau_max, dt_max);
+    observation.run(n, tau_max, dt_max, tau_min);
 }
 
 void test_erase() {
@@ -247,13 +248,22 @@ void test_mpi() {
 		}
 };
 
+
+void test_ctd() {
+	double z=0.1;
+	double ctd = comoving_transfer_distance(z);
+	std::cout << "CTD = " << ctd << std::endl;
+}
+
+
 int main() {
 	auto t1 = Clock::now();
 	std::clock_t start;
 	start = std::clock();
 //	test_mpi();
-  test_observations();
+//  test_observations();
 //  test_erase();
+	test_ctd();
 //    test_jet();
 //  test_pixel();
 //    test_image();

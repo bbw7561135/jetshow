@@ -4,6 +4,7 @@
 #include <math.h>
 #include <Eigen/Eigen>
 #include <boost/math/constants/constants.hpp>
+#include <boost/numeric/odeint.hpp>
 
 using Eigen::Vector3d;
 
@@ -58,5 +59,23 @@ Vector3d get_n_los_prime(Vector3d &n_los, Vector3d &v);
 // Vector of magnetic field in comoving (emission) frame in terms of the
 // magnetic field ``b`` and velocity ``v`` in the observer frame.
 Vector3d getBprime(Vector3d &b, Vector3d &v);
+
+
+class Ctd {
+public:
+		Ctd(double z, double H0=73., double omega_M=0.3, double omega_V=0.7);
+		void operator() (const double &x, double &dxdt, const double t);
+		double z;
+		double H0;
+		double omega_M;
+		double omega_V;
+};
+
+// Given redshift ``z``, Hubble constant ``H_0`` [km/s/Mpc] and density
+// parameters ``omega_M`` and ``omega_V``, returns comoving transverse distance
+// (see arXiv:astro-ph/9905116v4 formula 14). Angular diameter distance is
+// factor (1 + z) lower and luminosity distance is the same factor higher.
+double comoving_transfer_distance(double z, double H0=73., double omega_M=0.3,
+																  double omega_V=0.7);
 
 #endif //JETSHOW_UTILS_H
