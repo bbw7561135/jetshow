@@ -11,7 +11,7 @@ using std::pair;
 class Observation {
  public:
   Observation(Jet* newjet, ImagePlane* imagePlane, double nu);
-  void run(int n, double tau_max, double dt_max);
+  void run(int n, double tau_max, double dt_max, double tau_min);
   vector<vector<double>>& getImage(string value);
   pair<int,int> getImageSize();
   const double nu;

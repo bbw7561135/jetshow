@@ -16,7 +16,7 @@ Observation::Observation(Jet *newjet, ImagePlane *newimagePlane, double newnu) :
 };
 
 
-void Observation::run(int n, double tau_max, double dt_max) {
+void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
   auto image_size = getImageSize();
 	vector<Pixel>& pixels = imagePlane->getPixels();
 	vector<Ray>& rays = imagePlane->getRays();
@@ -97,31 +97,34 @@ void Observation::run(int n, double tau_max, double dt_max) {
           // cycle)
           background_tau += found_iter.get_state();
         }
+				double background_I = 0.;
+				// Calculate I only if optical depth is high enough
+				if (background_tau > tau_min) {
 
-        // Write final values here inside for-cycle
-        double background_I = 0.;
-        for (auto it = list_intersect.rend();
-             it != list_intersect.rbegin(); --it) {
-					auto borders = (*it).get_path();
-					Vector3d point_in = borders.first;
-					Vector3d point_out = borders.second;
-					double length = (point_out - point_in).norm();
-					// FIXME: cast to double?
-					double dt = length/n;
+					// Write final values here inside for-cycle
+					for (auto it = list_intersect.rend();
+							 it != list_intersect.rbegin(); --it) {
+						auto borders = (*it).get_path();
+						Vector3d point_in = borders.first;
+						Vector3d point_out = borders.second;
+						double length = (point_out - point_in).norm();
+						// FIXME: cast to double?
+						double dt = length / n;
 
-          Vector3d inv_direction = -1.*ray_direction;
-          I stokesI(jet, point_out, inv_direction, nu);
-          typedef runge_kutta_dopri5< double > stepper_type;
+						Vector3d inv_direction = -1. * ray_direction;
+						I stokesI(jet, point_out, inv_direction, nu);
+						typedef runge_kutta_dopri5<double> stepper_type;
 
-          // Here stI - Stokes I intensity.
-          double stI = background_I;
-          integrate_adaptive(make_controlled(1E-12, 1E-12, stepper_type()), stokesI,
-                             stI, 0.0 , length, dt, write_cout);
-          // Update background value (or write final values if this is last
-          // cycle)
-          background_I = stI;
-
-        }
+						// Here stI - Stokes I intensity.
+						double stI = background_I;
+						integrate_adaptive(make_controlled(1E-12, 1E-12, stepper_type()),
+															 stokesI,
+															 stI, 0.0, length, dt, write_cout);
+						// Update background value (or write final values if this is last
+						// cycle)
+						background_I = stI;
+					}
+				}
         // Write values to pixel
 				std::string value ("tau");
         pxl.setValue(value, background_tau);
