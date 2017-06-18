@@ -1,4 +1,7 @@
 #include <math.h>
+#include <string>
+#include <iostream>
+#include <fstream>
 #include "utils.h"
 
 
@@ -18,7 +21,7 @@
 double nu_p(double n) {return sqrt(n*q_e*q_e / (pi*m_e));}
 
 double nu_b(Vector3d &b, Vector3d &n_los) {
-    return q_e*(n_los.cross(b)).norm()/(2.*pi*m_e*c*b.norm());
+    return q_e*(n_los.cross(b)).norm()/(2.*pi*m_e*c);
 }
 
 double k_0(Vector3d &b, Vector3d &n_los, double nu, double n) {
@@ -26,7 +29,7 @@ double k_0(Vector3d &b, Vector3d &n_los, double nu, double n) {
 }
 
 double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
-    double factor = pow(3., (s+1.)/2.)/(4.)*tgamma(s/4.+11./6.)*tgamma(s/4.+1./6.);
+    double factor = (pow(3., (s+1.)/2.)/4.)*tgamma(s/4.+11./6.)*tgamma(s/4.+1./6.);
     return k_0(b, n_los, nu, n) * pow(nu_b(b, n_los)/nu, s/2.) * factor;
 }
 
@@ -83,6 +86,20 @@ double pc_to_mas(double z) {
 double mas_to_pc(double z) {
 	double d_a = comoving_transfer_distance(z)/(1.+z);
 	return mas_to_rad*d_a;
+}
+
+
+std::ostream &
+write_2dvector(std::ostream &os, std::vector<std::vector<double>> &v) {
+	for (int i = 0; i < v.size(); ++i)
+	{
+		for (int j = 0; j < v[i].size(); ++j)
+		{
+			os << v[i][j]<<" ";
+		}
+		os<<"\n";
+	}
+	return os;
 }
 
 

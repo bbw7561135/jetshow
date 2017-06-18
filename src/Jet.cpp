@@ -29,6 +29,12 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     auto nu_prime = nu/D;
     auto n_prime = n/gamma;
     auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
+
+		//
+//		std::cout << "b = " << b.norm() << " v = " << v.norm() << " G = " << gamma <<
+//							" D = " << D << " n = " << n << " n_pr = " << n_prime <<
+//							" b_pr= " << b_prime.norm() << std::endl;
+
     return k_i_prime/D;
 }
 
@@ -52,7 +58,12 @@ double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
     auto nu_prime = nu/D;
     auto n_prime = n/gamma;
     auto eta_i_prime = eta_i(b_prime, n_los_prime, nu_prime, n_prime);
-    return eta_i_prime*D*D*D;
+//		std::cout << "b = " << b.norm() << " v = " << v.norm() << " G = " << gamma <<
+//							" D = " << D << " n = " << n << " n_pr = " << n_prime <<
+//							" b_pr= " << b_prime.norm() << std::endl;
+//		std::cout << "n_los in jet.getEtaI " << n_los << std::endl;
+//		std::cout << "n_los_prime in jet.getEtaI " << n_los_prime << std::endl;
+    return eta_i_prime*D*D;
 }
 
 const Vector3d Jet::getB(const Vector3d &point) {

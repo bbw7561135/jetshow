@@ -3,6 +3,7 @@
 #include <Eigen/Eigen>
 #include <boost/math/special_functions/bessel.hpp>
 #include <BField.h>
+#include <utils.h>
 
 
 using Eigen::Vector3d;
@@ -12,7 +13,7 @@ ConstCylinderBField::ConstCylinderBField(double b_0, double n_b) : b_0_(b_0),
                                                                    n_b_(n_b) {};
 
 Vector3d ConstCylinderBField::bf(const Vector3d &point) const {
-    return Vector3d(0.0, 0.0, b_0_*pow(point[2], -n_b_));
+    return Vector3d(0.0, 0.0, b_0_*pow(point[2]/pc, -n_b_));
 }
 
 
@@ -22,9 +23,9 @@ RadialConicalBField::RadialConicalBField(double b_0, double n_b) : b_0_(b_0),
 
 Vector3d RadialConicalBField::bf(const Vector3d &point) const {
     double r = point.norm();
-    return Vector3d(b_0_*pow(r, -n_b_)*point[0]/r,
-                    b_0_*pow(r, -n_b_)*point[1]/r,
-                    b_0_*pow(r, -n_b_)*point[2]/r);
+    return Vector3d(b_0_*pow(r/pc, -n_b_)*point[0]/r,
+                    b_0_*pow(r/pc, -n_b_)*point[1]/r,
+                    b_0_*pow(r/pc, -n_b_)*point[2]/r);
 }
 
 
@@ -32,8 +33,9 @@ HelicalCylinderBField::HelicalCylinderBField(double b_0, double pitch_angle) :
         b_0_(b_0), pitch_angle_(pitch_angle) {};
 
 Vector3d HelicalCylinderBField::bf(const Vector3d &point) const {
-    return Vector3d(b_0_*tan(pitch_angle_*point[1]),
-                    -b_0_*tan(pitch_angle_*point[0]),
+    double r = sqrt(point[0]*point[0]+ point[1]*point[1]);
+    return Vector3d(b_0_*tan(pitch_angle_*point[1]/r),
+                    -b_0_*tan(pitch_angle_*point[0]/r),
                     b_0_);
 }
 

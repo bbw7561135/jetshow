@@ -6,6 +6,7 @@
 #include <iostream>
 #include "Cone.h"
 #include <vector>
+#include <utils.h>
 
 using std::min;
 using std::max;
@@ -110,9 +111,11 @@ std::list<Intersection> Cone::hit(Ray &ray) const {
         Vector3d point_out = ray.point(max(t1, t2));
         double cos_ray_cone = ray_direction.dot(cone_direction);
         // TODO: Case of ray parallel to cone direction is very rare - can
-        // safely ignore this case in cse of poor performance.
+        // safely ignore this case in case of poor performance.
         if (abs(cos_ray_cone) != 1.) {
             std::cout << "Two intersection - finite case" << std::endl;
+						std::cout << "Intersection in " << point_in/pc << std::endl;
+						std::cout << "Intersection out " << point_out/pc << std::endl;
             return std::list<Intersection>{Intersection(ray, point_in,
                                                         point_out)};
         } else {

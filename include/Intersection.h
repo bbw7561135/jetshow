@@ -24,27 +24,27 @@ class Intersection {
     // Default ctor
     Intersection() {};
     // Ctor for finite intersections
-    Intersection(const Ray &ray, const Vector3d &point_in,
-                 const Vector3d &point_out);
-    Intersection(const Ray &ray, const std::pair<Vector3d,Vector3d> &borders);
+    Intersection(const Ray ray, const Vector3d point_in,
+								 const Vector3d point_out);
+    Intersection(const Ray ray, const std::pair<Vector3d, Vector3d> borders);
     // Ctor for full infinite intersections
-    Intersection(const Ray &ray, const Geometry &geo);
+    Intersection(const Ray ray, const Geometry &geo);
     // Ctor for half infinite intersections
-    Intersection(const Ray &ray, const Vector3d &point, const Geometry &geo);
+    Intersection(const Ray ray, const Vector3d point, const Geometry &geo);
 
-    const Vector3d& direction() const;
-    void set_direction(const Vector3d &direction);
-    void set_borders(const Vector3d &point_in, const Vector3d &point_out);
+    const Vector3d direction() const;
+    void set_direction(const Vector3d direction);
+    void set_borders(const Vector3d point_in, const Vector3d point_out);
     void set_point_in(const Vector3d point);
     void set_point_out(const Vector3d point);
     bool is_finite() const;
-    const std::pair<Vector3d, Vector3d>& get_path() const;
+    const std::pair<Vector3d, Vector3d> get_path() const;
   private:
     Vector3d direction_;
     bool is_finite_;
     std::pair<Vector3d, Vector3d> borders_;
-    void init(const Ray& ray, const Vector3d& point_in,
-              const Vector3d& point_out);
+    void init(const Ray ray, const Vector3d point_in,
+							const Vector3d point_out);
 };
 
 #endif //JETSHOW_INTERCEPTION_H

@@ -10,7 +10,8 @@ Pixel::Pixel(double size, Vector3d &coordinate, pair<int,int> &ij): size_(size),
 void Pixel::scale_coordinates(double scale) {
     coordinate_ *= scale;
 }
-Vector3d &Pixel::getCoordinate() {
+
+Vector3d Pixel::getCoordinate() {
   return coordinate_;
 }
 

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <boost/numeric/odeint.hpp>
 #include "ImagePlane.h"
 #include "Observation.h"
@@ -180,33 +181,35 @@ void test_jet() {
 
 
 void test_observations() {
+		std::cout << "C = " << c << std::endl;
     Vector3d origin = {0., 0., 0.};
     Vector3d direction = {0., 0., 1.};
     double angle = 0.1;
-    double scale = 10.;
+    double scale = 100.*pc;
     Cone geometry(origin, direction, angle, scale);
 
-    RadialConicalBField bfield(1., 2.0);
+    RadialConicalBField bfield(100., 2.0);
     ConstCentralVField vfield(10.);
-    BKNField nfield(1., 100.);
+    BKNField nfield(pc, 100.);
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
 
-    auto image_size = std::make_pair(50, 50);
+    auto image_size = std::make_pair(5, 5);
   	// Size of pixel in mas
-    double pixel_size = 0.01;
+    double pixel_size = 1.0;
 		// Redshift
 		double z = 0.1;
 		// Number of parsecs in one mas - that will be pixel scale
 		auto pc_in_mas = mas_to_pc(z);
+		auto cm_in_mas = pc * pc_in_mas;
     double los_angle = 0.2;
-    ImagePlane imagePlane(image_size, pixel_size, pc_in_mas, los_angle);
+    ImagePlane imagePlane(image_size, pixel_size, cm_in_mas, los_angle);
 
     double nu = 5.*pow(10., 9.);
     Observation observation(&bkjet, &imagePlane, nu);
-    double tau_max = 100.;
-    double dt_max = 0.1;
-		double tau_min = 1E-4;
+    double tau_max = 1000.;
+    double dt_max = 0.1*pc;
+		double tau_min = 1E-11;
     int n = 100;
     observation.run(n, tau_max, dt_max, tau_min);
 }
@@ -214,22 +217,26 @@ void test_observations() {
 
 void test_erase() {
   std::list<double> a{10., 11., 12., 13., 14.};
+	for (auto it = a.rbegin();
+			 it != a.rend(); ++it) {
+		std::cout << *it << std::endl;
+	}
 
-  std::cout << "Before";
-  for (auto it = a.begin(); it != a.end(); it++) {
-    std::cout << " " << *it;}
-  std::cout << std::endl;
-
-  for (auto it = a.begin(); it != a.end(); ++it) {
-    if (*it > 11.5) {
-      it = a.erase(it++, a.end());
-    }
-  }
-
-  std::cout << "After";
-  for (auto it = a.begin(); it != a.end(); it++) {
-    std::cout << " " << *it;}
-  std::cout << std::endl;
+//  std::cout << "Before";
+//  for (auto it = a.begin(); it != a.end(); it++) {
+//    std::cout << " " << *it;}
+//  std::cout << std::endl;
+//
+//  for (auto it = a.begin(); it != a.end(); ++it) {
+//    if (*it > 11.5) {
+//      it = a.erase(it++, a.end());
+//    }
+//  }
+//
+//  std::cout << "After";
+//  for (auto it = a.begin(); it != a.end(); it++) {
+//    std::cout << " " << *it;}
+//  std::cout << std::endl;
   }
 
 
@@ -257,6 +264,38 @@ void test_ctd() {
 	std::cout << "CTD = " << ctd << std::endl;
 }
 
+void test_io() {
+	const int width = 4;
+	const int height = 5;
+
+	vector<vector<double>> a =
+			{
+					{1, 2, 3, 4},
+					{5, 6, 7, 8},
+					{9, 10, 11, 12},
+					{13, 14, 15, 16},
+					{17, 18, 19, 20}
+			};
+
+	int map[height][width] =
+			{
+					{1, 2, 3, 4},
+					{5, 6, 7, 8},
+					{9, 10, 11, 12},
+					{13, 14, 15, 16},
+					{17, 18, 19, 20}
+			};
+
+	std::fstream of("MapV.txt", std::ios::out | std::ios::app);
+
+	if (of.is_open())
+	{
+		write_2dvector(of, a);
+		write_2dvector(std::cout, a);
+		of.close();
+	}
+}
+
 
 int main() {
 	auto t1 = Clock::now();
@@ -264,6 +303,7 @@ int main() {
 	start = std::clock();
 //	test_mpi();
   test_observations();
+//	test_io();
 //  test_erase();
 //	test_ctd();
 //    test_jet();

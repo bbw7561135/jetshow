@@ -2,41 +2,41 @@
 #include "Intersection.h"
 
 
-const Vector3d& Intersection::direction() const {
+const Vector3d Intersection::direction() const {
   return direction_;
 }
 
-void Intersection::set_direction(const Vector3d &direction) {
+void Intersection::set_direction(const Vector3d direction) {
   direction_ = direction;
 }
 
 
-void Intersection::set_borders(const Vector3d &point_in,
-                               const Vector3d &point_out) {
+void Intersection::set_borders(const Vector3d point_in,
+															 const Vector3d point_out) {
   borders_ = std::make_pair(point_in, point_out);
 }
 
-const std::pair<Vector3d, Vector3d>& Intersection::get_path() const {
+const std::pair<Vector3d, Vector3d> Intersection::get_path() const {
   return borders_;
 }
 
 // Ctor for finite intersections
-Intersection::Intersection(const Ray &ray,
-                           const Vector3d &new_point_in,
-                           const Vector3d &new_point_out) {
+Intersection::Intersection(const Ray ray,
+													 const Vector3d new_point_in,
+													 const Vector3d new_point_out) {
   init(ray, new_point_in, new_point_out);
   is_finite_ = 1;
 }
 
-Intersection::Intersection(const Ray &ray,
-                           const std::pair<Vector3d, Vector3d> &borders) {
+Intersection::Intersection(const Ray ray,
+													 const std::pair<Vector3d, Vector3d> borders) {
   set_direction(ray.direction());
   set_borders(borders.first, borders.second);
 }
 
 
 // Ctor for full infinite intersections
-Intersection::Intersection(const Ray &ray, const Geometry &geo) : Intersection() {
+Intersection::Intersection(const Ray ray, const Geometry &geo) : Intersection() {
   Vector3d diff = ray.origin() - geo.origin();
   Vector3d ref_point = diff - diff.dot(ray.direction()) * ray.direction();
   Vector3d point_in = ref_point - geo.big_scale() * ray.direction();
@@ -46,8 +46,8 @@ Intersection::Intersection(const Ray &ray, const Geometry &geo) : Intersection()
 }
 
 // Ctor for half infinite intersections
-Intersection::Intersection(const Ray &ray, const Vector3d &point,
-                           const Geometry &geometry) : Intersection() {
+Intersection::Intersection(const Ray ray, const Vector3d point,
+													 const Geometry &geometry) : Intersection() {
   // Check if ``ray`` was inside ``geometry`` before coming to ``point``.
   Vector3d check_point = point-ray.direction();
   if (geometry.is_within(check_point)) {
@@ -66,9 +66,9 @@ bool Intersection::is_finite() const {
 
 // Cause C++ can't ``call`` ctors inside ctor (internally created object will
 // be lost once exiting its scope)
-void Intersection::init(const Ray &ray,
-                        const Vector3d &point_in,
-                        const Vector3d &point_out) {
+void Intersection::init(const Ray ray,
+												const Vector3d point_in,
+												const Vector3d point_out) {
   set_direction(ray.direction());
   set_borders(point_in, point_out);
 }

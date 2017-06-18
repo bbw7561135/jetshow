@@ -15,14 +15,12 @@ Observation::Observation(Jet *newjet, ImagePlane *newimagePlane, double newnu) :
   imagePlane = newimagePlane;
 };
 
-
+// ``dt_max`` - max. step in pc.
 void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
 	dt_max *= pc;
   auto image_size = getImageSize();
 	vector<Pixel>& pixels = imagePlane->getPixels();
 	vector<Ray>& rays = imagePlane->getRays();
-  // Cycle for each pixel+ray and make transfer for it. THIS CYCLE HAS TO BE
-  // PARALLELIZED!
 	// Commented out to ease debug printing
 	// #pragma omp parallel for schedule(dynamic) collapse(2)
 	// Formally, the best user-time:
@@ -35,7 +33,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
       // This is debug printing out ends
       auto ray = rays[j*image_size.first+k];
       auto pxl = pixels[j*image_size.first+k];
-			std::cout << "pxl coordinate : " << pxl.getCoordinate() << std::endl;
+			std::cout << "pxl coordinate : " << pxl.getCoordinate()/pc << std::endl;
 
 			auto ray_direction = ray.direction();
       std::list<Intersection> list_intersect = jet->hit(ray);
@@ -56,16 +54,20 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
           auto borders = (*it).get_path();
           Vector3d point_in = borders.first;
           Vector3d point_out = borders.second;
-					// Lenght now in cm!
-          double length = pc * (point_out - point_in).norm();
+
+					std::cout << "Ray entered jet at point " << point_in/pc << std::endl;
+					std::cout << "Ray left jet at point " << point_out/pc << std::endl;
+
+					double length = (point_out - point_in).norm();
 					std::cout << "Length = " << length << std::endl;
-          // FIXME: cast to double?
-					// dt & t will be in cm!
           double dt = length/n;
 
           // First integrate till some ``tau_max``
-          Tau tau(jet, point_in, ray_direction, nu, tau_max);
-          double optDepth = background_tau;
+					Vector3d ray_direction_ = -1. * ray_direction;
+					// TODO: If just ``ray_direction`` used tau is much less 1!
+					Tau tau(jet, point_in, ray_direction_, nu, tau_max);
+					std::cout << " Direction for integrating Tau " << ray_direction_ << std::endl;
+					double optDepth = background_tau;
           typedef runge_kutta_dopri5< double > stepper_type;
           auto stepper = make_dense_output(1E-12, 1E-12, dt_max,
                                            stepper_type());
@@ -79,6 +81,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
 						// This should prevale for optically thin parts
 						std::cout << "Tau less then tau_max" << std::endl;
 					} else {
+						// This is t[pc] where tau = ``tau_max
 						double t_tau_max = stepper.current_time();
 						Ray ray_tau_max(point_in, ray_direction);
 						Vector3d point_out_tau_max = ray_tau_max.point(t_tau_max);
@@ -102,20 +105,25 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
           background_tau += found_iter.get_state();
         }
 				double background_I = 0.;
+				std::cout << "Tau = " << background_tau << std::endl;
 				// Calculate I only if optical depth is high enough
 				if (background_tau > tau_min) {
 					background_I= 0.;
 					// Write final values here inside for-cycle
-					for (auto it = list_intersect.rend();
-							 it != list_intersect.rbegin(); --it) {
+					for (auto it = list_intersect.rbegin();
+							 it != list_intersect.rend(); ++it) {
 						auto borders = (*it).get_path();
 						Vector3d point_in = borders.first;
 						Vector3d point_out = borders.second;
-						double length = pc * (point_out - point_in).norm();
+						std::cout << "point in " << point_in/pc << std::endl;
+						std::cout << "point out " << point_out/pc << std::endl;
+
+						double length = (point_out - point_in).norm();
 						// FIXME: cast to double?
 						double dt = length / n;
 
 						Vector3d inv_direction = -1. * ray_direction;
+						std::cout << " Direction for integrating I " << inv_direction << std::endl;
 						I stokesI(jet, point_out, inv_direction, nu);
 						typedef runge_kutta_dopri5<double> stepper_type;
 
@@ -129,6 +137,8 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
 						// cycle)
 						background_I = stI;
 					}
+				} else {
+					std::cout << "Too small optical depth..." << std::endl;
 				}
         // Write values to pixel
 				std::string value ("tau");

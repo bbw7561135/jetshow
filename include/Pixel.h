@@ -16,7 +16,7 @@ using Eigen::Vector3d;
 class Pixel {
 public:
     Pixel(double size_, Vector3d &coordinate_, pair<int,int> &ij_);
-    Vector3d& getCoordinate();
+    Vector3d getCoordinate();
     double getValue(string value);
     void setValue(string value, double newvalue);
     void scale_coordinates(double scale);

@@ -2,6 +2,7 @@
 #define JETSHOW_UTILS_H
 
 #include <math.h>
+#include <vector>
 #include <Eigen/Eigen>
 #include <boost/math/constants/constants.hpp>
 #include <boost/numeric/odeint.hpp>
@@ -18,10 +19,11 @@ const double m_e = 9.109382*1E-28;
 // Mass of proton [g]
 const double m_p = 1.672621*1E-24;
 // Charge of electron [C]
-// const double q_e = 1.602176*pow(10.,-19.);
-const double q_e = 4.8*1E-10;
+ const double q_e = 4.8*1E-10;
+//const double q_e = 1.6*1E-19;
 // Charge of proton [C]
-const double q_p = 4.8*1E-10;
+ const double q_p = 4.8*1E-10;
+//const double q_p = 1.6*1E-19;
 // Speed of light [cm / s]
 const double c = 3.*1E+10;
 // Jy in cgc
@@ -84,5 +86,27 @@ double pc_to_mas(double z);
 
 // Return scale factor that converts from milliarcseconds to parsecs.
 double mas_to_pc(double z);
+
+
+//template<typename T, int height, int width>
+//std::ostream& writemap(std::ostream& os, T (&map)[height][width]);
+
+std::ostream& write_2dvector(std::ostream& os,
+														 std::vector<std::vector<double>>& v);
+
+
+template<typename T, int height, int width>
+std::ostream& writemap(std::ostream& os, T (&map)[height][width])
+{
+	for (int i = 0; i < height; ++i)
+	{
+		for (int j = 0; j < width; ++j)
+		{
+			os << map[i][j]<<" ";
+		}
+		os<<"\n";
+	}
+	return os;
+}
 
 #endif //JETSHOW_UTILS_H

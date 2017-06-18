@@ -38,7 +38,7 @@ Image::Image(pair<int, int> image_size, double pixel_size,
 }
 
 Vector3d Image::getCoordinate(int i, int j) {
-  return Vector3d(0., i-image_size_.first/2.+0.5, j-image_size_.second/2.+0.5);
+  return Vector3d(0, i-image_size_.first/2.+0.5, j-image_size_.second/2.+0.5);
 }
 
 Vector3d Image::getScaledCoordinate(int i, int j) {

@@ -13,22 +13,30 @@ System::System(Jet *newjet,
 
 
 void Tau::operator()(const double &x, double &dxdt, const double t) {
-  Vector3d point = point_in + t * ray_direction / pc;
+  Vector3d point = point_in + t * ray_direction;
 //  std::cout << "calculating k_I at point " << point << std::endl;
   dxdt = jet->getKI(point, ray_direction, nu);
 //  std::cout << "Step at t = " << t << std::endl;
+//	double kI = jet->getKI(point, ray_direction, nu);
+//  std::cout << "At t = " << t << " k_I = " << kI << std::endl;
 }
 
 
-
 void I::operator()(const double &x, double &dxdt, const double t) {
-  Vector3d point = point_in + t * ray_direction / pc;
-	std::cout << "t inside I =" << t << std::endl;
+  Vector3d point = point_in + t * ray_direction;
+//	std::cout << "t inside I =" << t << std::endl;
   //std::cout << "calculating transfer at point " << point << std::endl;
 	double eta = jet->getEtaI(point, ray_direction, nu);
+	double k = jet->getKI(point, ray_direction, nu);
+	double sf = eta/k;
+	std::cout << "k inside I = " << k << std::endl;
 	std::cout << "eta inside I = " << eta << std::endl;
-  dxdt = jet->getEtaI(point, ray_direction, nu) +
+	std::cout << "SF = " << sf << std::endl;
+  dxdt = jet->getEtaI(point, ray_direction, nu) -
       jet->getKI(point, ray_direction, nu) * x;
+	if (dxdt < 0.0) {
+		dxdt = 0.0;
+	}
 }
 
 
