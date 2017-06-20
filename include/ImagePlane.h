@@ -23,7 +23,7 @@ public:
 							 double los_angle);
     vector<Pixel>& getPixels();
     vector<Ray>& getRays();
-    vector<vector<double>>& getImage(string value);
+    vector<vector<double>> getImage(string value);
     const pair<int,int> image_size;
 
 private:

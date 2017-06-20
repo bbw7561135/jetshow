@@ -67,19 +67,24 @@ void test_image() {
 }
 
 void test_image_plane() {
+	string value ("tau");
   auto image_size = std::make_pair(10, 10);
   double pixel_size = 0.1;
   double pixel_scale = 100.;
   double los_angle = pi/6.;
   ImagePlane imagePlane(image_size, pixel_size, pixel_scale, los_angle);
   vector<Ray>& rays = imagePlane.getRays();
+	vector<Pixel>& pixels = imagePlane.getPixels();
   for (int j = 0; j < image_size.first; ++j) {
     std::cout << "j = " << j << std::endl;
     for (int k = 0; k < image_size.second; ++k) {
       std::cout << "k = " << k << std::endl;
-      auto ray = rays[j*image_size.first+k];
-      std::cout << "Ray origin " << ray.origin() << std::endl;
-      std::cout << "Ray direction " << ray.direction() << std::endl;
+      auto &ray = rays[j*image_size.first+k];
+			auto &pixel = pixels[j*image_size.first+k];
+			pixel.setValue(value, 0.005);
+			std::cout << pixel.getValue(value) << std::endl;
+//      std::cout << "Ray origin " << ray.origin() << std::endl;
+//      std::cout << "Ray direction " << ray.direction() << std::endl;
     }
   }
 
@@ -88,8 +93,8 @@ void test_image_plane() {
 		std::cout << "j = " << j << std::endl;
 		for (int k = 0; k < image_size.second; ++k) {
 			std::cout << "k = " << k << std::endl;
-			auto pxl = pxls[j*image_size.first+k];
-			std::cout << "Pixel Coordinate " << pxl.getCoordinate() << std::endl;
+			auto &pxl = pxls[j*image_size.first+k];
+			std::cout << "Pixel value " << pxl.getValue(value) << std::endl;
 		}
 	}
 }
@@ -180,11 +185,89 @@ void test_jet() {
 }
 
 
+void test_observations_cylinder() {
+	Vector3d origin = {0., 0., 0.};
+	Vector3d direction = {0., 0., 1.};
+	// Redshift
+	double z = 0.16;
+	// Cylinder radius - in cm
+	double r = 0.05 * 	25 * mas_to_pc(z) * pc;
+	std::cout << "Cylinder radius [pc] " << r/pc << std::endl;
+	Cylinder geometry(origin, direction, r);
+
+	ConstCylinderBField bfield(0.5, 0.0);
+	ConstFlatVField vfield(5.);
+	// To compare to 5000 in fluid frame need increase it by Gamma
+	BKNField nfield(25.*1E05, 1.65);
+
+	Jet jet(&geometry, &vfield, &bfield, &nfield);
+
+	auto image_size = std::make_pair(200, 200);
+
+	// Number of parsecs in one mas - that will be pixel scale
+	auto pc_in_mas = mas_to_pc(z);
+	std::cout << "Pc in 1 mas = " << pc_in_mas << std::endl;
+	// Size of pixel in cm - this also scale (0.5 means that image size is divided
+	// in Image construction (see getCoordinates)
+	auto pixel_size = 0.05*0.25*pc_in_mas*pc;
+	auto pix_solid_angle = pixel_solid_angle(0.05, z);
+	std::cout << "Pixel solid angle = " << pix_solid_angle << std::endl;
+	std::cout << "Pixel size [in cm] = " << pixel_size << std::endl;
+	auto cm_in_mas = pc * pc_in_mas;
+	double los_angle = pi/2.;
+	ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
+
+	double nu = 8.4*1E+9;
+	Observation observation(&jet, &imagePlane, nu);
+	double tau_max = 100.;
+	double dt_max = 0.01*pc;
+	double tau_min = 1E-15;
+	int n = 100;
+	observation.run(n, tau_max, dt_max, tau_min);
+
+	string value = "tau";
+	auto image = observation.getImage(value);
+	std::fstream fs;
+	fs.open("Map_tau.txt", std::ios::out | std::ios::app);
+
+	if (fs.is_open())
+	{
+		write_2dvector(fs, image);
+		fs.close();
+	}
+
+	value = "I";
+	image = observation.getImage(value);
+	fs.open("Map_I.txt", std::ios::out | std::ios::app);
+
+	if (fs.is_open())
+	{
+		write_2dvector(fs, image);
+		// Just to show how it can be used
+		// write_2dvector(std::cout, image);
+		fs.close();
+	}
+
+	value = "l";
+	image = observation.getImage(value);
+	fs.open("Map_l.txt", std::ios::out | std::ios::app);
+
+	if (fs.is_open())
+	{
+		write_2dvector(fs, image);
+		fs.close();
+	}
+
+	std::cout << "Pixel solid angle = " << pix_solid_angle << std::endl;
+
+}
+
+
 void test_observations() {
 		std::cout << "C = " << c << std::endl;
     Vector3d origin = {0., 0., 0.};
     Vector3d direction = {0., 0., 1.};
-    double angle = 0.1;
+    double angle = 0.2;
     double scale = 100.*pc;
     Cone geometry(origin, direction, angle, scale);
 
@@ -194,24 +277,48 @@ void test_observations() {
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
 
-    auto image_size = std::make_pair(5, 5);
+    auto image_size = std::make_pair(300, 300);
   	// Size of pixel in mas
-    double pixel_size = 1.0;
+    double pixel_size = 0.001;
 		// Redshift
 		double z = 0.1;
 		// Number of parsecs in one mas - that will be pixel scale
 		auto pc_in_mas = mas_to_pc(z);
 		auto cm_in_mas = pc * pc_in_mas;
-    double los_angle = 0.2;
+    double los_angle = 0.3;
     ImagePlane imagePlane(image_size, pixel_size, cm_in_mas, los_angle);
 
     double nu = 5.*pow(10., 9.);
     Observation observation(&bkjet, &imagePlane, nu);
-    double tau_max = 1000.;
-    double dt_max = 0.1*pc;
-		double tau_min = 1E-11;
+    double tau_max = 100.;
+    double dt_max = 0.01*pc;
+		double tau_min = 1E-15;
     int n = 100;
     observation.run(n, tau_max, dt_max, tau_min);
+
+		string value = "tau";
+		std::cout << "Getting image" << std::endl;
+		auto image = observation.getImage(value);
+		std::fstream of("Map_tau.txt", std::ios::out | std::ios::app);
+
+		if (of.is_open())
+		{
+			write_2dvector(of, image);
+			write_2dvector(std::cout, image);
+			of.close();
+		}
+
+		string valuei = "I";
+		std::cout << "Getting image" << std::endl;
+		auto imagei = observation.getImage(valuei);
+		std::fstream ofi("Map_I.txt", std::ios::out | std::ios::app);
+
+		if (ofi.is_open())
+		{
+			write_2dvector(ofi, imagei);
+			write_2dvector(std::cout, imagei);
+			ofi.close();
+		}
 }
 
 
@@ -302,7 +409,8 @@ int main() {
 	std::clock_t start;
 	start = std::clock();
 //	test_mpi();
-  test_observations();
+//  test_observations();
+	test_observations_cylinder();
 //	test_io();
 //  test_erase();
 //	test_ctd();
@@ -310,13 +418,16 @@ int main() {
 //  test_pixel();
 //    test_image();
 //    test_image_plane();
-	std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
+	std::cout << "Time: "
+						<< (std::clock() - start) / (double) (CLOCKS_PER_SEC / 1000)
+						<< " ms" << std::endl;
 	auto t2 = Clock::now();
 	std::cout << "Delta t2-t1: "
-						<< std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
+						<< std::chrono::duration_cast<std::chrono::milliseconds>(
+								t2 - t1).count()
 						<< " milliseconds" << std::endl;
-
 }
+
 
 //  Intersection intersection{};
 //  std::cout << intersection.direction() << std::endl;
@@ -328,19 +439,19 @@ int main() {
 //    double cone_angle = pi/4.;
 //    double scale = 10.0;
 //    Cone cone = Cone(cone_origin, cone_direction, cone_angle, scale);
-  // There's two intersections
+	// There's two intersections
 //    Vector3d ray_direction(0., 1., 0.);
 //    Vector3d ray_origin(0., 1., 1.);
-  // No intersections
+	// No intersections
 //    Vector3d ray_direction(0., 1., 0.);
 //    Vector3d ray_origin(1., 1., 0.);
-  // Two intersection (one far away)
+	// Two intersection (one far away)
 //    Vector3d ray_direction(0., 1., 1.);
 //    Vector3d ray_origin(0., 1., 0.);
-  // One intersection
+	// One intersection
 //    Vector3d ray_direction(0., 1., 0.);
 //    Vector3d ray_origin(0., 1., 0.);
-    // Along border
+	// Along border
 //    Vector3d ray_origin(0., 0., 0.);
 //    Vector3d ray_direction(0., 1., 1.);
 //
@@ -354,37 +465,37 @@ int main() {
 //    }
 
 
-      // Test ``is_within``
+	// Test ``is_within``
 //    Vector3d point{-2., 1., -5.};
 //    bool is_within = cone.is_within(point);
 //    std::cout << "Is within : " << is_within << std::endl;
 
-    // This tests cylinder-ray intersections
-//    Vector3d cylinder_origin(0., 0., 0.);
-//    Vector3d cylinder_direction(0., 0., 1.);
-//    double cylinder_radius = 1.;
-//    Cylinder cylinder(cylinder_origin, cylinder_direction, cylinder_radius);
-//    Vector3d point{0., 0., 2.};
-//    bool is_within = cylinder.is_within(point);
-//    std::cout << "Is within : " << is_within << std::endl;
+	// This tests cylinder-ray intersections
+//	Vector3d cylinder_origin(0., 0., 0.);
+//	Vector3d cylinder_direction(0., 0., 1.);
+//	double cylinder_radius = 1.;
+//	Cylinder cylinder(cylinder_origin, cylinder_direction, cylinder_radius);
+//	Vector3d point{0., 0., 2.};
+//	bool is_within = cylinder.is_within(point);
+//	std::cout << "Is within : " << is_within << std::endl;
 
-    // No intersections
-//    Vector3d ray_direction(1., 0., 1.);
-//    Vector3d ray_origin(0., 2., 0.);
+	// No intersections
+//	Vector3d ray_direction(1., 0., 1.);
+//	Vector3d ray_origin(0., 2., 0.);
 
-    // Along border
+	// Along border
 //    Vector3d ray_direction(0., 0., 1.);
 //    Vector3d ray_origin(0., 1., 0.);
 
-    // No interception. Along border internally
+	// No interception. Along border internally
 //    Vector3d ray_direction(0., 0., 1.);
 //    Vector3d ray_origin(-0.1, 0.2, 0.);
 
-    // No interception. Along border externally
+	// No interception. Along border externally
 //    Vector3d ray_direction(0., 0., 1.);
 //    Vector3d ray_origin(10., -0.2, 0.);
 
-    // Single interception
+	// Single interception
 //    Vector3d ray_direction(1., 0., 0.);
 //    Vector3d ray_origin(0., 1., 0.);
 
@@ -392,16 +503,18 @@ int main() {
 //    Vector3d ray_direction(0., 1., 0.);
 //    Vector3d ray_origin(0., 1., 0.);
 //
-//    Ray ray(ray_origin, ray_direction);
-//    std::list<Intersection> list_intersect = cylinder.hit(ray);
-//    std::cout << "Did ray traverse volume ?" << std::endl << !list_intersect.empty() << std::endl;
-//    if (!list_intersect.empty()) {
-//        Intersection intersect = list_intersect.front();
-//        std::pair<Vector3d,Vector3d> borders = intersect.get_path();
-//        std::cout << "Borders : " << borders.first << " and " << borders.second << std::endl;
-//        std::cout << "Direction " << intersect.direction() << std::endl;
-//    }
-    // End of cylinder-ray intersections
+//	Ray ray(ray_origin, ray_direction);
+//	std::list<Intersection> list_intersect = cylinder.hit(ray);
+//	std::cout << "Did ray traverse volume ?" << std::endl
+//						<< !list_intersect.empty() << std::endl;
+//	if (!list_intersect.empty()) {
+//		Intersection intersect = list_intersect.front();
+//		std::pair<Vector3d, Vector3d> borders = intersect.get_path();
+//		std::cout << "Borders : " << borders.first << " and " << borders.second
+//							<< std::endl;
+//		std::cout << "Direction " << intersect.direction() << std::endl;
+//	}
+	// End of cylinder-ray intersections
 
 
 
@@ -425,7 +538,6 @@ int main() {
 //    double t1 = (-c1 + sqrt(d)) / (c2);
 //    double t2 = (-c1 - sqrt(d)) / (c2);
 //    std::cout << "t1= " << t1 << " t2= " << t2 << std::endl;
-
 
 //int main() {
 //    Vector3d v1(0, 0, 0);

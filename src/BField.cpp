@@ -13,7 +13,8 @@ ConstCylinderBField::ConstCylinderBField(double b_0, double n_b) : b_0_(b_0),
                                                                    n_b_(n_b) {};
 
 Vector3d ConstCylinderBField::bf(const Vector3d &point) const {
-    return Vector3d(0.0, 0.0, b_0_*pow(point[2]/pc, -n_b_));
+	double r = point.norm();
+	return Vector3d(0.0, 0.0, b_0_*pow(r/pc, -n_b_));
 }
 
 

@@ -102,6 +102,13 @@ write_2dvector(std::ostream &os, std::vector<std::vector<double>> &v) {
 	return os;
 }
 
+double pixel_solid_angle(double pixel_size_mas, double z) {
+	double pixel_size_pc = pixel_size_mas * mas_to_pc(z);
+	double d_a = comoving_transfer_distance(z)/(1.+z);
+	return pixel_size_pc*pixel_size_pc/(d_a*d_a);
+
+}
+
 
 Ctd::Ctd(double z, double H0, double omega_M, double omega_V) : z(z), H0(H0),
 																																omega_M(omega_M),

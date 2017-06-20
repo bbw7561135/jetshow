@@ -10,13 +10,21 @@ using std::string;
 using Eigen::Vector3d;
 
 
-vector<vector<double>>& Image::getImage(string value) {
-    vector<vector<double>> image;
+vector<vector<double>> Image::getImage(string value) {
+//	std::cout << "In Image.getImage..." << std::endl;
+	vector<vector<double>> image;
+	image.resize(image_size_.first);
+	for (int i = 0; i < image_size_.first; ++i) {
+		image[i].resize(image_size_.second);
+	}
   for (int i = 0; i < image_size_.first; ++i) {
     for (int j = 0; j < image_size_.second; ++j) {
+//			double pix_value = pixels_[i*image_size_.first + j].getValue(value);
+//			std::cout << "In Image.getImage for pixel " << i << j << pix_value << std::endl;
       image[i][j] = pixels_[i*image_size_.first + j].getValue(value);
     }
   }
+	return image;
 }
 
 Image::Image(pair<int, int> image_size, double pixel_size,

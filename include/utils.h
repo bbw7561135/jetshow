@@ -88,25 +88,13 @@ double pc_to_mas(double z);
 double mas_to_pc(double z);
 
 
-//template<typename T, int height, int width>
-//std::ostream& writemap(std::ostream& os, T (&map)[height][width]);
+// Return solid angle of one pixel. We need this to convert specific intensities
+// I_{/nu} to flux densities S_{\nu}[Jy] = I_{\nu} * this
+double pixel_solid_angle(double pixel_size_mas, double z);
+
 
 std::ostream& write_2dvector(std::ostream& os,
 														 std::vector<std::vector<double>>& v);
 
-
-template<typename T, int height, int width>
-std::ostream& writemap(std::ostream& os, T (&map)[height][width])
-{
-	for (int i = 0; i < height; ++i)
-	{
-		for (int j = 0; j < width; ++j)
-		{
-			os << map[i][j]<<" ";
-		}
-		os<<"\n";
-	}
-	return os;
-}
 
 #endif //JETSHOW_UTILS_H

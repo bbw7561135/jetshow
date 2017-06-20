@@ -1,6 +1,7 @@
 #include <Eigen/Eigen>
 #include <memory>
 #include <math.h>
+#include <iostream>
 #include "ImagePlane.h"
 
 using Eigen::Vector3d;
@@ -14,6 +15,7 @@ ImagePlane::ImagePlane(pair<int,int> image_size, double pixel_size,
                                            los_angle_(los_angle),
                                            image_size(image_size) {
   direction_ = Vector3d{-sin(los_angle), 0, -cos(los_angle)};
+	std::cout << "Generating image plane with direction " << direction_ << std::endl;
 	Vector3d scale(1., 1., 1./sin(los_angle));
   // Initialize rays
   vector<Pixel>& pixels = image_.getPixels();
@@ -41,6 +43,7 @@ vector<Ray> &ImagePlane::getRays() {
   return rays_;
 }
 
-vector<vector<double>> &ImagePlane::getImage(string value) {
+vector<vector<double>> ImagePlane::getImage(string value) {
+//	std::cout << "In ImagePlane.getImage..." << std::endl;
   return image_.getImage(value);
 }

@@ -31,9 +31,9 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
 
 		//
-//		std::cout << "b = " << b.norm() << " v = " << v.norm() << " G = " << gamma <<
-//							" D = " << D << " n = " << n << " n_pr = " << n_prime <<
-//							" b_pr= " << b_prime.norm() << std::endl;
+		std::cout << "b = " << b.norm() << " v = " << v.norm() << " G = " << gamma <<
+							" D = " << D << " n = " << n << " n_pr = " << n_prime <<
+							" b_pr= " << b_prime.norm() << std::endl;
 
     return k_i_prime/D;
 }
@@ -41,7 +41,7 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
 // This is k_i in lab frame that could be integrated along LOS.
 double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
     // First, comoving frame ``eta_i_prime`` (in the rest frame of the emission
-    // element) is connected to this ``eta_i`` as ``eta_i = D^3 * eta_i_prime``.
+    // element) is connected to this ``eta_i`` as ``eta_i = D^2 * eta_i_prime``.
     // Second, in ``eta_i_prime`` we need all quantities in comoving frame
     // (primed) in terms of lab frame:
     // b_prime = f(b, v)

@@ -31,8 +31,8 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
       int n_pix = image_size.first*j + k + 1;
       std::cout << "Running on pixel # " << n_pix << std::endl;
       // This is debug printing out ends
-      auto ray = rays[j*image_size.first+k];
-      auto pxl = pixels[j*image_size.first+k];
+      auto &ray = rays[j*image_size.first+k];
+      auto &pxl = pixels[j*image_size.first+k];
 			std::cout << "pxl coordinate : " << pxl.getCoordinate()/pc << std::endl;
 
 			auto ray_direction = ray.direction();
@@ -46,6 +46,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
         // Do transfer here
         // Write final values here inside for-cycle
         double background_tau = 0.;
+				double thickness = 0.;
 
         // On some ``it`` we can stop because of tau > tau_max. Then we should
         // go from that ``it`` back. How to implement it using iterators?
@@ -69,7 +70,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
 					std::cout << " Direction for integrating Tau " << ray_direction_ << std::endl;
 					double optDepth = background_tau;
           typedef runge_kutta_dopri5< double > stepper_type;
-          auto stepper = make_dense_output(1E-12, 1E-12, dt_max,
+          auto stepper = make_dense_output(1E-11, 1E-11, dt_max,
                                            stepper_type());
 					using namespace std::placeholders;
 					auto is_done = std::bind(check_opt_depth, tau_max, _1);
@@ -103,6 +104,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
           // Update background value (or write final values if this is last
           // cycle)
           background_tau += found_iter.get_state();
+					thickness += length;
         }
 				double background_I = 0.;
 				std::cout << "Tau = " << background_tau << std::endl;
@@ -130,7 +132,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
 						// Here stI - Stokes I intensity.
 						double stI = background_I;
 						// TODO: Add ``dt_max`` constrains
-						integrate_adaptive(make_controlled(1E-12, 1E-12, stepper_type()),
+						integrate_adaptive(make_controlled(1E-9, 1E-9, stepper_type()),
 															 stokesI,
 															 stI, 0.0, length, dt, write_cout);
 						// Update background value (or write final values if this is last
@@ -145,13 +147,19 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
         pxl.setValue(value, background_tau);
 				value = "I";
 				pxl.setValue(value, background_I);
+				value = "l";
+				pxl.setValue(value, thickness);
+//				std::cout << "In run after setting pixe values " << std::endl;
+//				std::string value_ ("tau");
+//				std::cout << pxl.getValue(value_) << std::endl;
       }
     }
   }
 }
 
 
-vector<vector<double>> &Observation::getImage(string value) {
+vector<vector<double>> Observation::getImage(string value) {
+	std::cout << "In Observation.getImage..." << std::endl;
   return imagePlane->getImage(value);
 }
 

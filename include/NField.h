@@ -10,16 +10,25 @@ public:
     virtual double n(const Vector3d& point) const = 0;
 };
 
+class ConstNField: public NField {
+public:
+		ConstNField(double n);
+		double n(const Vector3d &point) const override;
+
+private:
+		double n_;
+};
+
 class BKNField: public NField {
 
     public:
-    BKNField(double z_0, double n_0);
+    BKNField(double n_0, double n_n);
 
     double n(const Vector3d &point) const override;
 
 private:
-    double z_0_;
     double n_0_;
+    double n_n_;
 
 };
 

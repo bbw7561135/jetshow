@@ -1,4 +1,5 @@
 #include <iostream>
+#include <utils.h>
 #include "Cylinder.h"
 
 using std::min;
@@ -32,9 +33,14 @@ bool Cylinder::is_within(Vector3d& point) const {
 
 
 std::list<Intersection> Cylinder::hit(Ray &ray) const {
-    const Vector3d ray_origin = ray.origin();
-    const Vector3d ray_direction = ray.direction();
-    const Vector3d cilinder_origin = origin();
+		std::cout << "Hiting cylinder with ray with direction " << ray.direction() << std::endl;
+		std::cout << "Cylinder direction = " << direction() << std::endl;
+		std::cout << "Cylinder radius = " << r() << std::endl;
+    const Vector3d ray_origin = ray.origin()/pc;
+		std::cout << "Ray origin = " << ray_origin << std::endl;
+		const Vector3d ray_direction = ray.direction();
+		std::cout << "Ray direction = " << ray_direction << std::endl;
+    const Vector3d cilinder_origin = origin()/pc;
     const Vector3d cilinder_direction = direction();
 
     const Vector3d delta = ray_origin - cilinder_origin;
@@ -44,11 +50,14 @@ std::list<Intersection> Cylinder::hit(Ray &ray) const {
     double c2 = v.squaredNorm();
     const Vector3d w = delta - delta.dot(cilinder_direction) * cilinder_direction;
     double c1 = v.dot(w);
-    double c0 = w.squaredNorm() - r();
+    double c0 = w.squaredNorm() - r()/pc;
 
-//    std::cout << "c2 = " << c2 << " c1 = " << c1 << " c0 = " << c0 << std::endl;
+    std::cout << "c2 = " << c2 << " c1 = " << c1 << " c0 = " << c0 << std::endl;
 
     double d = c1*c1 - c0*c2;
+
+		std::cout << "d = " << d << std::endl;
+
     if (d < 0) {
 //        std::cout << "No intercestions, d = " << d << std::endl;
         return std::list<Intersection>{};
@@ -58,10 +67,10 @@ std::list<Intersection> Cylinder::hit(Ray &ray) const {
         double sqrt_d = sqrt(d);
         double t1 = (-c1 - eps*sqrt_d)/(c2);
         double t2 = c0/(-c1 - eps*sqrt_d);
-//        std::cout << "t1: " << t1 << std::endl;
-//        std::cout << "t2: " << t2 << std::endl;
-        Vector3d point_in = ray.point(min(t1, t2));
-        Vector3d point_out = ray.point(max(t1, t2));
+        std::cout << "t1: " << t1 << std::endl;
+        std::cout << "t2: " << t2 << std::endl;
+        Vector3d point_in = ray.point(pc*min(t1, t2));
+        Vector3d point_out = ray.point(pc*max(t1, t2));
         return std::list<Intersection>{Intersection(ray, point_in, point_out)};
     } else {
         if (c2 == 1 && c1 ==0 && c0 == 0) {
