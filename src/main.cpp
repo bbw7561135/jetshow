@@ -271,54 +271,69 @@ void test_observations() {
     double scale = 100.*pc;
     Cone geometry(origin, direction, angle, scale);
 
-    RadialConicalBField bfield(100., 2.0);
+    RadialConicalBField bfield(0.1, 2.0);
     ConstCentralVField vfield(10.);
-    BKNField nfield(pc, 100.);
+    BKNField nfield(5.*1E+05, 2.);
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
 
-    auto image_size = std::make_pair(300, 300);
+    auto image_size = std::make_pair(100, 100);
   	// Size of pixel in mas
-    double pixel_size = 0.001;
+    double pixel_size_mas = 0.1;
 		// Redshift
 		double z = 0.1;
 		// Number of parsecs in one mas - that will be pixel scale
 		auto pc_in_mas = mas_to_pc(z);
 		auto cm_in_mas = pc * pc_in_mas;
     double los_angle = 0.3;
-    ImagePlane imagePlane(image_size, pixel_size, cm_in_mas, los_angle);
+		auto pixel_size = pixel_size_mas*0.25*pc_in_mas*pc;
+		auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, z);
 
-    double nu = 5.*pow(10., 9.);
+		ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
+
+    double nu = 5.*1E+09;
     Observation observation(&bkjet, &imagePlane, nu);
     double tau_max = 100.;
     double dt_max = 0.01*pc;
 		double tau_min = 1E-15;
     int n = 100;
-    observation.run(n, tau_max, dt_max, tau_min);
 
-		string value = "tau";
-		std::cout << "Getting image" << std::endl;
-		auto image = observation.getImage(value);
-		std::fstream of("Map_tau.txt", std::ios::out | std::ios::app);
+		std::cout << "Pixel solid angle = " << pix_solid_angle << std::endl;
 
-		if (of.is_open())
-		{
-			write_2dvector(of, image);
-			write_2dvector(std::cout, image);
-			of.close();
-		}
-
-		string valuei = "I";
-		std::cout << "Getting image" << std::endl;
-		auto imagei = observation.getImage(valuei);
-		std::fstream ofi("Map_I.txt", std::ios::out | std::ios::app);
-
-		if (ofi.is_open())
-		{
-			write_2dvector(ofi, imagei);
-			write_2dvector(std::cout, imagei);
-			ofi.close();
-		}
+//		observation.run(n, tau_max, dt_max, tau_min);
+//
+//		string value = "tau";
+//		auto image = observation.getImage(value);
+//		std::fstream fs;
+//		fs.open("Map_tau.txt", std::ios::out | std::ios::app);
+//
+//		if (fs.is_open())
+//		{
+//			write_2dvector(fs, image);
+//			fs.close();
+//		}
+//
+//		value = "I";
+//		image = observation.getImage(value);
+//		fs.open("Map_I.txt", std::ios::out | std::ios::app);
+//
+//		if (fs.is_open())
+//		{
+//			write_2dvector(fs, image);
+//			// Just to show how it can be used
+//			// write_2dvector(std::cout, image);
+//			fs.close();
+//		}
+//
+//		value = "l";
+//		image = observation.getImage(value);
+//		fs.open("Map_l.txt", std::ios::out | std::ios::app);
+//
+//		if (fs.is_open())
+//		{
+//			write_2dvector(fs, image);
+//			fs.close();
+//		}
 }
 
 
@@ -409,8 +424,8 @@ int main() {
 	std::clock_t start;
 	start = std::clock();
 //	test_mpi();
-//  test_observations();
-	test_observations_cylinder();
+  test_observations();
+//	test_observations_cylinder();
 //	test_io();
 //  test_erase();
 //	test_ctd();
