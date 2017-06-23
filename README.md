@@ -1,6 +1,6 @@
-## Instalation and building
+## Installation and building
 
-Possible you need to install ``git``, ``cmake``, ``boost`` and ``Eigen`` (C++
+Possibly you need to install ``git``, ``cmake``, ``boost`` and ``Eigen`` (C++
 libraries).
 
 ``git clone https://ipashchenko@bitbucket.org/ipashchenko/jetshow.git``
