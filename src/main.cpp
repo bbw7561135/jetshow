@@ -392,7 +392,7 @@ void test_observations() {
 
 		if (fs.is_open())
 		{
-			write_2dvector(fs, image);
+			write_2dvector(fs, image, pc);
 			fs.close();
 		}
 }

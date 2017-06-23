@@ -71,7 +71,7 @@ Result files are appeared in the same directory.
  * ``output`` describes output files.
  
     * ``file_tau`` - name of the file with image of optical depth.
-    * ``file_length`` - name of the file with image of geometrical depth.
-    * ``file_i`` - name of the file with image of Stokes ``I`` intensity (in
-    units of [Jy/pixel]).
+    * ``file_length`` - name of the file with image of geometrical depth [pc].
+    * ``file_i`` - name of the file with image of Stokes *I* intensity
+    [Jy/pixel].
     
