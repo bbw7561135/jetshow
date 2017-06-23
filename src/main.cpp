@@ -1,3 +1,4 @@
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <boost/numeric/odeint.hpp>
@@ -22,12 +23,17 @@
 #include <mpi.h>
 #include <ctime>
 #include <chrono>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
 
 using Eigen::Vector3d;
 using std::vector;
 using std::pair;
 using namespace boost::numeric::odeint;
 typedef std::chrono::high_resolution_clock Clock;
+namespace pt = boost::property_tree;
+namespace ph = std::placeholders;
 
 
 void test_pixel() {
@@ -152,7 +158,7 @@ void test_jet() {
     auto stepper = make_dense_output(1E-21, 1E-18, dt_max,
                                      stepper_type());
     using namespace std::placeholders;
-    auto is_done = std::bind(check_opt_depth, tau_max, _1);
+    auto is_done = std::bind(check_opt_depth, tau_max, ph::_1);
     auto ode_range = make_adaptive_range(std::ref(stepper), tau, x, 0.0, length,
                                        dt);
     auto iter = std::find_if(ode_range.first, ode_range.second, is_done);
@@ -264,76 +270,119 @@ void test_observations_cylinder() {
 
 
 void test_observations() {
-		std::cout << "C = " << c << std::endl;
+		// Create a root
+		pt::ptree root;
+
+		Geometry* geometry;
+		BField* bfield;
+		VField* vfield;
+		NField* nfield;
+
+		// Load the json file in this ptree
+		pt::read_json("../config.json", root);
+		// Read values
+		double los_angle = root.get<double>("observation.los_angle");
+		double z = root.get<double>("observation.redshift");
+		int number_of_pixels = root.get<int>("image.number_of_pixels");
+		double pixel_size_mas = root.get<double>("image.pixel_size_mas");
+
+		// Setting geometry
     Vector3d origin = {0., 0., 0.};
     Vector3d direction = {0., 0., 1.};
-    double angle = 0.2;
-    double scale = 100.*pc;
-    Cone geometry(origin, direction, angle, scale);
+		std::string geotype = root.get<std::string>("jet.geometry.type");
+		std::cout << "Geometry type " << geotype << std::endl;
+		if (geotype == "cone") {
+				// Create Cone with parameters
+				double cone_angle = root.get<double>("jet.geometry.parameters.angle");
+				double scale_pc = root.get<double>("jet.geometry.parameters.scale_pc");
+				double scale = pc * scale_pc;
+				geometry = new Cone(origin, direction, cone_angle, scale);
+//				geometry = geometry_;
+		}
 
-    RadialConicalBField bfield(0.1, 2.0);
-    ConstCentralVField vfield(10.);
-    BKNField nfield(5.*1E+05, 2.);
+		std::string btype = root.get<std::string>("jet.bfield.type");
+		std::cout << "B-field type " << btype << std::endl;
+		if (btype == "radial_conical") {
+				double b_1 = root.get<double>("jet.bfield.parameters.b_1");
+				double n_b = root.get<double>("jet.bfield.parameters.n_b");
+				bfield = new RadialConicalBField(b_1, n_b);
+		}
 
-    Jet bkjet(&geometry, &vfield, &bfield, &nfield);
+		std::string vtype = root.get<std::string>("jet.vfield.type");
+		std::cout << "Velocity type " << vtype << std::endl;
+		if (vtype == "const_central") {
+				double gamma = root.get<double>("jet.vfield.parameters.gamma");
+				vfield = new ConstCentralVField(gamma);
+		}
 
-    auto image_size = std::make_pair(100, 100);
-  	// Size of pixel in mas
-    double pixel_size_mas = 0.1;
-		// Redshift
-		double z = 0.1;
+		std::string ntype = root.get<std::string>("jet.nfield.type");
+		std::cout << "Density type " << ntype << std::endl;
+		if (ntype == "bk") {
+				double n_1 = root.get<double>("jet.nfield.parameters.n_1");
+				double n_n = root.get<double>("jet.nfield.parameters.n_n");
+				nfield = new BKNField(n_1, n_n);
+		}
+
+
+    Jet bkjet(geometry, vfield, bfield, nfield);
+
+    auto image_size = std::make_pair(number_of_pixels, number_of_pixels);
 		// Number of parsecs in one mas - that will be pixel scale
 		auto pc_in_mas = mas_to_pc(z);
 		auto cm_in_mas = pc * pc_in_mas;
-    double los_angle = 0.3;
+//    double los_angle = 0.3;
 		auto pixel_size = pixel_size_mas*0.25*pc_in_mas*pc;
 		auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, z);
 
 		ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
 
-    double nu = 5.*1E+09;
+		double nu = root.get<double>("observation.frequency_ghz");
+    nu *= 1E+09;
     Observation observation(&bkjet, &imagePlane, nu);
-    double tau_max = 100.;
-    double dt_max = 0.01*pc;
-		double tau_min = 1E-15;
-    int n = 100;
+		double tau_max = root.get<double>("integration.tau_max");
+		double dt_max = root.get<double>("integration.dl_max_pc");
+    dt_max *= pc;
+		double tau_min = root.get<double>("integration.log10_tau_min");
+		tau_min = pow(10.,tau_min);
+		int n = root.get<int>("integration.n");
 
+
+		observation.run(n, tau_max, dt_max, tau_min);
+
+		string value = "tau";
+		auto image = observation.getImage(value);
+		std::fstream fs;
+		fs.open("Map_tau.txt", std::ios::out | std::ios::app);
+
+		if (fs.is_open())
+		{
+			write_2dvector(fs, image);
+			fs.close();
+		}
+
+		value = "I";
+		image = observation.getImage(value);
+		fs.open("Map_I.txt", std::ios::out | std::ios::app);
+
+		if (fs.is_open())
+		{
+			write_2dvector(fs, image);
+			// Just to show how it can be used
+			// write_2dvector(std::cout, image);
+			fs.close();
+		}
+
+		value = "l";
+		image = observation.getImage(value);
+		fs.open("Map_l.txt", std::ios::out | std::ios::app);
+
+		if (fs.is_open())
+		{
+			write_2dvector(fs, image);
+			fs.close();
+		}
 		std::cout << "Pixel solid angle = " << pix_solid_angle << std::endl;
 
-//		observation.run(n, tau_max, dt_max, tau_min);
-//
-//		string value = "tau";
-//		auto image = observation.getImage(value);
-//		std::fstream fs;
-//		fs.open("Map_tau.txt", std::ios::out | std::ios::app);
-//
-//		if (fs.is_open())
-//		{
-//			write_2dvector(fs, image);
-//			fs.close();
-//		}
-//
-//		value = "I";
-//		image = observation.getImage(value);
-//		fs.open("Map_I.txt", std::ios::out | std::ios::app);
-//
-//		if (fs.is_open())
-//		{
-//			write_2dvector(fs, image);
-//			// Just to show how it can be used
-//			// write_2dvector(std::cout, image);
-//			fs.close();
-//		}
-//
-//		value = "l";
-//		image = observation.getImage(value);
-//		fs.open("Map_l.txt", std::ios::out | std::ios::app);
-//
-//		if (fs.is_open())
-//		{
-//			write_2dvector(fs, image);
-//			fs.close();
-//		}
 }
 
 

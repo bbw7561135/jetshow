@@ -22,7 +22,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min) {
 	vector<Pixel>& pixels = imagePlane->getPixels();
 	vector<Ray>& rays = imagePlane->getRays();
 	// Commented out to ease debug printing
-	// #pragma omp parallel for schedule(dynamic) collapse(2)
+	#pragma omp parallel for schedule(dynamic) collapse(2)
 	// Formally, the best user-time:
 	// #pragma omp parallel for num_threads(4) schedule(dynamic) collapse(2)
   for (int j = 0; j < image_size.first; ++j) {

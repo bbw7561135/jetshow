@@ -1,6 +1,7 @@
 {
     "observation":
     {
+        "frequency_ghz" : 5.0,
         "los_angle" : 0.3,
         "redshift" : 0.1
     },
@@ -13,27 +14,45 @@
     {
         "geometry" :
         {
-            "Cone" :
+            "type" : "cone",
+            "parameters" :
             {
-                "angle" : 0.05
+                "angle" : 0.2,
+                "scale_pc" : 1000.0
             }
         },
         "bfield":
         {
             "type" : "radial_conical",
-            "b_1" : 0.02,
-            "n_b" : 2.0
+            "parameters" :
+            {
+                "b_1" : 0.1,
+                "n_b" : 2.0
+            }
         },
         "vfield":
         {
             "type" : "const_central",
-            "gamma" : 10.0
+            "parameters" :
+            {
+                "gamma" : 10.0
+            }
         },
-        "nfielfd":
+        "nfield":
         {
             "type" : "bk",
-            "n_1" : 100.0,
-            "n_n" : 2.0
+            "parameters" :
+            {
+                "n_1" : 500000.0,
+                "n_n" : 2.0
+            }
         }
+    },
+    "integration" :
+    {
+        "tau_max" : 100.0,
+        "dl_max_pc" : 0.01,
+        "log10_tau_min" : -15.0,
+        "n" : 100
     }
 }
