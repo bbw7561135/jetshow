@@ -1,3 +1,29 @@
+## Instalation and building
+
+Possible you need to install ``git``, ``cmake``, ``boost`` and ``Eigen`` (C++
+libraries).
+
+``git clone https://ipashchenko@bitbucket.org/ipashchenko/jetshow.git``
+
+``cd jetshow``
+
+``mkdir build-dir; cd build_dir``
+
+``cmake ..``
+
+``make``
+
+## Using
+
+Configuration is managed via ``config.json`` file which is explained below.
+After building and optional editing of this file we ran executable:
+
+``./jetshow``
+
+Result files are appeared in the same directory.
+
+
+
 ## Parameters of ``config.json``
  
  * ``observation`` describes observer-related parameters such as
