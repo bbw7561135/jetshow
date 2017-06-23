@@ -342,7 +342,7 @@ void test_observations() {
 		double nu = root.get<double>("observation.frequency_ghz");
     nu *= 1E+09;
 		// Redshifting to SBH frame
-		nu /= (1.+z);
+		nu *= (1.+z);
     Observation observation(&bkjet, &imagePlane, nu);
 		double tau_max = root.get<double>("integration.tau_max");
 		double dt_max_pc = root.get<double>("integration.dl_max_pc");
