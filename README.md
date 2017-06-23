@@ -1,8 +1,6 @@
 ## Parameters of ``config.json``
  
- * ``observation``
- 
- This describes observer-related parameters such as
+ * ``observation`` describes observer-related parameters such as
  frequency, angle of jet axis to observer LOS, redshift
  of the source.
  
@@ -10,18 +8,14 @@
  
  * ``jet`` describes parameters of the jet.
  
-    * ``geometry``
-        
-        Possible types are:
+    * ``geometry`` with possible ``type``:
         * ``cone`` with parameters ``angle`` and ``scale_pc``.
         * (**not using for now**)``cylinder`` with parameters ``r`` and scale.
         
         The last one determines geometrical path in case of infinite
         intersections.
         
-    * ``bfield`` - magnetic field.
-    
-        Possible types are:
+    * ``bfield`` - magnetic field with possible types:
         * ``spiral_conical`` with parameters ``b_1`` and ``pitch_angle``
         * ``radial_conical`` with parameters ``b_1`` and ``n_b``.
         
@@ -29,15 +23,11 @@
         ratio of toroidal to longitudinal components (in observer's frame),
         ``n_b`` - minus exponent of distance dependence.
         
-    * ``vfield`` - velocity field.
-    
-        Possible types are:
+    * ``vfield`` - velocity field with possible types:
         * ``const_central`` with parameter ``gamma`` (lorentz factor of bulk
         motion). This corresponds to radial velocity field.
         
-    * ``nfield`` - density field.
-    
-        Possible types are:
+    * ``nfield`` - density field with possible types:
         * ``bk`` - power law dependence on distance from SBH with parameters
         ``n_1`` and ``n_n``.
         
