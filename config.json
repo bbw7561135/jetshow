@@ -1,0 +1,39 @@
+{
+    "observation":
+    {
+        "los_angle" : 0.3,
+        "redshift" : 0.1
+    },
+    "image":
+    {
+        "number_of_pixels" : 200,
+        "pixel_size_mas" : 0.05
+    },
+    "jet":
+    {
+        "geometry" :
+        {
+            "Cone" :
+            {
+                "angle" : 0.05
+            }
+        },
+        "bfield":
+        {
+            "type" : "radial_conical",
+            "b_1" : 0.02,
+            "n_b" : 2.0
+        },
+        "vfield":
+        {
+            "type" : "const_central",
+            "gamma" : 10.0
+        },
+        "nfielfd":
+        {
+            "type" : "bk",
+            "n_1" : 100.0,
+            "n_n" : 2.0
+        }
+    }
+}
