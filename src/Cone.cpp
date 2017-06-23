@@ -82,7 +82,7 @@ std::list<Intersection> Cone::hit(Ray &ray) const {
 
     double d = c1*c1 - c0*c2;
     if (d < 0) {
-        std::cout << "No intercestions, d = " << d << std::endl;
+//        std::cout << "No intercestions, d = " << d << std::endl;
         return std::list<Intersection>{};
     }
     else if (d == 0) {
@@ -91,13 +91,13 @@ std::list<Intersection> Cone::hit(Ray &ray) const {
         double t = -c1/c2;
         Vector3d point = ray.point(t);
         if (point == origin_ && abs(ray.direction().dot(direction())) == cos_angle_) {
-            std::cout << "One intersection and infinite path before/past" << std::endl;
+//            std::cout << "One intersection and infinite path before/past" << std::endl;
             auto borders =
                 (std::pair<Vector3d, Vector3d> &&) full_infinite_path(ray);
             return std::list<Intersection>{Intersection(ray, borders)};
             // return std::list<Intersection>{Intersection(ray, *this)};
         } else {
-          std::cout << "One intersection at apex" << std::endl;
+//          std::cout << "One intersection at apex" << std::endl;
           return std::list<Intersection>{Intersection(ray, point, point)};
         }
     } else {
@@ -113,13 +113,13 @@ std::list<Intersection> Cone::hit(Ray &ray) const {
         // TODO: Case of ray parallel to cone direction is very rare - can
         // safely ignore this case in case of poor performance.
         if (abs(cos_ray_cone) != 1.) {
-            std::cout << "Two intersection - finite case" << std::endl;
-						std::cout << "Intersection in " << point_in/pc << std::endl;
-						std::cout << "Intersection out " << point_out/pc << std::endl;
+//            std::cout << "Two intersection - finite case" << std::endl;
+//						std::cout << "Intersection in " << point_in/pc << std::endl;
+//						std::cout << "Intersection out " << point_out/pc << std::endl;
             return std::list<Intersection>{Intersection(ray, point_in,
                                                         point_out)};
         } else {
-            std::cout << "Two intersection - two half-infinite cases" << std::endl;
+//            std::cout << "Two intersection - two half-infinite cases" << std::endl;
             return std::list<Intersection>{Intersection(ray, point_out, *this),
                                            Intersection(ray, point_in, *this)};
         }

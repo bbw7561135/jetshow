@@ -31,9 +31,9 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
 
 		//
-		std::cout << "b = " << b.norm() << " v = " << v.norm() << " G = " << gamma <<
-							" D = " << D << " n = " << n << " n_pr = " << n_prime <<
-							" b_pr= " << b_prime.norm() << std::endl;
+//		std::cout << "b = " << b.norm() << " v = " << v.norm() << " G = " << gamma <<
+//							" D = " << D << " n = " << n << " n_pr = " << n_prime <<
+//							" b_pr= " << b_prime.norm() << std::endl;
 
     return k_i_prime/D;
 }

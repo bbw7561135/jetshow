@@ -26,14 +26,15 @@ void I::operator()(const double &x, double &dxdt, const double t) {
   Vector3d point = point_in + t * ray_direction;
 //	std::cout << "t inside I =" << t << std::endl;
   //std::cout << "calculating transfer at point " << point << std::endl;
-	double eta = jet->getEtaI(point, ray_direction, nu);
-	double k = jet->getKI(point, ray_direction, nu);
-	double sf = eta/k;
-	std::cout << "k inside I = " << k << std::endl;
-	std::cout << "eta inside I = " << eta << std::endl;
-	std::cout << "SF = " << sf << std::endl;
+//	double eta = jet->getEtaI(point, ray_direction, nu);
+//	double k = jet->getKI(point, ray_direction, nu);
+//	double sf = eta/k;
+//	std::cout << "k inside I = " << k << std::endl;
+//	std::cout << "eta inside I = " << eta << std::endl;
+//	std::cout << "SF = " << sf << std::endl;
   dxdt = jet->getEtaI(point, ray_direction, nu) -
       jet->getKI(point, ray_direction, nu) * x;
+	// FIXME: Do i need this?
 	if (dxdt < 0.0) {
 		dxdt = 0.0;
 	}
@@ -45,5 +46,11 @@ void write_cout(const double &x, const double t) {
 }
 
 bool check_opt_depth(double tau_max, const double &x) {
-  return x >= tau_max;
+//	bool doStop = x >= tau_max;
+//	if (doStop) {
+//		std::cout << "Stopping because of tau becoming > tau_max" << std::endl;
+//		std::cout << "Now tau is " << x << std::endl;
+//	}
+//  return doStop;
+	return x >= tau_max;
 }

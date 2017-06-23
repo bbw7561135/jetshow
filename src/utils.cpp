@@ -90,12 +90,14 @@ double mas_to_pc(double z) {
 
 
 std::ostream &
-write_2dvector(std::ostream &os, std::vector<std::vector<double>> &v) {
+write_2dvector(std::ostream &os, std::vector<std::vector<double>> &v,
+							 double scale) {
 	for (int i = 0; i < v.size(); ++i)
 	{
 		for (int j = 0; j < v[i].size(); ++j)
 		{
-			os << v[i][j]<<" ";
+			double value = v[i][j]/scale;
+			os << value <<" ";
 		}
 		os<<"\n";
 	}

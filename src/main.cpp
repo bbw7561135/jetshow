@@ -301,22 +301,27 @@ void test_observations() {
 		}
 
 		std::string btype = root.get<std::string>("jet.bfield.type");
-		std::cout << "B-field type " << btype << std::endl;
+		std::cout << "B-field type : " << btype << std::endl;
 		if (btype == "radial_conical") {
 				double b_1 = root.get<double>("jet.bfield.parameters.b_1");
 				double n_b = root.get<double>("jet.bfield.parameters.n_b");
 				bfield = new RadialConicalBField(b_1, n_b);
-		}
+		} else if (btype == "spiral_conical") {
+			double b_1 = root.get<double>("jet.bfield.parameters.b_1");
+			double pitch_angle = root.get<double>("jet.bfield.parameters.pitch_angle");
+			bfield = new SpiralConicalBField(b_1, pitch_angle);
+
+		};
 
 		std::string vtype = root.get<std::string>("jet.vfield.type");
-		std::cout << "Velocity type " << vtype << std::endl;
+		std::cout << "Velocity type : " << vtype << std::endl;
 		if (vtype == "const_central") {
 				double gamma = root.get<double>("jet.vfield.parameters.gamma");
 				vfield = new ConstCentralVField(gamma);
 		}
 
 		std::string ntype = root.get<std::string>("jet.nfield.type");
-		std::cout << "Density type " << ntype << std::endl;
+		std::cout << "Density type : " << ntype << std::endl;
 		if (ntype == "bk") {
 				double n_1 = root.get<double>("jet.nfield.parameters.n_1");
 				double n_n = root.get<double>("jet.nfield.parameters.n_n");
@@ -327,10 +332,8 @@ void test_observations() {
     Jet bkjet(geometry, vfield, bfield, nfield);
 
     auto image_size = std::make_pair(number_of_pixels, number_of_pixels);
-		// Number of parsecs in one mas - that will be pixel scale
 		auto pc_in_mas = mas_to_pc(z);
-		auto cm_in_mas = pc * pc_in_mas;
-//    double los_angle = 0.3;
+//		auto cm_in_mas = pc * pc_in_mas;
 		auto pixel_size = pixel_size_mas*0.25*pc_in_mas*pc;
 		auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, z);
 
@@ -340,11 +343,16 @@ void test_observations() {
     nu *= 1E+09;
     Observation observation(&bkjet, &imagePlane, nu);
 		double tau_max = root.get<double>("integration.tau_max");
-		double dt_max = root.get<double>("integration.dl_max_pc");
-    dt_max *= pc;
-		double tau_min = root.get<double>("integration.log10_tau_min");
-		tau_min = pow(10.,tau_min);
+		double dt_max_pc = root.get<double>("integration.dl_max_pc");
+    double dt_max = pc*dt_max_pc;
+		double tau_min_log10 = root.get<double>("integration.log10_tau_min");
+		double tau_min = pow(10.,tau_min_log10);
 		int n = root.get<int>("integration.n");
+
+		std::cout << "Integrating using max. opt. depth = " << tau_max << std::endl;
+		std::cout << "Integrating using min. lg(opt.depth) = " << tau_min_log10 << std::endl;
+		std::cout << "Integrating using max. step [pc] = " << dt_max_pc << std::endl;
+		std::cout << "Integrating using default number of steps = " << n << std::endl;
 
 
 		observation.run(n, tau_max, dt_max, tau_min);
@@ -352,7 +360,8 @@ void test_observations() {
 		string value = "tau";
 		auto image = observation.getImage(value);
 		std::fstream fs;
-		fs.open("Map_tau.txt", std::ios::out | std::ios::app);
+		std::string file_tau = root.get<std::string>("output.file_tau");
+		fs.open(file_tau, std::ios::out | std::ios::app);
 
 		if (fs.is_open())
 		{
@@ -362,11 +371,15 @@ void test_observations() {
 
 		value = "I";
 		image = observation.getImage(value);
-		fs.open("Map_I.txt", std::ios::out | std::ios::app);
+		std::string file_i = root.get<std::string>("output.file_i");
+		fs.open(file_i, std::ios::out | std::ios::app);
+		double scale = pix_solid_angle/(1E-23);
+		std::cout << "Scaling Stokes I by " << scale << std::endl;
 
 		if (fs.is_open())
 		{
-			write_2dvector(fs, image);
+			// Scaling to Jy
+			write_2dvector(fs, image, scale);
 			// Just to show how it can be used
 			// write_2dvector(std::cout, image);
 			fs.close();
@@ -374,40 +387,55 @@ void test_observations() {
 
 		value = "l";
 		image = observation.getImage(value);
-		fs.open("Map_l.txt", std::ios::out | std::ios::app);
+		std::string file_length = root.get<std::string>("output.file_length");
+		fs.open(file_length, std::ios::out | std::ios::app);
 
 		if (fs.is_open())
 		{
 			write_2dvector(fs, image);
 			fs.close();
 		}
-		std::cout << "Pixel solid angle = " << pix_solid_angle << std::endl;
-
 }
 
 
 void test_erase() {
-  std::list<double> a{10., 11., 12., 13., 14.};
-	for (auto it = a.rbegin();
-			 it != a.rend(); ++it) {
-		std::cout << *it << std::endl;
-	}
+//  std::list<double> a{10., 11., 12., 13., 14.};
+	std::list<double> a{1.};
+//	for (auto it = a.rbegin();
+//			 it != a.rend(); ++it) {
+//		std::cout << *it << std::endl;
+//	}
 
-//  std::cout << "Before";
-//  for (auto it = a.begin(); it != a.end(); it++) {
-//    std::cout << " " << *it;}
-//  std::cout << std::endl;
-//
-//  for (auto it = a.begin(); it != a.end(); ++it) {
-//    if (*it > 11.5) {
-//      it = a.erase(it++, a.end());
-//    }
-//  }
-//
-//  std::cout << "After";
-//  for (auto it = a.begin(); it != a.end(); it++) {
-//    std::cout << " " << *it;}
-//  std::cout << std::endl;
+  std::cout << "Before";
+  for (auto it = a.begin(); it != a.end(); it++) {
+    std::cout << " " << *it;}
+  std::cout << std::endl;
+
+	double sum = 0;
+
+  for (auto it = a.begin(); it != a.end(); ++it) {
+
+	  sum += *it;
+    if (sum > 0.5) {
+	    if (a.size() > 1) {
+		    std::cout << "Erasing" << std::endl;
+		    ++it;
+        it = a.erase(it, a.end()); // This now container.end();
+		    --it; // Move it before end to make it end on new cycle
+
+	    } else {
+//		    std::cout << *it << std::endl;
+		    std::cout << "Size = 1" << std::endl;
+	    }
+    } else {
+	    std::cout << "Sum less then 0.5" << std::endl;
+    }
+  }
+
+  std::cout << "After";
+  for (auto it = a.begin(); it != a.end(); it++) {
+    std::cout << " " << *it;}
+  std::cout << std::endl;
   }
 
 
@@ -482,14 +510,14 @@ int main() {
 //  test_pixel();
 //    test_image();
 //    test_image_plane();
-	std::cout << "Time: "
-						<< (std::clock() - start) / (double) (CLOCKS_PER_SEC / 1000)
-						<< " ms" << std::endl;
+	std::cout << "CPU Time: "
+						<< (std::clock() - start) / (double) (CLOCKS_PER_SEC)
+						<< " s" << std::endl;
 	auto t2 = Clock::now();
-	std::cout << "Delta t2-t1: "
-						<< std::chrono::duration_cast<std::chrono::milliseconds>(
+	std::cout << "User time: "
+						<< std::chrono::duration_cast<std::chrono::seconds>(
 								t2 - t1).count()
-						<< " milliseconds" << std::endl;
+						<< " s" << std::endl;
 }
 
 

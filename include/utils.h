@@ -94,7 +94,8 @@ double pixel_solid_angle(double pixel_size_mas, double z);
 
 
 std::ostream& write_2dvector(std::ostream& os,
-														 std::vector<std::vector<double>>& v);
+														 std::vector<std::vector<double>>& v,
+														 double scale=1.0);
 
 
 #endif //JETSHOW_UTILS_H
