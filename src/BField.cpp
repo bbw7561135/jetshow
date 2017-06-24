@@ -48,9 +48,9 @@ Vector3d SpiralConicalBField::bf(const Vector3d &point) const {
     double z = point[2];
     double x = point[0];
     double y = point[1];
-    double b_z = b_0_/(z*z);
-    return Vector3d(b_z*(x/z + y*tan(pitch_angle_)),
-                    b_z*(y/z - x*tan(pitch_angle_)),
+    double b_z = b_0_/(z*z/(pc*pc));
+    return Vector3d(b_z*(x/z + y*tan(pitch_angle_)/pc),
+                    b_z*(y/z - x*tan(pitch_angle_)/pc),
                     b_z);
 }
 
