@@ -121,7 +121,7 @@ std::vector<Vector3d> generate_random_directions(int n, unsigned int seed) {
 
 	for (int i = 0; i < n; ++i) {
 		std::vector<double> res = dist(gen);
-		Vector3d v = Vector3d{res};
+		Vector3d v = Vector3d(res.data());
 		points.push_back(v);
 	}
 	return points;
@@ -132,10 +132,10 @@ std::vector<Vector3d> generate_random_directions(int n, unsigned int seed) {
 // radius and polar angle. Density profile ``exponent``.
 // FIXME: It is for cone geometry. For cylinder the code is only slightly
 // different. Just different function signature? I want DRY code.
-std::vector<Vector3d> generate_random_points(int n, unsigned int seed,
-                                             double r_min, double r_max,
+std::vector<Vector3d> generate_random_points(int n, double r_min, double r_max,
                                              double exponent,
-                                             double costheta_lim)
+                                             double costheta_lim,
+                                             unsigned int seed)
 {
 	std::vector<Vector3d> points;
   boost::mt19937 gen;
@@ -145,6 +145,7 @@ std::vector<Vector3d> generate_random_points(int n, unsigned int seed,
 	for (int j = 0; j < n; ++j) {
 		double r = r_min + (r_max - r_min)*boost_distrib(gen);
 		double phi = 2.0*pi*boost_distrib(gen);
+		// FIXME: costheta should be in [costheta_lim, 1] range!
 		double costheta = costheta_lim*(2.0*boost_distrib(gen) - 1.0);
 		double theta = acos(costheta);
 
