@@ -103,10 +103,11 @@ std::ostream& write_2dvector(std::ostream& os,
 std::vector<Vector3d> generate_random_directions(int n, unsigned int seed=0);
 
 
-std::vector<Vector3d> generate_random_points(int n, unsigned int seed=0,
-                                             double r_min, double r_max,
-                                             double exponent,
-                                             double costheta_lim);
+std::vector<Vector3d> generate_random_points_sphere(int n, double r_max,
+                                                    double exponent,
+                                                    unsigned int seed=0,
+                                                    double r_min=0.0,
+                                                    double theta_lim=0.0);
 
 
 #endif //JETSHOW_UTILS_H

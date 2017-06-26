@@ -132,25 +132,43 @@ std::vector<Vector3d> generate_random_directions(int n, unsigned int seed) {
 // radius and polar angle. Density profile ``exponent``.
 // FIXME: It is for cone geometry. For cylinder the code is only slightly
 // different. Just different function signature? I want DRY code.
-std::vector<Vector3d> generate_random_points(int n, double r_min, double r_max,
-                                             double exponent,
-                                             double costheta_lim,
-                                             unsigned int seed)
+std::vector<Vector3d> generate_random_points_sphere(int n, double r_max,
+                                                    double exponent,
+                                                    unsigned int seed,
+                                                    double r_min,
+                                                    double theta_lim)
 {
 	std::vector<Vector3d> points;
   boost::mt19937 gen;
 	gen.seed(seed);
 	boost::random::uniform_real_distribution<double> boost_distrib(0.0, 1.0);
 
+	// Default unrestricted polar angle
+	double costheta_lim = 1.0;
+	// If polar angle is restricted
+	if (theta_lim > 0) {
+		costheta_lim = cos(theta_lim);
+	}
+
+	double r;
+	double phi;
+	double u;
+	double theta;
+
 	for (int j = 0; j < n; ++j) {
-		double r = r_min + (r_max - r_min)*boost_distrib(gen);
-		double phi = 2.0*pi*boost_distrib(gen);
-		// FIXME: costheta should be in [costheta_lim, 1] range!
-		double costheta = costheta_lim*(2.0*boost_distrib(gen) - 1.0);
-		double theta = acos(costheta);
+		r = r_min + (r_max - r_min) * boost_distrib(gen);
+		phi = 2.0 * pi * boost_distrib(gen);
+		u = (1.0 - costheta_lim) * (2.0 * boost_distrib(gen) - 1.0);
+		if (u < 0.0) {
+			u = u - costheta_lim;
+		} else {
+			u = u + costheta_lim;
+		}
+		theta = acos(u);
 
 		// dV = d(r3)d(cos\theta)d(\phi) => for uniform density we must take a cube
 		// root of ``r``.
+		// FIXME: What with r^(-3) density profiles?
 		r = pow(r, 1./(3.0-exponent));
 		Vector3d v = Vector3d{r*sin(theta)*cos(phi),
 		                      r*sin(theta)*sin(phi),
