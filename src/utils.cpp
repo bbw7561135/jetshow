@@ -130,6 +130,8 @@ std::vector<Vector3d> generate_random_directions(int n, unsigned int seed) {
 
 // Generates ``n`` random points inside spherical volume with restrictions on
 // radius and polar angle. Density profile ``exponent``.
+// FIXME: It is for cone geometry. For cylinder the code is only slightly
+// different. Just different function signature? I want DRY code.
 std::vector<Vector3d> generate_random_points(int n, unsigned int seed,
                                              double r_min, double r_max,
                                              double exponent,
