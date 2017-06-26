@@ -6,6 +6,9 @@
 #include <Eigen/Eigen>
 #include <boost/math/constants/constants.hpp>
 #include <boost/numeric/odeint.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_on_sphere.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
 
 using Eigen::Vector3d;
 
@@ -96,6 +99,11 @@ double pixel_solid_angle(double pixel_size_mas, double z);
 std::ostream& write_2dvector(std::ostream& os,
 														 std::vector<std::vector<double>>& v,
 														 double scale=1.0);
+
+std::vector<Vector3d> generate_random_directions(int n, unsigned int seed=0);
+
+
+std::vector<Vector3d> generate_random_points(int n, unsigned int seed=0);
 
 
 #endif //JETSHOW_UTILS_H

@@ -112,6 +112,53 @@ double pixel_solid_angle(double pixel_size_mas, double z) {
 }
 
 
+// Generates ``n`` random directions (normalized vectors).
+std::vector<Vector3d> generate_random_directions(int n, unsigned int seed) {
+	std::vector<Vector3d> points;
+  boost::mt19937 gen;
+	gen.seed(seed);
+  boost::uniform_on_sphere<double> dist(3);
+
+	for (int i = 0; i < n; ++i) {
+		std::vector<double> res = dist(gen);
+		Vector3d v = Vector3d{res};
+		points.push_back(v);
+	}
+	return points;
+}
+
+
+// Generates ``n`` random points inside spherical volume with restrictions on
+// radius and polar angle. Density profile ``exponent``.
+std::vector<Vector3d> generate_random_points(int n, unsigned int seed,
+                                             double r_min, double r_max,
+                                             double exponent,
+                                             double costheta_lim)
+{
+	std::vector<Vector3d> points;
+  boost::mt19937 gen;
+	gen.seed(seed);
+	boost::random::uniform_real_distribution<double> boost_distrib(0.0, 1.0);
+
+	for (int j = 0; j < n; ++j) {
+		double r = r_min + (r_max - r_min)*boost_distrib(gen);
+		double phi = 2.0*pi*boost_distrib(gen);
+		double costheta = costheta_lim*(2.0*boost_distrib(gen) - 1.0);
+		double theta = acos(costheta);
+
+		// dV = d(r3)d(cos\theta)d(\phi) => for uniform density we must take a cube
+		// root of ``r``.
+		r = pow(r, 1./(3.0-exponent));
+		Vector3d v = Vector3d{r*sin(theta)*cos(phi),
+		                      r*sin(theta)*sin(phi),
+		                      r*cos(theta)};
+		points.push_back(v);
+	}
+
+	return points;
+}
+
+
 Ctd::Ctd(double z, double H0, double omega_M, double omega_V) : z(z), H0(H0),
 																																omega_M(omega_M),
 																																omega_V(omega_V) {}
