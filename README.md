@@ -48,6 +48,14 @@ Result files are appeared in the same directory.
         ``b1`` - value of magnetic field [G] on 1 pc from SBH, ``pitch_angle`` -
         ratio of toroidal to longitudinal components (in observer's frame),
         ``n_b`` - minus exponent of distance dependence.
+        * ``random_fraction`` - fraction of random B-field. If ``0.0`` then no
+        random field.
+        * ``model_of_randomness`` - how random B-field is implemented. Possible
+        values are:
+            * ``points`` - in each point random B-field has random direction.
+            * ``cells`` - B-field consists of cells with random but constant
+            value and direction inside single cell. On cross-section of jet at
+            distance 1 pc there are nearly ``n_cells_1pc`` cells.
         
     * ``vfield`` - velocity field with possible types:
         * ``const_central`` with parameter ``gamma`` (lorentz factor of bulk
@@ -62,11 +70,24 @@ Result files are appeared in the same directory.
   
  * ``integration`` describes parameters of numerical solving of ODEs.
  
+    * ``step_type`` - Step type with possible values:
+        * ``constant`` with parameters ``tau_max``, ``n``, ``tau_n_min``,
+        ``n_tau_max``
+        * ``adaptive`` with parameters ``dl_max_pc``, ``n``, ``abs`` and ``rel``
+        errors.
     * ``tau_max`` - maximum optical depth to reach. All part of jet further than
     region with this optical depth will be discarded in transport.
     * ``dl_max_pc`` - maximum length of adaptive step [pc].
     * ``log10_tau_min`` - log10 of minimum optical depth to calculate flux.
-    * ``n`` - preliminary number of steps. The real number will be different.
+    * ``n`` - preliminary number of steps. The real number will be different for
+    adaptive steps.
+    * ``tau_n_min`` - border value of the optical depth: if depth is less then
+     this value - ``n`` steps will be used with ``constant`` step type when
+     integrating Stokes parameters. If depth is higher - value higher then ``n``
+     will be used.
+    * ``n_tau_max`` - number of steps to take while integrating Stokes
+    parameters when optical depth is higher or equal to ``tau_max``.
+    * ``..._abs/rel_error...`` - absolute or relative error for adaptive type.
     
  * ``output`` describes output files.
  

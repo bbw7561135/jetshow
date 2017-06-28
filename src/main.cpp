@@ -194,212 +194,212 @@ void test_jet() {
 
 
 void test_observations_cylinder() {
-	Vector3d origin = {0., 0., 0.};
-	Vector3d direction = {0., 0., 1.};
-	// Redshift
-	double z = 0.16;
-	// Cylinder radius - in cm
-	double r = 0.05 * 	25 * mas_to_pc(z) * pc;
-	std::cout << "Cylinder radius [pc] " << r/pc << std::endl;
-	Cylinder geometry(origin, direction, r);
-
-	ConstCylinderBField bfield(0.5, 0.0);
-	ConstFlatVField vfield(5.);
-	// To compare to 5000 in fluid frame need increase it by Gamma
-	BKNField nfield(25.*1E05, 1.65);
-
-	Jet jet(&geometry, &vfield, &bfield, &nfield);
-
-	auto image_size = std::make_pair(200, 200);
-
-	// Number of parsecs in one mas - that will be pixel scale
-	auto pc_in_mas = mas_to_pc(z);
-	std::cout << "Pc in 1 mas = " << pc_in_mas << std::endl;
-	// Size of pixel in cm - this also scale (0.5 means that image size is divided
-	// in Image construction (see getCoordinates)
-	auto pixel_size = 0.05*0.25*pc_in_mas*pc;
-	auto pix_solid_angle = pixel_solid_angle(0.05, z);
-	std::cout << "Pixel solid angle = " << pix_solid_angle << std::endl;
-	std::cout << "Pixel size [in cm] = " << pixel_size << std::endl;
-	auto cm_in_mas = pc * pc_in_mas;
-	double los_angle = pi/2.;
-	ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
-
-	double nu = 8.4*1E+9;
-	Observation observation(&jet, &imagePlane, nu);
-	double tau_max = 100.;
-	double dt_max = 0.01*pc;
-	double tau_min = 1E-15;
-	int n = 100;
-	observation.run(n, tau_max, dt_max, tau_min);
-
-	string value = "tau";
-	auto image = observation.getImage(value);
-	std::fstream fs;
-	fs.open("Map_tau.txt", std::ios::out | std::ios::app);
-
-	if (fs.is_open())
-	{
-		write_2dvector(fs, image);
-		fs.close();
-	}
-
-	value = "I";
-	image = observation.getImage(value);
-	fs.open("Map_I.txt", std::ios::out | std::ios::app);
-
-	if (fs.is_open())
-	{
-		write_2dvector(fs, image);
-		// Just to show how it can be used
-		// write_2dvector(std::cout, image);
-		fs.close();
-	}
-
-	value = "l";
-	image = observation.getImage(value);
-	fs.open("Map_l.txt", std::ios::out | std::ios::app);
-
-	if (fs.is_open())
-	{
-		write_2dvector(fs, image);
-		fs.close();
-	}
-
-	std::cout << "Pixel solid angle = " << pix_solid_angle << std::endl;
+//	Vector3d origin = {0., 0., 0.};
+//	Vector3d direction = {0., 0., 1.};
+//	// Redshift
+//	double z = 0.16;
+//	// Cylinder radius - in cm
+//	double r = 0.05 * 	25 * mas_to_pc(z) * pc;
+//	std::cout << "Cylinder radius [pc] " << r/pc << std::endl;
+//	Cylinder geometry(origin, direction, r);
+//
+//	ConstCylinderBField bfield(0.5, 0.0);
+//	ConstFlatVField vfield(5.);
+//	// To compare to 5000 in fluid frame need increase it by Gamma
+//	BKNField nfield(25.*1E05, 1.65);
+//
+//	Jet jet(&geometry, &vfield, &bfield, &nfield);
+//
+//	auto image_size = std::make_pair(200, 200);
+//
+//	// Number of parsecs in one mas - that will be pixel scale
+//	auto pc_in_mas = mas_to_pc(z);
+//	std::cout << "Pc in 1 mas = " << pc_in_mas << std::endl;
+//	// Size of pixel in cm - this also scale (0.5 means that image size is divided
+//	// in Image construction (see getCoordinates)
+//	auto pixel_size = 0.05*0.25*pc_in_mas*pc;
+//	auto pix_solid_angle = pixel_solid_angle(0.05, z);
+//	std::cout << "Pixel solid angle = " << pix_solid_angle << std::endl;
+//	std::cout << "Pixel size [in cm] = " << pixel_size << std::endl;
+//	auto cm_in_mas = pc * pc_in_mas;
+//	double los_angle = pi/2.;
+//	ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
+//
+//	double nu = 8.4*1E+9;
+//	Observation observation(&jet, &imagePlane, nu);
+//	double tau_max = 100.;
+//	double dt_max = 0.01*pc;
+//	double tau_min = 1E-15;
+//	int n = 100;
+//	observation.run(n, tau_max, dt_max, tau_min);
+//
+//	string value = "tau";
+//	auto image = observation.getImage(value);
+//	std::fstream fs;
+//	fs.open("Map_tau.txt", std::ios::out | std::ios::app);
+//
+//	if (fs.is_open())
+//	{
+//		write_2dvector(fs, image);
+//		fs.close();
+//	}
+//
+//	value = "I";
+//	image = observation.getImage(value);
+//	fs.open("Map_I.txt", std::ios::out | std::ios::app);
+//
+//	if (fs.is_open())
+//	{
+//		write_2dvector(fs, image);
+//		// Just to show how it can be used
+//		// write_2dvector(std::cout, image);
+//		fs.close();
+//	}
+//
+//	value = "l";
+//	image = observation.getImage(value);
+//	fs.open("Map_l.txt", std::ios::out | std::ios::app);
+//
+//	if (fs.is_open())
+//	{
+//		write_2dvector(fs, image);
+//		fs.close();
+//	}
+//
+//	std::cout << "Pixel solid angle = " << pix_solid_angle << std::endl;
 
 }
 
 
 void test_observations() {
-		// Create a root
-		pt::ptree root;
-
-		Geometry* geometry;
-		BField* bfield;
-		VField* vfield;
-		NField* nfield;
-
-		// Load the json file in this ptree
-		pt::read_json("../config.json", root);
-		// Read values
-		double los_angle = root.get<double>("observation.los_angle");
-		double z = root.get<double>("observation.redshift");
-		int number_of_pixels = root.get<int>("image.number_of_pixels");
-		double pixel_size_mas = root.get<double>("image.pixel_size_mas");
-
-		// Setting geometry
-    Vector3d origin = {0., 0., 0.};
-    Vector3d direction = {0., 0., 1.};
-		std::string geotype = root.get<std::string>("jet.geometry.type");
-		std::cout << "Geometry type " << geotype << std::endl;
-		if (geotype == "cone") {
-				// Create Cone with parameters
-				double cone_angle = root.get<double>("jet.geometry.parameters.angle");
-				double scale_pc = root.get<double>("jet.geometry.parameters.scale_pc");
-				double scale = pc * scale_pc;
-				geometry = new Cone(origin, direction, cone_angle, scale);
-//				geometry = geometry_;
-		}
-
-		std::string btype = root.get<std::string>("jet.bfield.type");
-		std::cout << "B-field type : " << btype << std::endl;
-		if (btype == "radial_conical") {
-				double b_1 = root.get<double>("jet.bfield.parameters.b_1");
-				double n_b = root.get<double>("jet.bfield.parameters.n_b");
-				bfield = new RadialConicalBField(b_1, n_b);
-		} else if (btype == "spiral_conical") {
-			double b_1 = root.get<double>("jet.bfield.parameters.b_1");
-			double pitch_angle = root.get<double>("jet.bfield.parameters.pitch_angle");
-			bfield = new SpiralConicalBField(b_1, pitch_angle);
-
-
-		};
-
-		std::string vtype = root.get<std::string>("jet.vfield.type");
-		std::cout << "Velocity type : " << vtype << std::endl;
-		if (vtype == "const_central") {
-				double gamma = root.get<double>("jet.vfield.parameters.gamma");
-				vfield = new ConstCentralVField(gamma);
-		}
-
-		std::string ntype = root.get<std::string>("jet.nfield.type");
-		std::cout << "Density type : " << ntype << std::endl;
-		if (ntype == "bk") {
-				double n_1 = root.get<double>("jet.nfield.parameters.n_1");
-				double n_n = root.get<double>("jet.nfield.parameters.n_n");
-				nfield = new BKNField(n_1, n_n);
-		}
-
-
-    Jet bkjet(geometry, vfield, bfield, nfield);
-
-    auto image_size = std::make_pair(number_of_pixels, number_of_pixels);
-		auto pc_in_mas = mas_to_pc(z);
-//		auto cm_in_mas = pc * pc_in_mas;
-		auto pixel_size = pixel_size_mas*0.25*pc_in_mas*pc;
-		auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, z);
-
-		ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
-
-		double nu = root.get<double>("observation.frequency_ghz");
-    nu *= 1E+09;
-		// Redshifting to SBH frame
-		nu *= (1.+z);
-    Observation observation(&bkjet, &imagePlane, nu);
-		double tau_max = root.get<double>("integration.tau_max");
-		double dt_max_pc = root.get<double>("integration.dl_max_pc");
-    double dt_max = pc*dt_max_pc;
-		double tau_min_log10 = root.get<double>("integration.log10_tau_min");
-		double tau_min = pow(10.,tau_min_log10);
-		int n = root.get<int>("integration.n");
-
-		std::cout << "Integrating using max. opt. depth = " << tau_max << std::endl;
-		std::cout << "Integrating using min. lg(opt.depth) = " << tau_min_log10 << std::endl;
-		std::cout << "Integrating using max. step [pc] = " << dt_max_pc << std::endl;
-		std::cout << "Integrating using default number of steps = " << n << std::endl;
-
-
-		observation.run(n, tau_max, dt_max, tau_min);
-
-		string value = "tau";
-		auto image = observation.getImage(value);
-		std::fstream fs;
-		std::string file_tau = root.get<std::string>("output.file_tau");
-		fs.open(file_tau, std::ios::out | std::ios::app);
-
-		if (fs.is_open())
-		{
-			write_2dvector(fs, image);
-			fs.close();
-		}
-
-		value = "I";
-		image = observation.getImage(value);
-		std::string file_i = root.get<std::string>("output.file_i");
-		fs.open(file_i, std::ios::out | std::ios::app);
-		double scale = pix_solid_angle/(1E-23);
-		std::cout << "Scaling Stokes I by " << scale << std::endl;
-
-		if (fs.is_open())
-		{
-			// Scaling to Jy
-			write_2dvector(fs, image, scale);
-			// Just to show how it can be used
-			// write_2dvector(std::cout, image);
-			fs.close();
-		}
-
-		value = "l";
-		image = observation.getImage(value);
-		std::string file_length = root.get<std::string>("output.file_length");
-		fs.open(file_length, std::ios::out | std::ios::app);
-
-		if (fs.is_open())
-		{
-			write_2dvector(fs, image, pc);
-			fs.close();
-		}
+//		// Create a root
+//		pt::ptree root;
+//
+//		Geometry* geometry;
+//		BField* bfield;
+//		VField* vfield;
+//		NField* nfield;
+//
+//		// Load the json file in this ptree
+//		pt::read_json("../config.json", root);
+//		// Read values
+//		double los_angle = root.get<double>("observation.los_angle");
+//		double z = root.get<double>("observation.redshift");
+//		int number_of_pixels = root.get<int>("image.number_of_pixels");
+//		double pixel_size_mas = root.get<double>("image.pixel_size_mas");
+//
+//		// Setting geometry
+//    Vector3d origin = {0., 0., 0.};
+//    Vector3d direction = {0., 0., 1.};
+//		std::string geotype = root.get<std::string>("jet.geometry.type");
+//		std::cout << "Geometry type " << geotype << std::endl;
+//		if (geotype == "cone") {
+//				// Create Cone with parameters
+//				double cone_angle = root.get<double>("jet.geometry.parameters.angle");
+//				double scale_pc = root.get<double>("jet.geometry.parameters.scale_pc");
+//				double scale = pc * scale_pc;
+//				geometry = new Cone(origin, direction, cone_angle, scale);
+////				geometry = geometry_;
+//		}
+//
+//		std::string btype = root.get<std::string>("jet.bfield.type");
+//		std::cout << "B-field type : " << btype << std::endl;
+//		if (btype == "radial_conical") {
+//				double b_1 = root.get<double>("jet.bfield.parameters.b_1");
+//				double n_b = root.get<double>("jet.bfield.parameters.n_b");
+//				bfield = new RadialConicalBField(b_1, n_b);
+//		} else if (btype == "spiral_conical") {
+//			double b_1 = root.get<double>("jet.bfield.parameters.b_1");
+//			double pitch_angle = root.get<double>("jet.bfield.parameters.pitch_angle");
+//			bfield = new SpiralConicalBField(b_1, pitch_angle);
+//
+//
+//		};
+//
+//		std::string vtype = root.get<std::string>("jet.vfield.type");
+//		std::cout << "Velocity type : " << vtype << std::endl;
+//		if (vtype == "const_central") {
+//				double gamma = root.get<double>("jet.vfield.parameters.gamma");
+//				vfield = new ConstCentralVField(gamma);
+//		}
+//
+//		std::string ntype = root.get<std::string>("jet.nfield.type");
+//		std::cout << "Density type : " << ntype << std::endl;
+//		if (ntype == "bk") {
+//				double n_1 = root.get<double>("jet.nfield.parameters.n_1");
+//				double n_n = root.get<double>("jet.nfield.parameters.n_n");
+//				nfield = new BKNField(n_1, n_n);
+//		}
+//
+//
+//    Jet bkjet(geometry, vfield, bfield, nfield);
+//
+//    auto image_size = std::make_pair(number_of_pixels, number_of_pixels);
+//		auto pc_in_mas = mas_to_pc(z);
+////		auto cm_in_mas = pc * pc_in_mas;
+//		auto pixel_size = pixel_size_mas*0.25*pc_in_mas*pc;
+//		auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, z);
+//
+//		ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
+//
+//		double nu = root.get<double>("observation.frequency_ghz");
+//    nu *= 1E+09;
+//		// Redshifting to SBH frame
+//		nu *= (1.+z);
+//    Observation observation(&bkjet, &imagePlane, nu);
+//		double tau_max = root.get<double>("integration.tau_max");
+//		double dt_max_pc = root.get<double>("integration.dl_max_pc");
+//    double dt_max = pc*dt_max_pc;
+//		double tau_min_log10 = root.get<double>("integration.log10_tau_min");
+//		double tau_min = pow(10.,tau_min_log10);
+//		int n = root.get<int>("integration.n");
+//
+//		std::cout << "Integrating using max. opt. depth = " << tau_max << std::endl;
+//		std::cout << "Integrating using min. lg(opt.depth) = " << tau_min_log10 << std::endl;
+//		std::cout << "Integrating using max. step [pc] = " << dt_max_pc << std::endl;
+//		std::cout << "Integrating using default number of steps = " << n << std::endl;
+//
+//
+//		observation.run(n, tau_max, dt_max, tau_min);
+//
+//		string value = "tau";
+//		auto image = observation.getImage(value);
+//		std::fstream fs;
+//		std::string file_tau = root.get<std::string>("output.file_tau");
+//		fs.open(file_tau, std::ios::out | std::ios::app);
+//
+//		if (fs.is_open())
+//		{
+//			write_2dvector(fs, image);
+//			fs.close();
+//		}
+//
+//		value = "I";
+//		image = observation.getImage(value);
+//		std::string file_i = root.get<std::string>("output.file_i");
+//		fs.open(file_i, std::ios::out | std::ios::app);
+//		double scale = pix_solid_angle/(1E-23);
+//		std::cout << "Scaling Stokes I by " << scale << std::endl;
+//
+//		if (fs.is_open())
+//		{
+//			// Scaling to Jy
+//			write_2dvector(fs, image, scale);
+//			// Just to show how it can be used
+//			// write_2dvector(std::cout, image);
+//			fs.close();
+//		}
+//
+//		value = "l";
+//		image = observation.getImage(value);
+//		std::string file_length = root.get<std::string>("output.file_length");
+//		fs.open(file_length, std::ios::out | std::ios::app);
+//
+//		if (fs.is_open())
+//		{
+//			write_2dvector(fs, image, pc);
+//			fs.close();
+//		}
 }
 
 
@@ -490,12 +490,15 @@ void test_observations_rnd_bfield() {
 	// Redshifting to SBH frame
 	nu *= (1.+z);
 	Observation observation(&bkjet, &imagePlane, nu);
-	double tau_max = root.get<double>("integration.tau_max");
-	double dt_max_pc = root.get<double>("integration.dl_max_pc");
+	string step_type = root.get<string>("integration.step_type");
+	double tau_max = root.get<double>("integration.parameters.tau_max");
+	double tau_n_min = root.get<double>("integration.parameters.tau_n_min");
+	double dt_max_pc = root.get<double>("integration.parameters.dl_max_pc");
 	double dt_max = pc*dt_max_pc;
-	double tau_min_log10 = root.get<double>("integration.log10_tau_min");
+	double tau_min_log10 = root.get<double>("integration.parameters.log10_tau_min");
 	double tau_min = pow(10.,tau_min_log10);
-	int n = root.get<int>("integration.n");
+	int n = root.get<int>("integration.parameters.n");
+	int n_tau_max = root.get<int>("integration.parameters.n_tau_max");
 
 	std::cout << "Integrating using max. opt. depth = " << tau_max << std::endl;
 	std::cout << "Integrating using min. lg(opt.depth) = " << tau_min_log10 << std::endl;
@@ -503,7 +506,8 @@ void test_observations_rnd_bfield() {
 	std::cout << "Integrating using default number of steps = " << n << std::endl;
 
 
-	observation.run(n, tau_max, dt_max, tau_min);
+	observation.run(n, tau_max, dt_max, tau_min, step_type, n_tau_max, tau_n_min,
+	                tau_max);
 
 	string value = "tau";
 	auto image = observation.getImage(value);

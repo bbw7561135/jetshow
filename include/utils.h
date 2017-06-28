@@ -116,5 +116,8 @@ std::vector<Vector3d> generate_random_points_general(int n, double r_max,
                                                      double exponent,
                                                      unsigned int seed);
 
+int steps_schedule(double tau, int n_min, int n_max, double tau_min=0.1,
+                   double tau_max=100.0);
+
 
 #endif //JETSHOW_UTILS_H

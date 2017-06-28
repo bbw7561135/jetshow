@@ -54,3 +54,14 @@ bool check_opt_depth(double tau_max, const double &x) {
 //  return doStop;
 	return x >= tau_max;
 }
+
+bool check_opt_depth_xt(double tau_max, std::pair<double, double> xt) {
+//	bool doStop = x >= tau_max;
+//	if (doStop) {
+//		std::cout << "Stopping because of tau becoming > tau_max" << std::endl;
+//		std::cout << "Now tau is " << x << std::endl;
+//	}
+//  return doStop;
+	auto x = xt.first;
+	return x >= tau_max;
+}

@@ -218,6 +218,20 @@ generate_random_points_general(int n, double r_max, Geometry *geo,
 	return points;
 }
 
+int steps_schedule(double tau, int n_min, int n_max, double tau_min,
+                      double tau_max) {
+	if (tau <= tau_min) {
+		return n_min;
+	} else if (tau >= tau_max) {
+		return n_max;
+	} else {
+	double b = -log(tau_min);
+	double k = n_max/pow((log(tau_max) + b), 2.0);
+	double n = k * pow((log(tau) + b), 2.0) + n_min;
+	return ceil(n);
+	}
+}
+
 
 Ctd::Ctd(double z, double H0, double omega_M, double omega_V) : z(z), H0(H0),
 																																omega_M(omega_M),

@@ -64,14 +64,9 @@ void write_cout(const double &x, const double t);
 
 
 bool check_opt_depth(double tau_max, const double &x);
-//
-//class OptDepthMax {
-//public:
-//    OptDepthMax(double tau_max);
-//    bool is_done(const double &x);
-//
-//private:
-//    double tau_max;
-//};
+
+
+bool check_opt_depth_xt(double tau_max, std::pair<double,double> xt);
+
 
 #endif //JETSHOW_SYSTEMS_H

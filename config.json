@@ -7,8 +7,8 @@
     },
     "image":
     {
-        "number_of_pixels" : 100,
-        "pixel_size_mas" : 0.05
+        "number_of_pixels" : 200,
+        "pixel_size_mas" : 0.02
     },
     "jet":
     {
@@ -17,7 +17,7 @@
             "type" : "cone",
             "parameters" :
             {
-                "angle" : 0.05,
+                "angle" : 0.025,
                 "scale_pc" : 1000.0
             }
         },
@@ -28,6 +28,9 @@
             {
                 "b_1" : 1.0,
                 "n_b" : 1.5,
+                "random_fraction" : 0.0,
+                "model_of_randomness" : "point",
+                "n_cells_1pc" : 100,
                 "pitch_angle" : 1.0
             }
         },
@@ -51,10 +54,22 @@
     },
     "integration" :
     {
-        "tau_max" : 100.0,
-        "dl_max_pc" : 0.01,
-        "log10_tau_min" : -10.0,
-        "n" : 100
+        "step_type" : "adaptive",
+        "parameters" :
+        {
+            "tau_max" : 100.0,
+            "tau_adaptive" : 10,
+            "dl_max_pc" : 0.01,
+            "log10_tau_min" : -10.0,
+            "n" : 100,
+            "tau_n_min" : 0.1,
+            "n_tau_max" : 1000,
+            "log10_abs_error_tau" : -3.0,
+            "log10_rel_error_tau" : -3.0,
+            "log10_abs_error_I" : -3.0,
+            "log10_rel_error_I" : -3.0
+        }
+
     },
     "output" :
     {

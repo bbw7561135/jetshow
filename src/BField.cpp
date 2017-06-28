@@ -107,7 +107,6 @@ RandomPointBField::RandomPointBField(BField* bfield, double rnd_fraction,
 
 Vector3d RandomPointBField::direction(const Vector3d &point) const {
 	std::vector<double> res = dist_(gen_);
-	Vector3d v = Vector3d(std::move(res.data()));
-//	std::cout << "generating direction = " << v << std::endl;
-	return v;
+//	std::cout << "generating random direction... " << std::endl;
+	return std::move(Vector3d(std::move(res.data())));
 }
