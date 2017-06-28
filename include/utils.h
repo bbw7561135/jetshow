@@ -9,6 +9,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_on_sphere.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
+#include "Geometry.h"
 
 using Eigen::Vector3d;
 
@@ -105,9 +106,15 @@ std::vector<Vector3d> generate_random_directions(int n, unsigned int seed=0);
 
 std::vector<Vector3d> generate_random_points_sphere(int n, double r_max,
                                                     double exponent,
-                                                    unsigned int seed=0,
+                                                    unsigned int seed,
                                                     double r_min=0.0,
-                                                    double theta_lim=0.0);
+                                                    double theta_max=0.0,
+                                                    double theta_min=0.0);
+
+std::vector<Vector3d> generate_random_points_general(int n, double r_max,
+                                                     Geometry* geo,
+                                                     double exponent,
+                                                     unsigned int seed);
 
 
 #endif //JETSHOW_UTILS_H

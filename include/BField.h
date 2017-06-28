@@ -2,6 +2,10 @@
 #define JETSHOW_BFIELDS_H
 
 #include <Eigen/Eigen>
+#include "Cells.h"
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_on_sphere.hpp>
+
 
 using Eigen::Vector3d;
 
@@ -62,24 +66,39 @@ private:
     double mu_;
 };
 
-// This is old code for helical field. Note that it is likely to be wrong.
-//class BField
-//{
-//public:
-//    BField(double z0, double fiValue0, double zValue0);
-//
-//    Vector3d bf(Vector3d &p);
-//    double fiValue(Vector3d &p);
-//    double zValue(Vector3d &p);
-//    double getZ0() { return z0;}
-//    double getFiValue0() { return fiValue0;}
-//    double getZValue0() { return zValue0;}
-//
-//
-//private:
-//    double z0;
-//    double fiValue0;
-//    double zValue0;
-//};
+
+class RandomBField : public BField {
+public:
+		RandomBField(BField* bfield, double rnd_fraction);
+		virtual Vector3d direction(const Vector3d &point) const = 0 ;
+		Vector3d bf(const Vector3d &point) const override ;
+
+protected:
+		BField* bfield_;
+		double rnd_fraction_;
+};
+
+
+class RandomCellsBField : public RandomBField {
+public:
+		RandomCellsBField(Cells* cells, BField* bfield, double rnd_fraction);
+		Vector3d direction(const Vector3d &point) const override ;
+
+private:
+		Cells* cells_;
+};
+
+
+class RandomPointBField : public RandomBField {
+public:
+		RandomPointBField(BField* bfield, double rnd_fraction, unsigned int seed);
+		Vector3d direction(const Vector3d &point) const override ;
+
+private:
+		// FIXME: Use different generator for each thread.
+		const unsigned int seed_;
+		mutable boost::mt19937 gen_;
+		mutable boost::uniform_on_sphere<double> dist_;
+};
 
 #endif //JETSHOW_BFIELDS_H

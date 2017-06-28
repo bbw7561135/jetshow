@@ -130,13 +130,13 @@ std::vector<Vector3d> generate_random_directions(int n, unsigned int seed) {
 
 // Generates ``n`` random points inside spherical volume with restrictions on
 // radius and polar angle. Density profile ``exponent``.
-// FIXME: It is for cone geometry. For cylinder the code is only slightly
-// different. Just different function signature? I want DRY code.
+// FIXME: Implement ``theta_min`` > 0 case.
 std::vector<Vector3d> generate_random_points_sphere(int n, double r_max,
                                                     double exponent,
                                                     unsigned int seed,
                                                     double r_min,
-                                                    double theta_lim)
+                                                    double theta_max,
+                                                    double theta_min)
 {
 	std::vector<Vector3d> points;
   boost::mt19937 gen;
@@ -146,8 +146,8 @@ std::vector<Vector3d> generate_random_points_sphere(int n, double r_max,
 	// Default unrestricted polar angle
 	double costheta_lim = 1.0;
 	// If polar angle is restricted
-	if (theta_lim > 0) {
-		costheta_lim = cos(theta_lim);
+	if (theta_max > 0) {
+		costheta_lim = cos(theta_max);
 	}
 
 	double r;
@@ -174,6 +174,45 @@ std::vector<Vector3d> generate_random_points_sphere(int n, double r_max,
 		                      r*sin(theta)*sin(phi),
 		                      r*cos(theta)};
 		points.push_back(v);
+	}
+
+	return points;
+}
+
+std::vector<Vector3d>
+generate_random_points_general(int n, double r_max, Geometry *geo,
+                               double exponent, unsigned int seed) {
+	std::vector<Vector3d> points;
+	boost::mt19937 gen;
+	gen.seed(seed);
+	boost::random::uniform_real_distribution<double> boost_distrib(0.0, 1.0);
+
+
+	double r;
+	double phi;
+	double u;
+	double costheta;
+	double theta;
+	int j = 0;
+	Vector3d v;
+
+	while (j < n) {
+		r = r_max*boost_distrib(gen);
+		phi = 2.0 * pi * boost_distrib(gen);
+		costheta = 2.0 * boost_distrib(gen) - 1.0;
+		theta = acos(costheta);
+
+		// dV = d(r3)d(cos\theta)d(\phi) => for uniform density we must take a cube
+		// root of ``r``.
+		// FIXME: What with r^(-3) density profiles?
+		r = pow(r, 1./(3.0-exponent));
+		v = Vector3d{r*sin(theta)*cos(phi),
+		             r*sin(theta)*sin(phi),
+		             r*cos(theta)};
+		if (geo->is_within(v)) {
+			points.push_back(v);
+			++j;
+		}
 	}
 
 	return points;

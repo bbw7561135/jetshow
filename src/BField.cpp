@@ -4,6 +4,7 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include <BField.h>
 #include <utils.h>
+#include <Cells.h>
 
 
 using Eigen::Vector3d;
@@ -61,7 +62,6 @@ ForceFreeCylindricalBField::ForceFreeCylindricalBField(double b_0, double mu) :
 Vector3d ForceFreeCylindricalBField::bf(const Vector3d &point) const {
     double x = point[0];
     double y = point[1];
-    double r = point.norm();
     double atan_term = atan(y/x);
     double bessel_0 = boost::math::cyl_bessel_i(0, mu_);
     double bessel_1 = boost::math::cyl_bessel_i(1, mu_);
@@ -71,33 +71,43 @@ Vector3d ForceFreeCylindricalBField::bf(const Vector3d &point) const {
 }
 
 
+RandomBField::RandomBField(BField *bfield, double rnd_fraction) :
+		rnd_fraction_(rnd_fraction)
+{
+	bfield_ = bfield;
+};
 
-// This is old code for helical field. Note that it is likely to be wrong.
-//// fi-value of magnetic field in some point ``p``
-//double BField::fiValue(Vector3d &p) {
-//
-//    return fiValue0 * z0 / p[2];
-//
-//}
-//
-//// z-value of magnetic field in some point ``p``
-//double BField::zValue(Vector3d &p) {
-//
-//    return zValue0 * (z0 / p[2]) * (z0 / p[2]);
-//
-//}
-//
-//// Vector of magnetic field at some point ``p``
-//Vector3d BField::bf(Vector3d &p) {
-//
-//    double tmp = sqrt(p[0] * p[0] + p[1] * p[1]);
-//    return Eigen::Vector3d(-zValue(p) * p[1] / tmp, fiValue(p) * p[0] / tmp,
-//    zValue(p));
-//}
-//
-//// Constructor
-//BField::BField(double newz0, double newfiValue0, double newzValue0) {
-//    z0 = newz0;
-//    fiValue0 = newfiValue0;
-//    zValue0 = newzValue0;
-//}
+Vector3d RandomBField::bf(const Vector3d &point) const {
+	Vector3d b = bfield_->bf(point);
+	double bv = b.norm();
+	Vector3d n = direction(point);
+//	std::cout << "Rnd direction = " << n << std::endl;
+	b = b + rnd_fraction_*bv*n;
+	return b;
+}
+
+
+RandomCellsBField::RandomCellsBField(Cells* cells, BField* bfield,
+                                     double rnd_fraction) :
+		RandomBField(bfield, rnd_fraction) {
+	cells_ = cells;
+}
+
+Vector3d RandomCellsBField::direction(const Vector3d &point) const {
+	return cells_->getID(point);
+}
+
+
+RandomPointBField::RandomPointBField(BField* bfield, double rnd_fraction,
+                                     unsigned int seed) :
+		RandomBField(bfield, rnd_fraction), seed_(seed), dist_(3) {
+	gen_.seed(seed_);
+};
+
+
+Vector3d RandomPointBField::direction(const Vector3d &point) const {
+	std::vector<double> res = dist_(gen_);
+	Vector3d v = Vector3d(std::move(res.data()));
+//	std::cout << "generating direction = " << v << std::endl;
+	return v;
+}
