@@ -7,8 +7,8 @@
     },
     "image":
     {
-        "number_of_pixels" : 800,
-        "pixel_size_mas" : 0.02
+        "number_of_pixels" : 100,
+        "pixel_size_mas" : 0.05
     },
     "jet":
     {
