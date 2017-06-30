@@ -1,3 +1,7 @@
+## jetshow
+Synchrotron radiation transfer in inhomogeneous AGN jet model (a.k.a. Blandford & Königl jet model).
+
+
 ## Installation and building
 
 Possibly you need to install ``git``, ``cmake``, ``boost`` and ``Eigen`` (C++
