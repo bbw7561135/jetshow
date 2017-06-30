@@ -24,7 +24,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	vector<Pixel>& pixels = imagePlane->getPixels();
 	vector<Ray>& rays = imagePlane->getRays();
 	// Comment out for easy debug printing
-//	#pragma omp parallel for schedule(dynamic) collapse(2)
+	#pragma omp parallel for schedule(dynamic) collapse(2)
 	// Actually, the best user-time:
 	// #pragma omp parallel for num_threads(4) schedule(dynamic) collapse(2)
   for (int j = 0; j < image_size.first; ++j) {
@@ -57,7 +57,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 				if (background_tau > tau_min) {
 					string local_type;
 					// In high optical depth pixels use adaptive steps
-					if (background_tau > 0.1*tau_max) {
+					if (background_tau > 0.01*tau_max) {
 						local_type = "adaptive";
 					} else {
 						local_type = "constant";

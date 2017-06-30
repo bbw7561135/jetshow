@@ -454,10 +454,12 @@ void test_observations_rnd_bfield() {
 //	cells.setGeometry(scale_pc*pc, cone_angle);
 //	cells.create();
 	// Create ``RandomBField`` instance
-	double rnd_fraction = 0.25;
+	double rnd_fraction = root.get<double>("jet.bfield.parameters.random_fraction");
 //	RandomCellsBField rnd_bfield(&cells, bfield, rnd_fraction);
 	unsigned int seed = 123;
-	RandomPointBField rnd_bfield(bfield, rnd_fraction, seed);
+	if (rnd_fraction > 0) {
+		bfield = new RandomPointBField(bfield, rnd_fraction, seed);
+	}
 
 	std::string vtype = root.get<std::string>("jet.vfield.type");
 	std::cout << "Velocity type : " << vtype << std::endl;
@@ -475,7 +477,7 @@ void test_observations_rnd_bfield() {
 	}
 
 
-	Jet bkjet(geometry, vfield, &rnd_bfield, nfield);
+	Jet bkjet(geometry, vfield, bfield, nfield);
 
 	auto image_size = std::make_pair(number_of_pixels, number_of_pixels);
 	auto pc_in_mas = mas_to_pc(z);
@@ -525,7 +527,7 @@ void test_observations_rnd_bfield() {
 	image = observation.getImage(value);
 	std::string file_i = root.get<std::string>("output.file_i");
 	fs.open(file_i, std::ios::out | std::ios::app);
-	double scale = pix_solid_angle/(1E-23);
+	double scale = 1E-23/pix_solid_angle;
 	std::cout << "Scaling Stokes I by " << scale << std::endl;
 
 	if (fs.is_open())
