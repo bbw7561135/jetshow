@@ -9,13 +9,8 @@ pipelines:
   default:
     - step:
         script:
-          # Print the Linux version.
-          - uname -a
-          # Print the gcc version.
-          - gcc --version
-          #  Install a CMake 3.0.2 version.
           - apt-get update -qq
-          - apt-get install cmake -y
+          - apt-get install gcc make cmake libboost-all-dev libeigen3-dev -y
           #  Alternatively you could install a CMake 3.2.2 version through PPA repository.
           #- apt-get update -qq
           #- apt-get install software-properties-common -y
