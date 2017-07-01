@@ -7,25 +7,16 @@ image: ubuntu:rolling
 
 pipelines:
   branches:
-  master:
-    - step:
-        script:
-          - apt-get update -qq
-          - apt-get install gcc make cmake libboost-all-dev libeigen3-dev -y
-          #  Alternatively you could install a CMake 3.2.2 version through PPA repository.
-          #- apt-get update -qq
-          #- apt-get install software-properties-common -y
-          # Add PPA repository.
-          #- echo 'deb http://ppa.launchpad.net/george-edison55/cmake-3.x/ubuntu trusty main' | tee -a /etc/apt/sources.list.d/cmake.list
-          #- apt-get update -qq
-          #- apt-get install cmake -y --force-yes
-          # Print the CMake version.
-          - cmake --version
-          - mkdir build
-          - cd build
-          # Call the CMake.
-          - cmake ..
-          # Build the project.
-          - make jetshow_test
-          # Run tests:)
-          - ./jetshow_test
+    master:
+      - step:
+          script:
+            - apt-get update -qq
+            - apt-get install gcc make cmake libboost-all-dev libeigen3-dev -y
+            - mkdir build
+            - cd build
+            # Call the CMake.
+            - cmake ..
+            # Build the project.
+            - make jetshow_test
+            # Run tests:)
+            - ./jetshow_test
