@@ -47,9 +47,8 @@ beam = ccimage.beam
 rms = rms_image(ccimage)
 blc, trc = find_bbox(ccimage.image, rms, 10)
 comps = import_difmap_model('bk.mdl', data_dir)
-core = comps[0]
 iplot(ccimage.image, x=ccimage.x, y=ccimage.y, min_abs_level=3*rms, beam=beam,
-      show_beam=True, blc=blc, trc=trc, core=core.p)
+      show_beam=True, blc=blc, trc=trc, components=comps)
 
 
 import collections
