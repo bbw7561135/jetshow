@@ -6,7 +6,8 @@
 image: ubuntu:rolling
 
 pipelines:
-  default:
+  branches:
+  master:
     - step:
         script:
           - apt-get update -qq
