@@ -24,7 +24,6 @@ TEST_CASE("Intersection of Cone with Ray", "[Cone]") {
 		Intersection intersect = list_intersect.front();
 		std::pair<Vector3d,Vector3d> borders = intersect.get_path();
 		REQUIRE(list_intersect.size() == 1);
-		std::cout << borders.first << std::endl;
 		REQUIRE((borders.first - point1).isMuchSmallerThan(1E-06, 1E-06));
 		REQUIRE((borders.second - point2).isMuchSmallerThan(1E-06, 1E-06));
 	}
