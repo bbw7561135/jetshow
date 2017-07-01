@@ -25,4 +25,6 @@ pipelines:
           # Call the CMake.
           - cmake ..
           # Build the project.
-          - make test
+          - make jetshow_test
+          # Run tests:)
+          - ./jetshow_test

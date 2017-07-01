@@ -14,6 +14,7 @@ set(TEST_FILES ${TEST_DIR}/simple_test.cpp include/Cone.h include/Intersection.h
         include/Geometry.h src/Geometry.cpp include/utils.h)
 add_executable(jetshow_test ${TEST_FILES})
 
+
 # Require MPI for this project:
 find_package(MPI REQUIRED)
 set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
