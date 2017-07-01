@@ -15,7 +15,6 @@ TEST_CASE("Intersection of Cone with Ray", "[Cone]") {
 	Cone cone(origin, direction, angle, scale);
 
 	SECTION("Two intersections") {
-		std::cout << "In test of two intersections" << std::endl;
 		Vector3d ray_direction(0., 1., 0.);
 		Vector3d ray_origin(0., 1., 1.);
 		Vector3d point1(0.0, -1.0, 1.0);
@@ -31,7 +30,6 @@ TEST_CASE("Intersection of Cone with Ray", "[Cone]") {
 	}
 
 	SECTION("No intersection") {
-		std::cout << "In test of no intersections" << std::endl;
 		std::list<std::pair<Vector3d,Vector3d>> ray_directions;
 		double theta;
 		double r = 2.0;
@@ -60,7 +58,6 @@ TEST_CASE("Intersection of Cone with Ray", "[Cone]") {
 	}
 
 	SECTION("One intersection at apex") {
-		std::cout << "In test of 1 apex intersection" << std::endl;
 		std::list<std::pair<Vector3d,Vector3d>> ray_directions;
 		double theta;
 		for (int j = 0; j < 8; ++j) {
@@ -84,7 +81,6 @@ TEST_CASE("Intersection of Cone with Ray", "[Cone]") {
 	}
 
 	SECTION("One intersection at apex along border") {
-		std::cout << "In test of 1 apex intersection along border" << std::endl;
 		std::list<Vector3d> ray_directions{Vector3d(1., 0., 1.),
 		                                   Vector3d(-1., 0., 1.),
 		                                   Vector3d(1., 0., -1.),
@@ -96,14 +92,10 @@ TEST_CASE("Intersection of Cone with Ray", "[Cone]") {
 		Vector3d ray_origin(0., 0., 0.);
 		for (auto it = ray_directions.begin(); it != ray_directions.end(); ++it) {
 			Ray ray(ray_origin, *it);
-			std::cout << "Cone angle : " << cone.angle() << std::endl;
 			std::list<Intersection> list_intersect = cone.hit(ray);
 			Intersection intersect = list_intersect.front();
 			std::pair<Vector3d,Vector3d> borders = intersect.get_path();
 			REQUIRE(list_intersect.size() == 1);
-			std::cout << borders.first << std::endl;
-			std::cout << borders.second << std::endl;
-			std::cout << borders.first + cone.big_scale()*ray.direction() << std::endl;
 			REQUIRE((borders.first + cone.big_scale()*ray.direction()).isMuchSmallerThan(1E-06, 1E-06));
 			REQUIRE((borders.second - cone.big_scale()*ray.direction()).isMuchSmallerThan(1E-06, 1E-06));
 		}
