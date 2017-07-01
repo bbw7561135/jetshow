@@ -51,3 +51,40 @@ core = comps[0]
 iplot(ccimage.image, x=ccimage.x, y=ccimage.y, min_abs_level=3*rms, beam=beam,
       show_beam=True, blc=blc, trc=trc, core=core.p)
 
+
+import collections
+
+
+def deep_update(source, overrides):
+    """Update a nested dictionary or similar mapping.
+    https://stackoverflow.com/a/30655448
+
+    Modify ``source`` in place.
+    """
+    for key, value in overrides.iteritems():
+        if isinstance(value, collections.Mapping) and value:
+            returned = deep_update(source.get(key, {}), value)
+            source[key] = returned
+        else:
+            source[key] = overrides[key]
+    return source
+    
+    
+
+def update_config(cfg_in, update_dict, cfg_out=None):
+    """Update json config file with some nested structure e.g. change frequency
+    to 2.0 GHz:
+
+    ``
+    update_dict = {u'observation' : {u'frequency_ghz': 2.0}}
+    ``
+    """
+    with open(cfg_in, "r") as jsonFile:
+        data = json.load(jsonFile)
+    deep_update(data, update_dict)
+    if cfg_out is None:
+        cfg_out = cfg_in
+    with open(cfg_out, "w") as jsonFile:
+        json.dump(data, jsonFile)
+    
+
