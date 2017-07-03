@@ -97,7 +97,7 @@ def update_config(cfg_in, update_dict, cfg_out=None):
 def run_simulations(cfg_file, out_dir, initial_dfm_model,
                     path_to_executable, uv_fits_template,
                     uv_fits_save_fname='bk.fits', out_dfm_model_fn='bk.mdl',
-                    update_params_dict=None):
+                    update_params_dict=None, noise_factor=1.0):
     """
     Run simulation of BK jet, fit results.
 
@@ -152,6 +152,8 @@ def run_simulations(cfg_file, out_dir, initial_dfm_model,
     image_tau = np.loadtxt(image_tau_file)
     icomp = ImageComponent(image_i, y_rad[0,:], z_rad[:,0])
     noise = uvdata.noise(use_V=True)
+    for key, value in noise.items():
+        noise[key] = noise_factor*value
     model = Model(stokes='I')
     model.add_component(icomp)
     uvdata.substitute([model])
@@ -161,7 +163,7 @@ def run_simulations(cfg_file, out_dir, initial_dfm_model,
     initial_dfm_dir, initial_dfm_model_fn = os.path.split(initial_dfm_model)
     # Fit model in difmap
     modelfit_difmap(uv_fits_save_fname, initial_dfm_model_fn, out_dfm_model_fn,
-                    niter=100, path=out_dir,
+                    niter=300, path=out_dir,
                     mdl_path=initial_dfm_dir,
                     out_path=out_dir)
 
@@ -204,12 +206,15 @@ def find_shift_from_difmap_models(freq_difmap_models_dict):
         bmins.append(bmin)
         freqs.append(freq)
     for name, container in zip(('dr', 'bmaj', 'bmin'), (drs, bmajs, bmins)):
-        res = curve_fit(shift_model, freqs, container, p0=[1.0, 1.0])
+        try:
+            res = curve_fit(shift_model, freqs, container, p0=[1.0, 1.0])
+        except RuntimeError:
+            res=([0.0, 0.0], None)
         result_dict[name] = (res[0], container)
     return result_dict
 
 
-def find_shifts_from_true_images(freq_true_images_dict, imsize, pixel_size_mas):
+def find_shifts_from_true_images(freq_true_images_dict, imsize, pixelsizes_dict):
     """
   Find shift using true images.
 
@@ -227,7 +232,7 @@ def find_shifts_from_true_images(freq_true_images_dict, imsize, pixel_size_mas):
         true_image = np.loadtxt(true_image_path)
         # Distance from SMBH (0,0) in mas
         dr = (np.unravel_index(true_image.argmax(),
-                               true_image.shape)[1]-imsize/2)*pixel_size_mas
+                               true_image.shape)[1]-imsize/2)*pixelsizes_dict[freq]
         drs.append(dr)
         freqs.append(freq)
     res = curve_fit(shift_model, freqs, drs, p0=[1.0, 1.0])
@@ -275,103 +280,166 @@ if __name__ == '__main__':
     uv_fits_template_dict[15.4] = os.path.join(uv_fits_template,
                                               '0235+164.u.2006_06_15.uvf')
     update_params_dict = nested_dict()
-    freqs = [1.7, 8.1, 8.4, 12.1, 15.4]
-    los_angles = [0.035, 0.0525, 0.07, 0.0875]
+    pixsizes_dict = nested_dict()
+    imsizes_dict = nested_dict()
+    freqs = [1.7, 8.1, 12.1, 15.4]
+    # los_angles = [0.035, 0.0525, 0.07, 0.0875]
+    los_angles = [0.0875]
+    # angles = [0.0175, 0.035]
     angles = [0.0175]
     bs = [0.1, 1, 10]
     ns = [50, 500, 5000]
 
-    # Here cycle for different values of the parameters
-    los_angle = 0.0525
-    angle = 0.0175
-    b = 1.0
-    n = 500.0
-    number_of_pixels = 2000
-    pixel_size_mas = 0.002
-    freq_difmap_models_dict = collections.OrderedDict()
-    freq_true_images_dict = collections.OrderedDict()
-    out_dir = os.path.join(main_dir,
-                           'test_imsize{}_los{}_angle{}_b{}_n{}'.format(number_of_pixels,
-                                                        los_angle, angle, b, n))
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
+    # /40
+    pixsizes_dict[0.1][50] = 0.0001
+    imsizes_dict[0.1][50] = 1000
+    # /20
+    pixsizes_dict[0.1][500] = 0.0002
+    imsizes_dict[0.1][500] = 1000
+    # /10
+    pixsizes_dict[0.1][5000] = 0.0004
+    imsizes_dict[0.1][5000] = 1000
 
-    # Simulate image for each frequency
-    for freq in freqs:
-        update_params_dict[u'image'][u'number_of_pixels'] = number_of_pixels
-        update_params_dict[u'observation'][u'frequency_ghz'] = freq
-        update_params_dict[u'observation'][u'los_angle'] = los_angle
-        update_params_dict[u'jet'][u'geometry'][u'parameters'][u'angle'] = angle
-        update_params_dict[u'jet'][u'bfield'][u'parameters'][u'b_1'] = b
-        update_params_dict[u'jet'][u'nfield'][u'parameters'][u'n_1'] = n
-        update_params_dict[u'output'][u'file_i'] = 'map_i_{}.txt'.format(freq)
-        update_params_dict[u'output'][u'file_tau'] = 'map_tau_{}.txt'.format(freq)
-        update_params_dict[u'output'][u'file_length'] = 'map_l_{}.txt'.format(freq)
-        run_simulations(cfg_file, out_dir, initial_dfm_model,
-                        path_to_executable, uv_fits_template_dict[freq],
-                        uv_fits_save_fname='bk_{}.fits'.format(freq),
-                        out_dfm_model_fn='bk_{}.mdl'.format(freq),
-                        update_params_dict=update_params_dict)
+    # /10
+    pixsizes_dict[1][50] = 0.0004
+    imsizes_dict[1][50] = 1000
+    # /4
+    pixsizes_dict[1][500] = 0.001
+    imsizes_dict[1][500] = 1000
+    # /2
+    pixsizes_dict[1][5000] = 0.002
+    imsizes_dict[1][5000] = 1000
 
-        # Move simulated images to from directory with executable to ``out_dir``
-        os.rename(os.path.join(executable_dir, 'map_i_{}.txt'.format(freq)),
-                  os.path.join(out_dir, 'map_i_{}.txt'.format(freq)))
-        os.rename(os.path.join(executable_dir, 'map_tau_{}.txt'.format(freq)),
-                  os.path.join(out_dir, 'map_tau_{}.txt'.format(freq)))
-        os.rename(os.path.join(executable_dir, 'map_l_{}.txt'.format(freq)),
-                  os.path.join(out_dir, 'map_l_{}.txt'.format(freq)))
+    # /2
+    pixsizes_dict[10][50] = 0.002
+    imsizes_dict[10][50] = 1000
+    # /1
+    pixsizes_dict[10][500] = 0.004
+    imsizes_dict[10][500] = 1000
+    # *2
+    pixsizes_dict[10][5000] = 0.008
+    imsizes_dict[10][5000] = 1000
 
-        make_plot_i_tau(os.path.join(out_dir, 'map_i_{}.txt'.format(freq)),
-                        os.path.join(out_dir, 'map_tau_{}.txt'.format(freq)),
-                        angle, los_angle, number_of_pixels, out_dir=out_dir,
-                        name="{}_GHz".format(freq),
-                        title="LOS={} Angle={} B={} N={} freq={}".format(los_angle, angle, b, n, freq))
-        freq_difmap_models_dict[freq] = os.path.join(out_dir,
-                                                     'bk_{}.mdl'.format(freq))
-        freq_true_images_dict[freq] = os.path.join(out_dir,
-                                                   'map_i_{}.txt'.format(freq))
 
-    # Calculate shifts in different ways
-    observed_shifts = find_shift_from_difmap_models(freq_difmap_models_dict)
-    true_shifts = find_shifts_from_true_images(freq_true_images_dict,
-                                               number_of_pixels,
-                                               pixel_size_mas)
-    bias_dr = observed_shifts['dr'][0][1] - true_shifts['dr'][0][1]
-    bias_bmaj = observed_shifts['bmaj'][0][1] - 1.0
-    bias_bmin = observed_shifts['bmin'][0][1] - 1.0
 
-    import matplotlib.pyplot as plt
-    # Plot all measured values
-    plt.plot(freqs, observed_shifts['dr'][1], '.k', ms=10,
-             label="k={0:.2f} observed dr".format(observed_shifts['dr'][0][1]))
-    plt.plot(freqs, true_shifts['dr'][1], '.r', ms=10,
-             label="k={0:.2f} true dr".format(true_shifts['dr'][0][1]))
-    plt.plot(freqs, observed_shifts['bmaj'][1], '.b', ms=10,
-             label="k={0:.2f} observed bmaj".format(observed_shifts['bmaj'][0][1]))
-    plt.plot(freqs, observed_shifts['bmin'][1], '.g', ms=10,
-             label="k={0:.2f} observed bmin".format(observed_shifts['bmin'][0][1]))
+    for angle in angles:
+        for los_angle in los_angles:
+            for b in bs:
+                for n in ns:
+                    if angle == 0.0175:
+                        if los_angle == 0.035:
+                            if b == 0.1:
+                                if n == 50 or n == 500 or n == 5000:
+                                    continue
+                            if b == 1:
+                                if n == 50:
+                                    continue
+                    # Here cycle for different values of the parameters
+                    # los_angle = 0.035
+                    # angle = 0.0175
+                    # b = 1.0
+                    # n = 500.0
+                    # number_of_pixels = 1000
+                    number_of_pixels = imsizes_dict[b][n]
+                    # pixel_size_mas = 0.004
+                    pixel_size_mas = pixsizes_dict[b][n]
 
-    freqs_grid = np.linspace(freqs[0], freqs[-1], 100)
-    drs_observed_fit = shift_model(freqs_grid, observed_shifts['dr'][0][0],
-                                   observed_shifts['dr'][0][1])
-    bmajs_observed_fit = shift_model(freqs_grid, observed_shifts['bmaj'][0][0],
-                                     observed_shifts['bmaj'][0][1])
-    bmins_observed_fit = shift_model(freqs_grid, observed_shifts['bmin'][0][0],
-                                     observed_shifts['bmin'][0][1])
-    drs_true_fit = shift_model(freqs_grid, true_shifts['dr'][0][0],
-                               true_shifts['dr'][0][1])
-    plt.plot(freqs_grid, drs_observed_fit, 'k')
-    plt.plot(freqs_grid, bmajs_observed_fit, 'b')
-    plt.plot(freqs_grid, bmins_observed_fit, 'g')
-    plt.plot(freqs_grid, drs_true_fit, 'r')
-    plt.xlabel("Frequency, GHz")
-    plt.ylabel("Shift/Size, mas")
-    plt.legend(loc='best')
-    plt.title("LOS={} Angle={} B={} N={}".format(los_angle, angle, b, n))
-    plt.savefig(os.path.join(out_dir, 'fits.png'), bbox_inches='tight')
-    plt.close()
+                    freq_pixel_size_dict = collections.OrderedDict()
+                    for freq in freqs:
+                        if freq == 1.7:
+                            pixel_size_mas_ = 10*pixel_size_mas
+                        else:
+                            pixel_size_mas_ = pixel_size_mas
+                        freq_pixel_size_dict[freq] = pixel_size_mas_
 
-    print("True k (dr) = {}".format(true_shifts['dr'][1]))
-    print("Bias of observed k (dr) = {}".format(bias_dr))
-    print("Bias of observed k (bmaj) = {}".format(bias_bmaj))
-    print("Bias of observed k (bmin) = {}".format(bias_bmin))
+                    print("Pixel sizes : ", freq_pixel_size_dict)
+                    freq_difmap_models_dict = collections.OrderedDict()
+                    freq_true_images_dict = collections.OrderedDict()
+                    out_dir = os.path.join(main_dir,
+                                           'prod_imsize{}_pix{}_los{}_angle{}_b{}_n{}'.format(number_of_pixels,
+                                                                        pixel_size_mas, los_angle, angle, b, n))
+                    if not os.path.exists(out_dir):
+                        os.mkdir(out_dir)
+
+                    # Simulate image for each frequency
+                    for freq in freqs:
+                        update_params_dict[u'image'][u'number_of_pixels'] = number_of_pixels
+                        update_params_dict[u'image'][u'pixel_size_mas'] = freq_pixel_size_dict[freq]
+                        update_params_dict[u'integration'][u'parameters'][u'log10_tau_min'] = -4.0
+                        update_params_dict[u'observation'][u'frequency_ghz'] = freq
+                        update_params_dict[u'observation'][u'los_angle'] = los_angle
+                        update_params_dict[u'jet'][u'geometry'][u'parameters'][u'angle'] = angle
+                        update_params_dict[u'jet'][u'bfield'][u'parameters'][u'b_1'] = b
+                        update_params_dict[u'jet'][u'nfield'][u'parameters'][u'n_1'] = n
+                        update_params_dict[u'output'][u'file_i'] = 'map_i_{}.txt'.format(freq)
+                        update_params_dict[u'output'][u'file_tau'] = 'map_tau_{}.txt'.format(freq)
+                        update_params_dict[u'output'][u'file_length'] = 'map_l_{}.txt'.format(freq)
+                        run_simulations(cfg_file, out_dir, initial_dfm_model,
+                                        path_to_executable, uv_fits_template_dict[freq],
+                                        uv_fits_save_fname='bk_{}.fits'.format(freq),
+                                        out_dfm_model_fn='bk_{}.mdl'.format(freq),
+                                        update_params_dict=update_params_dict,
+                                        noise_factor=0.01)
+
+                        # Move simulated images to from directory with executable to ``out_dir``
+                        os.rename(os.path.join(executable_dir, 'map_i_{}.txt'.format(freq)),
+                                  os.path.join(out_dir, 'map_i_{}.txt'.format(freq)))
+                        os.rename(os.path.join(executable_dir, 'map_tau_{}.txt'.format(freq)),
+                                  os.path.join(out_dir, 'map_tau_{}.txt'.format(freq)))
+                        os.rename(os.path.join(executable_dir, 'map_l_{}.txt'.format(freq)),
+                                  os.path.join(out_dir, 'map_l_{}.txt'.format(freq)))
+
+                        make_plot_i_tau(os.path.join(out_dir, 'map_i_{}.txt'.format(freq)),
+                                        os.path.join(out_dir, 'map_tau_{}.txt'.format(freq)),
+                                        angle, los_angle, number_of_pixels, out_dir=out_dir,
+                                        name="{}_GHz".format(freq),
+                                        title="LOS={} Angle={} B={} N={} freq={}".format(los_angle, angle, b, n, freq))
+                        freq_difmap_models_dict[freq] = os.path.join(out_dir,
+                                                                     'bk_{}.mdl'.format(freq))
+                        freq_true_images_dict[freq] = os.path.join(out_dir,
+                                                                   'map_i_{}.txt'.format(freq))
+
+                    # Calculate shifts in different ways
+                    observed_shifts = find_shift_from_difmap_models(freq_difmap_models_dict)
+                    true_shifts = find_shifts_from_true_images(freq_true_images_dict,
+                                                               number_of_pixels,
+                                                               freq_pixel_size_dict)
+                    bias_dr = observed_shifts['dr'][0][1] - true_shifts['dr'][0][1]
+                    bias_bmaj = observed_shifts['bmaj'][0][1] - 1.0
+                    bias_bmin = observed_shifts['bmin'][0][1] - 1.0
+
+                    import matplotlib.pyplot as plt
+                    # Plot all measured values
+                    plt.plot(freqs, observed_shifts['dr'][1], '.k', ms=10,
+                             label="k={0:.2f} observed dr".format(observed_shifts['dr'][0][1]))
+                    plt.plot(freqs, true_shifts['dr'][1], '.r', ms=10,
+                             label="k={0:.2f} true dr".format(true_shifts['dr'][0][1]))
+                    plt.plot(freqs, observed_shifts['bmaj'][1], '.b', ms=10,
+                             label="k={0:.2f} observed bmaj".format(observed_shifts['bmaj'][0][1]))
+                    plt.plot(freqs, observed_shifts['bmin'][1], '.g', ms=10,
+                             label="k={0:.2f} observed bmin".format(observed_shifts['bmin'][0][1]))
+
+                    freqs_grid = np.linspace(freqs[0], freqs[-1], 100)
+                    drs_observed_fit = shift_model(freqs_grid, observed_shifts['dr'][0][0],
+                                                   observed_shifts['dr'][0][1])
+                    bmajs_observed_fit = shift_model(freqs_grid, observed_shifts['bmaj'][0][0],
+                                                     observed_shifts['bmaj'][0][1])
+                    bmins_observed_fit = shift_model(freqs_grid, observed_shifts['bmin'][0][0],
+                                                     observed_shifts['bmin'][0][1])
+                    drs_true_fit = shift_model(freqs_grid, true_shifts['dr'][0][0],
+                                               true_shifts['dr'][0][1])
+                    plt.plot(freqs_grid, drs_observed_fit, 'k')
+                    plt.plot(freqs_grid, bmajs_observed_fit, 'b')
+                    plt.plot(freqs_grid, bmins_observed_fit, 'g')
+                    plt.plot(freqs_grid, drs_true_fit, 'r')
+                    plt.xlabel("Frequency, GHz")
+                    plt.ylabel("Shift/Size, mas")
+                    plt.legend(loc='best')
+                    plt.title("LOS={} Angle={} B={} N={}".format(los_angle, angle, b, n))
+                    plt.savefig(os.path.join(out_dir, 'fits.png'), bbox_inches='tight')
+                    plt.close()
+
+                    print("True k (dr) = {}".format(true_shifts['dr'][0][1]))
+                    print("Bias of observed k (dr) = {}".format(bias_dr))
+                    print("Bias of observed k (bmaj) = {}".format(bias_bmaj))
+                    print("Bias of observed k (bmin) = {}".format(bias_bmin))
