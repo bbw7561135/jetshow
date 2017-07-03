@@ -1,7 +1,3 @@
-//
-// Created by ilya on 6/6/17.
-//
-
 #ifndef JETSHOW_VFIELD_H
 #define JETSHOW_VFIELD_H
 
@@ -9,16 +5,12 @@
 
 using Eigen::Vector3d;
 
-// TODO: What is more efficient?
-// 1. Returning type Vector3d. Thus returning a value. Copying can be avoided
-// via RVO?
-// 2. Returning a reference. I need lvalue expression inside member function to
-// reference it. Thus creating and possibly copying. Is it optimized?
-// 3. Using move semantic?
+
 class VField {
 public:
     virtual Vector3d v(const Vector3d& point) const = 0;
 };
+
 
 class ConstFlatVField: public VField {
 public:
@@ -30,6 +22,30 @@ private:
 };
 
 
+class ShearedFlatVField: public VField {
+public:
+		ShearedFlatVField(double gamma_axis, double gamma_border, double r);
+		Vector3d v(const Vector3d& point) const override ;
+
+private:
+		double gamma_axis_;
+		double gamma_border_;
+		double r_;
+};
+
+
+class SheathFlatVField: public VField {
+public:
+		SheathFlatVField(double gamma_spine, double gamma_sheath, double r_sheath);
+		Vector3d v(const Vector3d& point) const override ;
+
+private:
+		double gamma_spine_;
+		double gamma_sheath_;
+		double r_sheath_;
+};
+
+
 class ConstCentralVField: public VField {
 public:
     ConstCentralVField(double gamma);
@@ -37,6 +53,31 @@ public:
 
 private:
     double gamma_;
+};
+
+
+class ShearedCentralVField: public VField {
+public:
+		ShearedCentralVField(double gamma_axis, double gamma_border, double theta);
+		Vector3d v(const Vector3d& point) const override ;
+
+private:
+		double gamma_axis_;
+		double gamma_border_;
+		double theta_;
+};
+
+
+class SheathCentralVField: public VField {
+public:
+		SheathCentralVField(double gamma_spine, double gamma_sheath,
+		                    double theta_sheath);
+		Vector3d v(const Vector3d& point) const override ;
+
+private:
+		double gamma_spine_;
+		double gamma_sheath_;
+		double theta_sheath_;
 };
 
 #endif //JETSHOW_VFIELD_H
