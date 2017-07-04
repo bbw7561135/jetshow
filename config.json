@@ -57,7 +57,7 @@
         "step_type" : "adaptive",
         "parameters" :
         {
-            "tau_max" : 100.0,
+            "tau_max" : 1000.0,
             "tau_adaptive" : 10,
             "dl_max_pc" : 0.01,
             "log10_tau_min" : -10.0,
@@ -75,6 +75,9 @@
     {
         "file_tau" : "map_tau.txt",
         "file_length" : "map_l.txt",
-        "file_i" : "map_i.txt"
+        "file_i" : "map_i.txt",
+        "file_q" : "map_q.txt",
+        "file_u" : "map_u.txt",
+        "file_v" : "map_v.txt"
     }
 }

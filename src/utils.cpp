@@ -42,7 +42,7 @@ double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
 }
 
 double k_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
-	return (s+2.)/(s+10./3/)*k_i(b, n_los, nu, n, s);
+	return (s+2.)/(s+10./3)*k_i(b, n_los, nu, n, s);
 }
 
 double k_u(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {

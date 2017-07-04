@@ -6,6 +6,7 @@
 #include <boost/numeric/odeint.hpp>
 
 using namespace boost::numeric::odeint;
+typedef std::vector<double> state_type;
 
 
 Observation::Observation(Jet *newjet, ImagePlane *newimagePlane, double newnu) :
@@ -52,7 +53,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	      double thickness = tau_l_end.second;
 
 	      // Write final values here inside integrate_i
-				double background_I = 0.;
+				state_type background_iquv{0., 0., 0., 0};
 				// Calculate I only if optical depth is high enough
 				if (background_tau > tau_min) {
 					string local_type;
@@ -67,11 +68,11 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 						local_type = "adaptive";
 					}
 					if (local_type == "constant") {
-						integrate_i(list_intersect, ray_direction, nu, n, background_tau,
-					              tau_n_min, tau_n_max, background_I);
+//						integrate_i(list_intersect, ray_direction, nu, n, background_tau,
+//					              tau_n_min, tau_n_max, background_iquv);
 					} else if (local_type == "adaptive") {
-						integrate_i_adaptive(list_intersect, ray_direction, nu, n,
-						                     background_tau, background_I);
+						integrate_full_stokes_adaptive(list_intersect, ray_direction, nu, n,
+						                               background_tau, background_iquv);
 					}
 				} else {
 //					std::cout << "Too small optical depth..." << std::endl;
@@ -80,7 +81,13 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 				std::string value ("tau");
         pxl.setValue(value, background_tau);
 				value = "I";
-				pxl.setValue(value, background_I);
+				pxl.setValue(value, background_iquv[0]);
+	      value = "Q";
+	      pxl.setValue(value, background_iquv[1]);
+	      value = "U";
+	      pxl.setValue(value, background_iquv[2]);
+	      value = "V";
+	      pxl.setValue(value, background_iquv[3]);
 				value = "l";
 				pxl.setValue(value, thickness);
       }
@@ -290,5 +297,39 @@ void Observation::integrate_i_adaptive(std::list<Intersection> &list_intersect,
 		                   stokesI,
 		                   stI, 0.0, length, dt);
 		background_I = stI;
+	}
+}
+
+
+void
+Observation::integrate_full_stokes_adaptive(std::list<Intersection> &list_intersect,
+                                            Vector3d ray_direction, const double nu,
+                                            int n, double background_tau,
+                                            state_type& background) {
+
+	for (auto it = list_intersect.rbegin();
+	     it != list_intersect.rend(); ++it) {
+		auto borders = (*it).get_path();
+		Vector3d point_in = borders.first;
+		Vector3d point_out = borders.second;
+
+		double length = (point_out - point_in).norm();
+		double auto_n = n;
+		if (background_tau > 0.1) {
+			auto_n = steps_schedule(background_tau, n, 10*n);
+		}
+		double dt = length / auto_n;
+
+		Vector3d inv_direction = -1. * ray_direction;
+		FullStokes full_stokes(jet, point_out, inv_direction, nu);
+		typedef runge_kutta_dopri5<state_type> stepper_type;
+		auto stepper = stepper_type();
+
+		state_type iquv = background;
+		// TODO: Add ``dt_max`` constrains (using ``make_dense_output``)
+		// One can add observer function at the end of the argument list.
+		integrate_adaptive(make_controlled(1E-9, 1E-9, stepper_type()),
+		                   full_stokes, iquv, 0.0, length, dt);
+		background = iquv;
 	}
 }
