@@ -97,7 +97,6 @@ public:
 		Vector3d direction(const Vector3d &point) const override ;
 
 private:
-		// FIXME: Use different generator for each thread.
 		mutable std::vector<boost::variate_generator<gen_type, boost::uniform_on_sphere<double>>> randoms_on_sphere;
 };
 
