@@ -1,5 +1,6 @@
 ## jetshow
-Synchrotron radiation transfer in inhomogeneous AGN jet model (a.k.a. Blandford & Königl jet model).
+Synchrotron radiation transfer in inhomogeneous AGN jet model (a.k.a. Blandford
+& Königl jet model - DOI:10.1086/157262).
 
 
 ## Installation and building
@@ -98,13 +99,11 @@ Result files are appeared in the same directory.
     * ``file_tau`` - name of the file with image of optical depth.
     * ``file_length`` - name of the file with image of geometrical depth [pc].
     * ``file_i`` - name of the file with image of Stokes *I* intensity
-    [Jy/pixel].
+    [Jy/pixel]. The same for each Stokes parameter (*Q*, *U* and *V*).
     
     
 ## Warnings
 
-* Currently, models of random B-field could be used only in single threaded run.
-To do it - comment out line 27 at ``Observation.cpp`` and re-compile.
  
-* Using of ``adaptive`` integration type slows down the running time seriously
-in case of ``RandomPointBField``.
+* Using of ``adaptive`` integration type slows down the running time in case of
+``RandomPointBField``.
