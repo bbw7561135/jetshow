@@ -26,11 +26,33 @@ public:
     // Absorption coefficient in ``point`` of the jet in the observer (lab)
     // frame. ``n`` is unit LOS vector in the observer frame.
     double getKI(Vector3d &point, Vector3d &n_los, double nu);
+
+		double getKQ(Vector3d &point, Vector3d &n_los, double nu);
+
+		double getKU(Vector3d &point, Vector3d &n_los, double nu);
+
+		// TODO: For e+ must be "+" sign
+		double getKV(Vector3d &point, Vector3d &n_los, double nu);
+
+		double getKF(Vector3d &point, Vector3d &n_los, double nu);
+
+		double getKC(Vector3d &point, Vector3d &n_los, double nu);
+
+		double gethQ(Vector3d &point, Vector3d &n_los, double nu);
+
     // Emission coefficient in ``point`` of the jet in the observer (lab)
     // frame. ``n`` is unit LOS vector in the observer frame.
     double getEtaI(Vector3d &point, Vector3d &n_los, double nu);
 
+		double getEtaQ(Vector3d &point, Vector3d &n_los, double nu);
+
+		double getEtaU(Vector3d &point, Vector3d &n_los, double nu);
+
+		// TODO: For e+ must be "+" sign
+		double getEtaV(Vector3d &point, Vector3d &n_los, double nu);
+
     std::list<Intersection> hit(Ray& ray);
+
 
 private:
     Geometry* geometry_;

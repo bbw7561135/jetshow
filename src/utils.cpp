@@ -24,8 +24,16 @@ double nu_b(Vector3d &b, Vector3d &n_los) {
     return q_e*(n_los.cross(b)).norm()/(2.*pi*m_e*c);
 }
 
+double nu_b_value(Vector3d &b) {
+	return q_e*b.norm()/(2.*pi*m_e*c);
+}
+
 double k_0(Vector3d &b, Vector3d &n_los, double nu, double n) {
     return pi*nu_p(n)*nu_p(n)*nu_b(b, n_los)/(c*nu*nu);
+}
+
+double k_0_value(Vector3d &b, double nu, double n) {
+	return pi*nu_p(n)*nu_p(n)*nu_b_value(b)/(c*nu*nu);
 }
 
 double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
@@ -33,13 +41,75 @@ double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
     return k_0(b, n_los, nu, n) * pow(nu_b(b, n_los)/nu, s/2.) * factor;
 }
 
+double k_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
+	return (s+2.)/(s+10./3/)*k_i(b, n_los, nu, n, s);
+}
+
+double k_u(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
+	return 0;
+}
+
+double k_v(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
+	double cos_theta = b.dot(n_los)/b.norm();
+	double factor = pow(3., s/2.)*(s+3.)*(s+2.)/(4.*(s+1.))*tgamma(s/4.+11./12.)*tgamma(s/4.+7./12.);
+	return -k_0_value(b, nu, n)*cos_theta*pow(nu_b(b, n_los)/nu, (s+1.)/2.) * factor;
+}
+
+double k_F_c(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
+	double cos_theta = b.dot(n_los)/b.norm();
+	return 2.*pi*nu_p(n)*nu_p(n)*nu_b_value(b)*cos_theta/(c*nu*nu);
+}
+
+double k_C_c(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
+	return -pi*nu_p(n)*nu_p(n)*nu_b(b, n_los)*nu_b(b, n_los)/(c*nu*nu*nu);
+}
+
+double
+k_F_r(Vector3d &b, Vector3d &n_los, double nu, double n, double gamma_min,
+      double s) {
+	return (s+2.)*log(gamma_min)/((s+1.)*pow(gamma_min, s+1.))*k_F_c(b, n_los, nu,
+	                                                                 n, s);
+}
+
+double
+k_C_r(Vector3d &b, Vector3d &n_los, double nu, double n, double gamma_min,
+      double s) {
+	return (2./(s-2.))*(pow(gamma_min, 2.-s) -
+			pow(nu_b(b, n_los)/nu, (s-2.)/2.))*k_C_c(b, n_los, nu, n, s);
+}
+
+
+double h_Q(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
+	return 0;
+}
+
+
+
 double eta_0(Vector3d &b, Vector3d &n_los, double n) {
     return pi*nu_p(n)*nu_p(n)*nu_b(b, n_los)*m_e/c;
+}
+
+double eta_0_value(Vector3d &b, double n) {
+	return pi*nu_p(n)*nu_p(n)*nu_b_value(b)*m_e/c;
 }
 
 double eta_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
     double factor = pow(3., s/2.)/(2.*(s+1))*tgamma(s/4.+19./12.)*tgamma(s/4.-1./12.);
     return eta_0(b, n_los, n) * pow(nu_b(b, n_los)/nu, (s-1.)/2.) * factor;
+}
+
+double eta_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
+	return (s+1.0)/(s+7./3.)*eta_i(b, n_los, nu, n, s);
+}
+
+double eta_u(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
+	return 0;
+}
+
+double eta_v(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
+	double cos_theta = b.dot(n_los)/b.norm();
+	double factor = pow(3., (s-1.)/2.)*(s+2.)/(2.*s)*tgamma(s/4.+2./3.)*tgamma(s/4.+1./3.);
+	return -eta_0_value(b, n)*cos_theta*pow(nu_b(b, n_los)/nu, s/2.) * factor;
 }
 
 
