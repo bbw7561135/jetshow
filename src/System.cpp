@@ -35,8 +35,9 @@ void I::operator()(const double &x, double &dxdt, const double t) {
   dxdt = jet->getEtaI(point, ray_direction, nu) -
       jet->getKI(point, ray_direction, nu) * x;
 	// FIXME: Do i need this?
-	if (dxdt < 0.0) {
-		dxdt = 0.0;
+	double x0 = x;
+	if (x0 < 0) {
+		x0 = 0.0;
 	}
 }
 
