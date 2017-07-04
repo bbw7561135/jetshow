@@ -6,23 +6,13 @@
 
 
 class System {
- public:
-  // Default ctor
-  // System();
+  public:
     System(Jet* newjet, Vector3d &newpoint_in, Vector3d &newray_direction,
            double newnu);
 
-  // This is what differs
   virtual void operator() (const double &x, double &dxdt, const double t) = 0;
 
-  void setPointIn(Vector3d &newpoint_in) {
-    point_in = newpoint_in;
-  }
-  void setRayDirection(Vector3d &newray_direction) {
-    ray_direction = newray_direction;
-  }
-
-  protected:
+	protected:
     Jet* jet;
     Vector3d point_in;
     Vector3d ray_direction;
@@ -46,17 +36,6 @@ class I : public System {
 
   void operator() (const double &x, double &dxdt, const double t) override;
 };
-
-
-//class OptDepthObserver {
-//  public:
-//    OptDepthObserver(double tau_max, double &t);
-//    void operator()( const double &x , double t ) const;
-//
-//  private:
-//    double time_;
-//    double value_;
-//};
 
 
 // This debug-print integrands and ``time`` variable
