@@ -5,9 +5,11 @@
 #include "Cells.h"
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_on_sphere.hpp>
+#include <boost/random/variate_generator.hpp>
 
 
 using Eigen::Vector3d;
+typedef boost::random::mt19937 gen_type;
 
 
 class BField {
@@ -96,9 +98,7 @@ public:
 
 private:
 		// FIXME: Use different generator for each thread.
-		const unsigned int seed_;
-		mutable boost::mt19937 gen_;
-		mutable boost::uniform_on_sphere<double> dist_;
+		mutable std::vector<boost::variate_generator<gen_type, boost::uniform_on_sphere<double>>> randoms_on_sphere;
 };
 
 #endif //JETSHOW_BFIELDS_H

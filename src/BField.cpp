@@ -5,9 +5,11 @@
 #include <BField.h>
 #include <utils.h>
 #include <Cells.h>
+#include <boost/random/variate_generator.hpp>
 
 
 using Eigen::Vector3d;
+typedef boost::variate_generator<gen_type&, boost::uniform_on_sphere<double>> gg;
 
 
 ConstCylinderBField::ConstCylinderBField(double b_0, double n_b) : b_0_(b_0),
@@ -100,13 +102,23 @@ Vector3d RandomCellsBField::direction(const Vector3d &point) const {
 
 RandomPointBField::RandomPointBField(BField* bfield, double rnd_fraction,
                                      unsigned int seed) :
-		RandomBField(bfield, rnd_fraction), seed_(seed), dist_(3) {
-	gen_.seed(seed_);
+		RandomBField(bfield, rnd_fraction),
+		randoms_on_sphere() {
+	for (int j = 0; j < omp_get_max_threads(); ++j) {
+		gen_type rand_gen;
+		rand_gen.seed(j+seed);
+		boost::uniform_on_sphere<double> unif_sphere(3);
+		boost::variate_generator<gen_type, boost::uniform_on_sphere<double>> random_on_sphere(rand_gen, unif_sphere);
+		randoms_on_sphere.push_back(random_on_sphere);
+	}
+	std::cout << "In random B init" << std::endl;
+
 };
 
 
 Vector3d RandomPointBField::direction(const Vector3d &point) const {
-	std::vector<double> res = dist_(gen_);
-//	std::cout << "generating random direction... " << std::endl;
+	std::vector<double> res = randoms_on_sphere[omp_get_thread_num()]();
+//	std::cout << "generating random direction from thread number " <<
+//	                                                               omp_get_thread_num() << std::endl;
 	return std::move(Vector3d(std::move(res.data())));
 }
