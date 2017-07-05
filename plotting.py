@@ -2,6 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
+from scipy.ndimage.measurements import label
+from scipy.ndimage.morphology import generate_binary_structure
+from skimage.measure import regionprops
+
 
 # TODO: Need functions that could read config.json and create corresponding
 # plots of the physical parameters.
@@ -54,6 +58,35 @@ def beta(x, y, z, gamma0=10.):
     return result
 
 
+def find_bbox(array, level, delta=0.):
+    """
+    Find bounding box for part of image containing source.
+
+    :param array:
+        Numpy 2D array with image.
+    :param level:
+        Level at which threshold image in image units.
+    :param delta:
+        Extra space to add symmetrically [pixels].
+    :return:
+        Tuples of BLC & TRC.
+    """
+
+    signal = array > level
+    s = generate_binary_structure(2, 2)
+    labeled_array, num_features = label(signal, structure=s)
+    props = regionprops(labeled_array, intensity_image=array)
+
+    max_prop = props[0]
+    for prop in props[1:]:
+        if prop.max_intensity > max_prop.max_intensity:
+            max_prop = prop
+
+    bbox = max_prop.bbox
+    blc = (int(bbox[1] - delta), int(bbox[0] - delta))
+    trc = (int(bbox[3] + delta), int(bbox[2] + delta))
+    return blc, trc
+
 
 # FIXME: Don't use ``Components`` as arguments here
 def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
@@ -65,7 +98,7 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
          beam_place='ll', colorbar_label=None, show=True, contour_color='k',
          beam_edge_color='black', beam_face_color='green', beam_alpha=0.3,
          show_points=None, components=None, slice_color='black',
-         plot_colorbar=True):
+         plot_colorbar=True, mas_in_pixel=None, max_vector_value_length=5.):
     """
     Plot image(s). Need much work to clean it!
 
@@ -139,6 +172,14 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
         ``None`` then don't plot points. (default: ``None``)
     :param plot_colorbar: (optional)
         If colors is set then should we plot colorbar? (default: ``True``).
+    :param mas_in_pixel: (optonal)
+        Number of milliarcseconds in one pixel. If ``None`` then plot in pixels.
+        (default: ``None``)
+    :param max_vector_value_length: (optional)
+        Determines what part of the image is the length of the vector with
+        maximum magnitude. E.g. if ``5`` then maximum value of vector quantity
+        corresponds to arrow with length equal to 1/5 of the image length.
+        (default: ``5``)
 
     :note:
         ``blc`` & ``trc`` are AIPS-like (from 1 to ``imsize``). Internally
@@ -155,6 +196,10 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
     matplotlib.rcParams['pdf.fonttype'] = 42
     matplotlib.rcParams['ps.fonttype'] = 42
 
+    mas_in_pixel_ = 1.0
+    if mas_in_pixel is None:
+        mas_in_pixel_ = mas_in_pixel
+
     image = None
     if contours is not None:
         image = contours
@@ -166,36 +211,24 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
     if image is None:
         raise Exception("No images to plot!")
     if x is None:
-        x = np.arange(image.shape[0])
-        factor_x = 1
-    else:
-        factor_x = 1. / mas_to_rad
+        x = np.arange(image.shape[0]) - image.shape[0]/2
     if y is None:
-        y = np.arange(image.shape[1])
-        factor_y = 1
-    else:
-        factor_y = 1. / mas_to_rad
+        y = np.arange(image.shape[1]) - image.shape[1]/2
+
+    x = x * mas_in_pixel_
+    y = y * mas_in_pixel_
 
     # Set BLC & TRC
     blc = blc or (1, 1,)
     trc = trc or image.shape
-    # Use ``-1`` because user expect AIPS-like behavior of ``blc`` & ``trc``
     x_slice = slice(blc[1] - 1, trc[1], None)
     y_slice = slice(blc[0] - 1, trc[0],  None)
+    x = x[x_slice]
+    y = y[y_slice]
 
-    # Create coordinates
-    imsize_x = x_slice.stop - x_slice.start
-    imsize_y = y_slice.stop - y_slice.start
-    # In mas (if ``x`` & ``y`` were supplied in rad) or in pixels (if no ``x`` &
-    # ``y`` were supplied)
-    x_ = x[x_slice] * factor_x
-    y_ = y[y_slice] * factor_y
-    # With this coordinates are plotted as in Zhenya's map
-    # x_ *= -1.
-    # y_ *= -1.
-    # Coordinates for plotting
-    x = np.linspace(x_[0], x_[-1], imsize_x)
-    y = np.linspace(y_[0], y_[-1], imsize_y)
+    # Use ``-1`` because user expect AIPS-like behavior of ``blc`` & ``trc``
+    # x = np.linspace(blc[1]-1, trc[1], trc[1]-blc[1]+1)
+    # y = np.linspace(blc[0]-1, trc[0], trc[0]-blc[0]+1)
 
     # Optionally mask arrays
     if contours is not None and contours_mask is not None:
@@ -208,61 +241,64 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
     # Actually plotting
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-    ax.set_xlabel(u'Relative R.A. (mas)')
-    ax.set_ylabel(u'Relative Decl. (mas)')
+
+    xlabel = u'Rel. Position (pix)'
+    ylabel = xlabel
+    if mas_in_pixel is not None:
+        xlabel = u'Rel. Position (mas)'
+        ylabel = u'Rel. Position (mas)'
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
 
     # Plot contours
     if contours is not None:
-        # If no absolute levels are supplied then construct them
         if abs_levels is None:
-            print "constructing absolute levels for contours..."
             max_level = contours[x_slice, y_slice].max()
-            # from given relative levels
             if rel_levels is not None:
-                print "from relative levels..."
-                # Build levels (``pyplot.contour`` takes only absolute values)
                 abs_levels = [-max_level] + [max_level * i for i in rel_levels]
-                # If given only min_abs_level & increment factor ``k``
             else:
-                # from given minimal absolute level
                 if min_abs_level is not None:
-                    print "from minimal absolute level..."
                     n_max = int(math.ceil(math.log(max_level / min_abs_level, k)))
-                # from given minimal relative level
                 elif min_rel_level is not None:
-                    print "from minimal relative level..."
                     min_abs_level = min_rel_level * max_level / 100.
                     n_max = int(math.ceil(math.log(max_level / min_abs_level, k)))
+                else:
+                    raise Exception("Not enough information for levels")
                 abs_levels = [-min_abs_level] + [min_abs_level * k ** i for i in
                                                  range(n_max)]
-            print "Constructed absolute levels are: ", abs_levels
-        # return y, x, contours[x_slice, y_slice]
         co = ax.contour(y, x, contours[x_slice, y_slice], abs_levels,
                         colors=contour_color)
-        print "OK"
     if colors is not None:
         im = ax.imshow(colors[x_slice, y_slice], interpolation='none',
                        origin='lower', extent=[y[0], y[-1], x[0], x[-1]],
                        cmap=plt.get_cmap(cmap), clim=color_clim)
     if vectors is not None:
         if vectors_values is not None:
-            # TODO: Does "-" sign because of RA increases to the left actually?
-            # VLBIers do count angles from North to negative RA.
-            u = -vectors_values[x_slice, y_slice] * np.sin(vectors[x_slice,
+            u = vectors_values[x_slice, y_slice] * np.sin(vectors[x_slice,
                                                                    y_slice])
             v = vectors_values[x_slice, y_slice] * np.cos(vectors[x_slice,
                                                                   y_slice])
+            max_vector_value = np.max(np.abs(vectors_values))
+            scale = max_vector_value_length*max_vector_value
         else:
-            u = -np.sin(vectors[x_slice, y_slice])
+            u = np.sin(vectors[x_slice, y_slice])
             v = np.cos(vectors[x_slice, y_slice])
+            scale = None
 
         if vectors_mask is not None:
             u = np.ma.array(u, mask=vectors_mask[x_slice, y_slice])
             v = np.ma.array(v, mask=vectors_mask[x_slice, y_slice])
+
+
         vec = ax.quiver(y[::vinc], x[::vinc], u[::vinc, ::vinc],
                         v[::vinc, ::vinc], angles='uv',
-                        units='xy', headwidth=0., headlength=0., scale=0.005,
-                        width=0.05, headaxislength=0.)
+                        units='width', headwidth=0., headlength=0., scale=scale,
+                        width=0.005, headaxislength=0., pivot='middle',
+                        scale_units='width')
+        # if vectors_values is not None:
+        #     ax.quiverkey(vec, blc[0]+5, blc[1]+5, max_vector_value,
+        #                  "max", coordinates='data', color='r')
+
     # Set equal aspect
     ax.set_aspect('equal')
 
@@ -277,12 +313,11 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
 
     if plot_title:
         title = ax.set_title(plot_title, fontsize='large')
-    # Add colorbar if plotting colors
     if colors is not None:
         if plot_colorbar:
             from mpl_toolkits.axes_grid1 import make_axes_locatable
             divider = make_axes_locatable(ax)
-            cax = divider.append_axes("right", size="10%", pad=0.00)
+            cax = divider.append_axes("right", size="5%", pad=0.00)
             cb = fig.colorbar(im, cax=cax)
             if colorbar_label is not None:
                 cb.set_label(colorbar_label)
@@ -321,17 +356,17 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
 
     if components:
         for comp in components:
-            y_c = -comp.p[1]
-            x_c = comp.p[2]
+            y_c = -comp[1]
+            x_c = comp[2]
             if len(comp) == 6:
-                e_height = comp.p[3]
-                e_width = comp.p[3] * comp.p[4]
+                e_height = comp[3]
+                e_width = comp[3] * comp[4]
                 e = Ellipse((y_c, x_c), e_width, e_height,
-                            angle=90+180*comp.p[5]/np.pi,
+                            angle=90+180*comp[5]/np.pi,
                             edgecolor=beam_edge_color, facecolor='red',
                             alpha=beam_alpha)
             elif len(comp) == 4:
-                c_size = comp.p[3]
+                c_size = comp[3]
                 e = Circle((y_c, x_c), c_size,
                             edgecolor=beam_edge_color, facecolor='red',
                             alpha=beam_alpha)
@@ -349,7 +384,6 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
             os.makedirs(outdir)
 
         path = os.path.join(outdir, outfile)
-        print "Saving to {}.{}".format(path, ext)
         plt.savefig("{}.{}".format(path, ext), bbox_inches='tight', dpi=200)
 
     if show:
