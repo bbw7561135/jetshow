@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib
+import math
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from scipy.ndimage.measurements import label
@@ -100,7 +102,17 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
          show_points=None, components=None, slice_color='black',
          plot_colorbar=True, mas_in_pixel=None, max_vector_value_length=5.):
     """
-    Plot image(s). Need much work to clean it!
+    Plot image(s). The simplest way to do it (with automatic borders):
+
+    >>> min_rel_level = 0.03
+    >>> min_level = min_rel_level * i_image.max()
+    >>> colors_mask = i_image < min_level
+    >>> blc, trc = find_bbox(i_image, min_level, 5)
+    >>> plot(contours=i_image, colors=p_image, vectors=chi_image,
+        vectors_values=p_image, colors_mask=colors_mask,
+        min_rel_level=100*min_rel_level, blc=blc, trc=trc, vinc=2,
+        vectors_mask=colors_mask, mas_in_pixel=0.002)
+
 
     :param contours: (optional)
         Numpy 2D array (possibly masked) that should be plotted using contours.
@@ -197,19 +209,18 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
     matplotlib.rcParams['ps.fonttype'] = 42
 
     mas_in_pixel_ = 1.0
-    if mas_in_pixel is None:
+    if mas_in_pixel is not None:
         mas_in_pixel_ = mas_in_pixel
 
-    image = None
     if contours is not None:
         image = contours
     elif colors is not None and image is None:
         image = colors
     elif vectors is not None and image is None:
         image = vectors
+    else:
+        raise Exception("No image to plot")
 
-    if image is None:
-        raise Exception("No images to plot!")
     if x is None:
         x = np.arange(image.shape[0]) - image.shape[0]/2
     if y is None:
@@ -225,10 +236,6 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
     y_slice = slice(blc[0] - 1, trc[0],  None)
     x = x[x_slice]
     y = y[y_slice]
-
-    # Use ``-1`` because user expect AIPS-like behavior of ``blc`` & ``trc``
-    # x = np.linspace(blc[1]-1, trc[1], trc[1]-blc[1]+1)
-    # y = np.linspace(blc[0]-1, trc[0], trc[0]-blc[0]+1)
 
     # Optionally mask arrays
     if contours is not None and contours_mask is not None:
@@ -293,7 +300,7 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
         vec = ax.quiver(y[::vinc], x[::vinc], u[::vinc, ::vinc],
                         v[::vinc, ::vinc], angles='uv',
                         units='width', headwidth=0., headlength=0., scale=scale,
-                        width=0.005, headaxislength=0., pivot='middle',
+                        width=0.0025, headaxislength=0., pivot='middle',
                         scale_units='width')
         # if vectors_values is not None:
         #     ax.quiverkey(vec, blc[0]+5, blc[1]+5, max_vector_value,
@@ -374,12 +381,10 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
                 raise Exception("Only Circle or Ellipse components are plotted")
             ax.add_patch(e)
 
-
     # Saving output
     if outfile:
         if outdir is None:
             outdir = '.'
-        # If the directory does not exist, create it
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
@@ -394,17 +399,30 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
     return fig
 
 
-
 if __name__ == '__main__':
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    import os
+    cwd = os.getcwd()
+    os.chdir(os.path.join(cwd, 'cmake-build-debug'))
+    i_image = np.loadtxt('map_i.txt')
+    q_image = np.loadtxt('map_q.txt')
+    u_image = np.loadtxt('map_u.txt')
+    v_image = np.loadtxt('map_v.txt')
+    p_image = np.sqrt(q_image**2+u_image**2)
+    chi_image = 0.5*np.arctan2(u_image, q_image)
 
-    x, y, z = np.meshgrid(np.arange(-5., 5., 1.0),
-                          np.arange(-5., 5., 1.0),
-                          np.arange(0.1, 10., 1.0))
-    from
-    result = beta(x, y, z)
+    colors_mask = i_image < i_image.max()*0.03
+    blc, trc = find_bbox(i_image, 0.03*i_image.max(), 5)
+    plot(contours=i_image, colors=p_image/i_image, vectors=chi_image,
+         vectors_values=p_image, colors_mask=colors_mask, min_rel_level=3,
+         blc=blc, trc=trc, vinc=2, vectors_mask=colors_mask, mas_in_pixel=0.002,
+         cmap='gist_rainbow', plot_title='BK jet',
+         colorbar_label='Frac. LP')
 
-    ax.quiver(x, y, z, result[0], result[1], result[2], length=1.0)
-
-    plt.show()
+    # fig = plt.figure()
+    # ax = fig.gca(projection='3d')
+    # x, y, z = np.meshgrid(np.arange(-5., 5., 1.0),
+    #                       np.arange(-5., 5., 1.0),
+    #                       np.arange(0.1, 10., 1.0))
+    # result = beta(x, y, z)
+    # ax.quiver(x, y, z, result[0], result[1], result[2], length=1.0)
+    # plt.show()
