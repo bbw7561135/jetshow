@@ -411,10 +411,10 @@ if __name__ == '__main__':
     chi_image = 0.5*np.arctan2(u_image, q_image)
 
     colors_mask = i_image < i_image.max()*0.03
-    blc, trc = find_bbox(i_image, 0.03*i_image.max(), 5)
+    blc, trc = find_bbox(i_image, 0.03*i_image.max(), 10)
     plot(contours=i_image, colors=p_image/i_image, vectors=chi_image,
          vectors_values=p_image, colors_mask=colors_mask, min_rel_level=3,
-         blc=blc, trc=trc, vinc=2, vectors_mask=colors_mask, mas_in_pixel=0.002,
+         blc=blc, trc=trc, vinc=4, vectors_mask=colors_mask, mas_in_pixel=0.001,
          cmap='gist_rainbow', plot_title='BK jet',
          colorbar_label='Frac. LP')
 

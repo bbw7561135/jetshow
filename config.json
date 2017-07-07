@@ -7,8 +7,8 @@
     },
     "image":
     {
-        "number_of_pixels" : 500,
-        "pixel_size_mas" : 0.002
+        "number_of_pixels" : 1000,
+        "pixel_size_mas" : 0.001
     },
     "jet":
     {
@@ -23,7 +23,7 @@
         },
         "bfield":
         {
-            "type" : "radial_conical",
+            "type" : "spiral_conical",
             "parameters" :
             {
                 "b_1" : 1.0,
@@ -58,14 +58,13 @@
         "parameters" :
         {
             "tau_max" : 1000.0,
-            "tau_adaptive" : 10,
             "dl_max_pc" : 0.01,
             "log10_tau_min" : -10.0,
             "n" : 100,
             "tau_n_min" : 0.1,
             "n_tau_max" : 1000,
             "log10_abs_error_tau" : -3.0,
-            "log10_rel_error_tau" : -5.0,
+            "log10_rel_error_tau" : -9.0,
             "log10_abs_error_I" : -9.0,
             "log10_rel_error_I" : -4.0
         }
