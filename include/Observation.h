@@ -14,6 +14,7 @@ class Observation {
   Observation(Jet* newjet, ImagePlane* imagePlane, double nu);
   void run(int n, double tau_max, double dt_max, double tau_min, string type,
            int n_max, double tau_n_min, double tau_n_max);
+	void run_stripe(int n, double tau_max, double tau_min);
   vector<vector<double>> getImage(string value);
   pair<int,int> getImageSize();
   const double nu;

@@ -364,3 +364,39 @@ Observation::integrate_full_stokes_adaptive(std::list<Intersection> &list_inters
 		background = iquv;
 	}
 }
+
+void Observation::run_stripe(int n, double tau_max, double tau_min) {
+	auto image_size = getImageSize();
+	vector<Pixel>& pixels = imagePlane->getPixels();
+	vector<Ray>& rays = imagePlane->getRays();
+	// Comment out for easy debug printing
+#pragma omp parallel for schedule(dynamic)
+	for (int j = 0; j < image_size.first; ++j) {
+		for (int k = 0; k < image_size.second; ++k) {
+			if (j == image_size.first / 2) {
+				int n_pix = image_size.first * j + k + 1;
+				std::cout << "Running on pixel # " << n_pix << std::endl;
+				auto &ray = rays[j * image_size.first + k];
+				auto &pxl = pixels[j * image_size.first + k];
+
+				auto ray_direction = ray.direction();
+				std::list <Intersection> list_intersect = jet->hit(ray);
+				if (list_intersect.empty()) {
+					continue;
+				} else {
+
+					std::pair<double, double> tau_l_end;
+					tau_l_end = integrate_tau(list_intersect, ray_direction, nu, tau_max,
+					                          n);
+					double background_tau = tau_l_end.first;
+					double thickness = tau_l_end.second;
+					std::cout << "Tau = " << background_tau << std::endl;
+
+					// Write values to pixel
+					std::string value("tau");
+					pxl.setValue(value, background_tau);
+				}
+			}
+		}
+	}
+}
