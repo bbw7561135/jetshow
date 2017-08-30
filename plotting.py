@@ -246,7 +246,7 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
         vectors = np.ma.array(vectors, mask=vectors_mask)
 
     # Actually plotting
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 5))
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
 
     xlabel = u'Rel. Position (pix)'
