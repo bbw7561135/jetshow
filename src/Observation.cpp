@@ -177,6 +177,10 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
                                     Vector3d ray_direction, const double nu,
                                     double tau_max, int n, double dt_max) {
 
+	// Presicion for finding tau crossing
+	const double tau_precision = 1;
+
+
 	// Write final values in this variables inside for-cycle
 	double background_tau = 0.;
 	double thickness = 0.;
@@ -209,12 +213,39 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 																				 0.0, length, dt);
 		auto found_iter = std::find_if(ode_range.first, ode_range.second,
 		                               is_done);
+		// tau_max somewhere on interval considered
 		if (found_iter != ode_range.second) {
-			double t_tau_max = stepper.current_time();
 
-			// TODO: Use https://github.com/headmyshoulder/odeint-v2/blob/master/examples/find_crossing.cpp
-			// to find more precise value of t(tau_max)
-//						double t_tau_previous = stepper.previous_time();
+
+			double found_tau = found_iter.get_state();
+			// the dense out stepper now covers the interval where the condition changes
+	    // improve the solution by bisection
+	    double t0 = stepper.previous_time();
+			std::cout << "Original t_0 = " << t0 << std::endl;
+	    double t1 = stepper.current_time();
+			std::cout << "Original t_1 = " << t1 << std::endl;
+	    double t_m;
+	    double x_m = found_tau;
+	    // use odeint's resizing functionality to allocate memory for x_m
+//	    adjust_size_by_resizeability(x_m, optDepth, typename is_resizeable<double>::type());
+	    while(std::abs(x_m - tau_max) > tau_precision) {
+	        t_m = 0.5 * (t0 + t1);  // get the mid point time
+	        stepper.calc_state(t_m, x_m); // obtain the corresponding state
+		      std::cout << "Current x_m = " << x_m << std::endl;
+	        if (x_m > tau_max)
+	            t1 = t_m;  // condition changer lies before midpoint
+	        else
+	            t0 = t_m;  // condition changer lies after midpoint
+	    }
+	    // we found the interval of size eps, take it's midpoint as final guess
+	    t_m = 0.5 * (t0 + t1);
+	    stepper.calc_state(t_m, x_m);
+			std::cout << "Found precise cross value tau = " << x_m << std::endl;
+			std::cout << "Originally it was tau = " << found_iter.get_state() << std::endl;
+			double t_tau_max = t_m;
+//			double t_tau_max = stepper.current_time();
+
+
 
 			Ray ray_tau_max(point_in, ray_direction);
 			Vector3d point_out_tau_max = ray_tau_max.point(t_tau_max);
