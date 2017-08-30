@@ -25,7 +25,12 @@ After building and optional editing of this file we ran executable:
 
 ``./jetshow``
 
-Result files are appeared in the same directory.
+Result files should appear in the same directory. Results could be displayed
+using ``plotting.py`` script. E.g.:
+
+![Stokes I contours, color of frac. linear polarization and direction with
+value of linear polarization.](./bk_jet.png)
+
 
 
 
