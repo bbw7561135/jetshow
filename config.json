@@ -73,6 +73,7 @@
     "output" :
     {
         "file_tau" : "map_tau.txt",
+        "file_tau_stripe" : "stripe_tau.txt",
         "file_length" : "map_l.txt",
         "file_i" : "map_i.txt",
         "file_q" : "map_q.txt",
