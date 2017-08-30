@@ -29,7 +29,7 @@ Result files should appear in the same directory. Results could be displayed
 using ``plotting.py`` script. E.g.:
 
 ![Stokes I contours, color of frac. linear polarization and direction with
-value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.png?dl=0)
+value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.png)
 
 
 
