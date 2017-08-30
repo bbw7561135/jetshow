@@ -174,6 +174,19 @@ write_2dvector(std::ostream &os, std::vector<std::vector<double>> &v,
 	return os;
 }
 
+
+std::ostream &
+write_vector(std::ostream &os, std::vector<double> &v, double scale) {
+	for (int i = 0; i < v.size(); ++i)
+	{
+		double value = v[i]/scale;
+		os << value <<" ";
+		os<<"\n";
+	}
+	return os;
+}
+
+
 double pixel_solid_angle(double pixel_size_mas, double z) {
 	double pixel_size_pc = pixel_size_mas * mas_to_pc(z);
 	double d_a = comoving_transfer_distance(z)/(1.+z);

@@ -130,6 +130,11 @@ std::ostream& write_2dvector(std::ostream& os,
 														 std::vector<std::vector<double>>& v,
 														 double scale=1.0);
 
+std::ostream& write_vector(std::ostream& os,
+                           std::vector<double>& v,
+                           double scale=1.0);
+
+
 std::vector<Vector3d> generate_random_directions(int n, unsigned int seed=0);
 
 
