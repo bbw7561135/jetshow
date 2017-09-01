@@ -401,21 +401,27 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
 
 if __name__ == '__main__':
     import os
-    cwd = os.getcwd()
-    os.chdir(os.path.join(cwd, 'cmake-build-debug'))
-    i_image = np.loadtxt('map_i.txt')
-    q_image = np.loadtxt('map_q.txt')
-    u_image = np.loadtxt('map_u.txt')
-    v_image = np.loadtxt('map_v.txt')
+    import json
+    main_dir = '/home/ilya/github/bck/jetshow'
+    cfg_file = os.path.join(main_dir, 'config.json')
+    data_dir = os.path.join(main_dir, 'cmake-build-debug')
+    i_image = np.loadtxt(os.path.join(data_dir, 'map_i.txt'))
+    q_image = np.loadtxt(os.path.join(data_dir, 'map_q.txt'))
+    u_image = np.loadtxt(os.path.join(data_dir, 'map_u.txt'))
+    v_image = np.loadtxt(os.path.join(data_dir, 'map_v.txt'))
     p_image = np.sqrt(q_image**2+u_image**2)
     chi_image = 0.5*np.arctan2(u_image, q_image)
+
+    with open(cfg_file, "r") as jsonFile:
+        params = json.load(jsonFile)
+    mas_in_pixel = params[u'image'][u'pixel_size_mas']
 
     colors_mask = i_image < i_image.max()*0.03
     blc, trc = find_bbox(i_image, 0.03*i_image.max(), 10)
     plot(contours=i_image, colors=p_image/i_image, vectors=chi_image,
          vectors_values=p_image, colors_mask=colors_mask, min_rel_level=3,
-         blc=blc, trc=trc, vinc=4, vectors_mask=colors_mask, mas_in_pixel=0.001,
-         cmap='gist_rainbow', plot_title='BK jet',
+         blc=blc, trc=trc, vinc=4, vectors_mask=colors_mask,
+         mas_in_pixel=mas_in_pixel, cmap='gist_rainbow', plot_title='BK jet',
          colorbar_label='Frac. LP')
 
     # fig = plt.figure()
