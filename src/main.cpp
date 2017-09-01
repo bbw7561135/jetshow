@@ -476,26 +476,113 @@ void test_stripe() {
 	double tau_min = pow(10.,tau_min_log10);
 	int n = root.get<int>("integration.parameters.n");
 	int n_tau_max = root.get<int>("integration.parameters.n_tau_max");
+	std::string calculate = root.get<std::string>("calculate");
 
 	std::cout << "Integrating using max. opt. depth = " << tau_max << std::endl;
 	std::cout << "Integrating using min. lg(opt.depth) = " << tau_min_log10 << std::endl;
 	std::cout << "Integrating using max. step [pc] = " << dt_max_pc << std::endl;
 	std::cout << "Integrating using default number of steps = " << n << std::endl;
+	std::cout << "Calculate mode = " << calculate << std::endl;
 
-	observation.run_stripe(n, tau_max, tau_min);
-//	observation.run(n, tau_max, dt_max, tau_min, step_type, n_tau_max, tau_n_min,
-//	                tau_max);
 
-	string value = "tau";
-	auto image = observation.getImage(value);
-	std::fstream fs;
-	std::string file_tau = root.get<std::string>("output.file_tau");
-	fs.open(file_tau, std::ios::out | std::ios::app);
 
-	if (fs.is_open())
-	{
-		write_2dvector(fs, image);
-		fs.close();
+	if (calculate == "tau") {
+		observation.run_stripe(n, tau_max, tau_min);
+
+		string value = "tau";
+		auto stripe = observation.getStripe(value);
+		std::fstream fs;
+		std::string file_tau = root.get<std::string>("output.file_tau_stripe");
+		fs.open(file_tau, std::ios::out | std::ios::app);
+
+		if (fs.is_open()) {
+			write_vector(fs, stripe);
+			fs.close();
+		}
+	} else if (calculate == "full") {
+		observation.run(n, tau_max, dt_max, tau_min, step_type, n_tau_max, tau_n_min,
+		                tau_max);
+
+		string value = "tau";
+		auto image = observation.getImage(value);
+		std::fstream fs;
+		std::string file_tau = root.get<std::string>("output.file_tau");
+		fs.open(file_tau, std::ios::out | std::ios::app);
+
+		if (fs.is_open())
+		{
+			write_2dvector(fs, image);
+			fs.close();
+		}
+
+		value = "I";
+		image = observation.getImage(value);
+		std::string file_i = root.get<std::string>("output.file_i");
+		fs.open(file_i, std::ios::out | std::ios::app);
+		double scale = 1E-23/pix_solid_angle;
+		std::cout << "Scaling Stokes I by " << scale << std::endl;
+
+		if (fs.is_open())
+		{
+			// Scaling to Jy
+			write_2dvector(fs, image, scale);
+			// Just to show how it can be used
+			// write_2dvector(std::cout, image);
+			fs.close();
+		}
+
+		value = "Q";
+		image = observation.getImage(value);
+		std::string file_q = root.get<std::string>("output.file_q");
+		fs.open(file_q, std::ios::out | std::ios::app);
+
+		if (fs.is_open())
+		{
+			// Scaling to Jy
+			write_2dvector(fs, image, scale);
+			// Just to show how it can be used
+			// write_2dvector(std::cout, image);
+			fs.close();
+		}
+
+		value = "U";
+		image = observation.getImage(value);
+		std::string file_u = root.get<std::string>("output.file_u");
+		fs.open(file_u, std::ios::out | std::ios::app);
+
+		if (fs.is_open())
+		{
+			// Scaling to Jy
+			write_2dvector(fs, image, scale);
+			// Just to show how it can be used
+			// write_2dvector(std::cout, image);
+			fs.close();
+		}
+
+		value = "V";
+		image = observation.getImage(value);
+		std::string file_v = root.get<std::string>("output.file_v");
+		fs.open(file_v, std::ios::out | std::ios::app);
+
+		if (fs.is_open())
+		{
+			// Scaling to Jy
+			write_2dvector(fs, image, scale);
+			// Just to show how it can be used
+			// write_2dvector(std::cout, image);
+			fs.close();
+		}
+
+		value = "l";
+		image = observation.getImage(value);
+		std::string file_length = root.get<std::string>("output.file_length");
+		fs.open(file_length, std::ios::out | std::ios::app);
+
+		if (fs.is_open())
+		{
+			write_2dvector(fs, image, pc);
+			fs.close();
+		}
 	}
 }
 
