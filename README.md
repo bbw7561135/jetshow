@@ -106,6 +106,11 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
     * ``file_i`` - name of the file with image of Stokes *I* intensity
     [Jy/pixel]. The same for each Stokes parameter (*Q*, *U* and *V*).
     
+ * ``calculate`` chooses what to calculate. Possible values are:
+    * ``full`` - calculate all stokes parameters and optical depth
+    * ``tau`` - calculate only stripe of the optical depth along the jet, which
+    is used while iteratively finding the best image parameters.
+    
     
 ## Warnings
 
