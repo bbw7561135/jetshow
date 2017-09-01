@@ -150,6 +150,7 @@ def run_jetshow(cfg_file, path_to_executable, update_params_dict=None):
     print("Running jetshow with"
           " parameters N={}, size={} mas".format(params[u'image'][u'number_of_pixels'],
                                                  params[u'image'][u'pixel_size_mas']))
+    print("Calculating mode = {}".format(params[u'calculate']))
     subprocess.call(["./{}".format(exe)])
     os.chdir(cwd)
     return params
