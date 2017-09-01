@@ -105,6 +105,12 @@ pair<int, int> Observation::getImageSize() {
   return imagePlane->image_size;
 }
 
+
+vector<double> Observation::getStripe(string value) {
+	return imagePlane->getStripe(value);
+}
+
+
 pair<double, double>
 Observation::integrate_tau(std::list<Intersection>& list_intersect,
                            Vector3d ray_direction, const double nu,

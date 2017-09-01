@@ -10,17 +10,18 @@ typedef std::vector<double> state_type;
 
 
 class Observation {
- public:
-  Observation(Jet* newjet, ImagePlane* imagePlane, double nu);
-  void run(int n, double tau_max, double dt_max, double tau_min, string type,
-           int n_max, double tau_n_min, double tau_n_max);
-	void run_stripe(int n, double tau_max, double tau_min);
-  vector<vector<double>> getImage(string value);
-  pair<int,int> getImageSize();
-  const double nu;
- private:
-  Jet* jet;
-  ImagePlane* imagePlane;
+  public:
+    Observation(Jet* newjet, ImagePlane* imagePlane, double nu);
+    void run(int n, double tau_max, double dt_max, double tau_min, string type,
+             int n_max, double tau_n_min, double tau_n_max);
+		void run_stripe(int n, double tau_max, double tau_min);
+    vector<vector<double>> getImage(string value);
+		vector<double> getStripe(string value);
+    pair<int,int> getImageSize();
+    const double nu;
+  private:
+    Jet* jet;
+    ImagePlane* imagePlane;
 
 		pair<double, double>
 		integrate_tau(std::list<Intersection>& list_intersect,

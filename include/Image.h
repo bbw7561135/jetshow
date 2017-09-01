@@ -29,6 +29,7 @@ public:
     const int num_of_pixels_;
     const pair<int,int> image_size;
     vector<vector<double>> getImage(string value);
+		vector<double> getStripe(string value);
     Vector3d getCoordinate(int i, int j);
     Vector3d getScaledCoordinate(int i, int j);
     vector<Pixel>& getPixels();

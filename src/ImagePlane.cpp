@@ -43,6 +43,9 @@ vector<Ray> &ImagePlane::getRays() {
 }
 
 vector<vector<double>> ImagePlane::getImage(string value) {
-//	std::cout << "In ImagePlane.getImage..." << std::endl;
   return image_.getImage(value);
+}
+
+vector<double> ImagePlane::getStripe(string value) {
+	return image_.getStripe(value);
 }
