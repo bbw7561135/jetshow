@@ -327,7 +327,7 @@ def shift_model(nu, a, k):
     return a * nu**(-1./k)
 
 
-def find_shift_from_difmap_models(freq_difmap_models_dict):
+def _find_shift_from_difmap_models(freq_difmap_models_dict):
     """
     Find shift using difmap model files of core.
 
@@ -363,6 +363,48 @@ def find_shift_from_difmap_models(freq_difmap_models_dict):
             res=([0.0, 0.0], None)
         result_dict[name] = (res[0], container)
     return result_dict
+
+
+def find_core_separation_from_jet_using_difmap_model(difmap_model):
+    """
+    Find separation between core and jet component using difmap modelfit result
+    file.
+
+    :param difmap_model:
+        File with model in difmap format.
+    :return:
+        Value of distance between core and jet component.
+    """
+
+    difmap_dir, difmap_fn = os.path.split(difmap_model)
+    comps = import_difmap_model(difmap_fn, difmap_dir)
+    core = comps[0]
+    jet = comps[1]
+    dr = (jet.p[1]**2 - core.p[1]**2) +\
+         2.*core.p[1]*jet.p[1]*np.cos(jet.p[2] - core.p[2])
+    return np.sqrt(dr)
+
+
+def find_core_separation_from_center_using_simulations(fname,
+                                                       simulations_params):
+    """
+    Find separation of core from center (SMBH).
+
+    :param fname:
+        Path to file with simulations result of Stokes I.
+    :param simulations_params:
+        Dictionary with simulations parameters.
+    :return:
+        Value of distance between core and center (SMBH).
+    """
+    image = np.loadtxt(fname)
+    imsize = simulations_params[u'image'][u'number_of_pixels']
+    mas_in_pix = simulations_params[u'image'][u'pixel_size_mas']
+    # Distance from SMBH (0,0) in pixels
+    dr = (np.unravel_index(image.argmax(), image.shape)[1]-imsize/2)
+    # In mas
+    dr *= mas_in_pix
+    return dr
 
 
 def find_shifts_from_true_images(freq_true_images_dict, imsize, pixelsizes_dict):
