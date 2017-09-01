@@ -6,7 +6,7 @@ import collections
 import json
 import numpy as np
 from scipy.optimize import curve_fit
-from components import ImageComponent
+from components import ImageComponent, CGComponent
 from uv_data import UVData
 from model import Model
 from utils import mas_to_rad
@@ -283,6 +283,8 @@ def modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor,
         Number of iterations for difmap fitting. (default: ``300``)
     """
     uvdata = UVData(uv_fits_template)
+
+    # Create coordinate grid
     imsize = params[u'image'][u'number_of_pixels']
     imsize = (imsize, imsize)
     mas_in_pix = params[u'image'][u'pixel_size_mas']
@@ -293,17 +295,23 @@ def modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor,
     z_mas = z * mas_in_pix
     y_rad = mas_to_rad * y_mas
     z_rad = mas_to_rad * z_mas
+
     image_i_file = os.path.join(exe_dir, params[u'output'][u'file_i'])
     image_i = np.loadtxt(image_i_file)
     icomp = ImageComponent(image_i, y_rad[0, :], z_rad[:, 0])
+
     noise = uvdata.noise(use_V=True)
     for key, value in noise.items():
         noise[key] = noise_factor * value
     model = Model(stokes='I')
     model.add_component(icomp)
+
+    jet_comp = CGComponent(0.5, 1., 0., 0.3)
+    model.add_component(jet_comp)
+
     uvdata.substitute([model])
     uvdata.noise_add(noise)
-    uvdata.save(os.path.join(out_dir, uv_fits_save_fname))
+    uvdata.save(os.path.join(out_dir, uv_fits_save_fname), rewrite=True)
     initial_dfm_dir, initial_dfm_model_fn = os.path.split(initial_dfm_model)
     # Fit model in difmap
     modelfit_difmap(uv_fits_save_fname, initial_dfm_model_fn, out_dfm_model_fn,
@@ -407,8 +415,43 @@ if __name__ == '__main__':
     main_dir = '/home/ilya/github/bck/jetshow'
     cfg_file = os.path.join(main_dir, 'config.json')
     path_to_executable = os.path.join(main_dir, 'cmake-build-debug', 'jetshow')
+    simulation_params = run_simulations(cfg_file, path_to_executable)
 
-    params = run_simulations(cfg_file, path_to_executable)
+
+
+    exe_dir, exe = os.path.split(path_to_executable)
+    # initial_dfm_model = os.path.join(main_dir, 'initial_eg.mdl')
+    initial_dfm_model = os.path.join(main_dir, 'initial_eg_cg.mdl')
+    uv_fits_template = '/home/ilya/github/vlbi_errors/vlbi_errors/'
+    uv_fits_template = os.path.join(uv_fits_template,
+                                    '0235+164.u.2006_06_15.uvf')
+    modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor=0.01,
+                               out_dfm_model_fn="bk.mdl", out_dir=exe_dir,
+                               params=simulation_params,
+                               uv_fits_save_fname="bk.fits",
+                               uv_fits_template=uv_fits_template)
+
+    from spydiff import modelfit_difmap, clean_difmap, import_difmap_model
+    from image import plot as iplot
+    from image import find_bbox
+    from from_fits import create_clean_image_from_fits_file
+    from image_ops import rms_image
+
+    path_to_script = '/home/ilya/github/vlbi_errors/difmap/final_clean_nw'
+    clean_difmap('bk.fits', 'bk_cc.fits', 'I', (1024, 0.1), path=exe_dir,
+                 path_to_script=path_to_script, show_difmap_output=True,
+                 outpath=exe_dir)
+
+    ccimage = create_clean_image_from_fits_file(os.path.join(exe_dir,
+                                                             'bk_cc.fits'))
+    beam = ccimage.beam
+    rms = rms_image(ccimage)
+    blc, trc = find_bbox(ccimage.image, rms, 10)
+    comps = import_difmap_model('bk.mdl', exe_dir)
+    iplot(ccimage.image, x=ccimage.x, y=ccimage.y, min_abs_level=3*rms,
+          beam=beam, show_beam=True, blc=blc, trc=trc, components=comps)
+
+
 
     # initial_dfm_model = os.path.join(main_dir, 'initial_eg.mdl')
     # executable_dir, _ = os.path.split(path_to_executable)
