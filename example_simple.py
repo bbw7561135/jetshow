@@ -95,7 +95,7 @@ def update_config(cfg_in, update_dict, cfg_out=None):
 
 
 def analyze_tau_stripe(fname, log10_tau_small=-4.0, border_tau1=(0.1, 0.3),
-                       border_tau_min=(0.75, 1)):
+                       border_tau_min=(0.75, 1), min_pixels_to_tau1=20):
     tau = np.loadtxt(fname)
     length = len(tau)
     idx_tau1 = np.argmin(np.abs(np.log10(tau) - 0.0))
@@ -117,6 +117,9 @@ def analyze_tau_stripe(fname, log10_tau_small=-4.0, border_tau1=(0.1, 0.3),
             decrease_number_of_pixels = True
     else:
         increase_number_of_pixels = True
+
+    if idx_tau1 < min_pixels_to_tau1:
+        decrease_pixels_size = True
 
     return {"increase_pixel_size": increase_pixel_size,
             "decrease_pixels_size": decrease_pixels_size,
@@ -187,21 +190,29 @@ def find_image_params(cfg_file, path_to_executable):
     updated = False
 
     # Until image parameters are OK for us
+    updates_steps = np.linspace(1., 2., 10)[::-1]
+    update_step_n = 0
+    update_step_size = 0
+
     while True in decision_dict.values():
         if updated:
             decision_dict = analyze_tau_stripe(os.path.join(exe_dir,
                                                             'stripe_tau.txt'))
         if decision_dict["increase_pixel_size"]:
-            params[u'image'][u'pixel_size_mas'] *= np.sqrt(2)
+            params[u'image'][u'pixel_size_mas'] *= updates_steps[update_step_size]
+            update_step_size += 1
         elif decision_dict["decrease_pixels_size"]:
-            params[u'image'][u'pixel_size_mas'] /= np.sqrt(2)
+            params[u'image'][u'pixel_size_mas'] /= updates_steps[update_step_size]
+            update_step_size += 1
         elif decision_dict["increase_number_of_pixels"]:
-            new_number = int(np.sqrt(2)*params[u'image'][u'number_of_pixels'])
+            new_number = int(updates_steps[update_step_n]*params[u'image'][u'number_of_pixels'])
+            update_step_n += 1
             if new_number % 2:
                 new_number += 1
             params[u'image'][u'number_of_pixels'] = new_number
         elif decision_dict["decrease_number_of_pixels"]:
-            new_number = int(params[u'image'][u'number_of_pixels']/np.sqrt(2))
+            new_number = int(params[u'image'][u'number_of_pixels']/updates_steps[update_step_n])
+            update_step_n += 1
             if new_number % 2:
                 new_number += 1
             params[u'image'][u'number_of_pixels'] = new_number
