@@ -40,7 +40,11 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
  frequency, angle of jet axis to observer LOS, redshift
  of the source.
  
+ ---
+ 
  2. ``image`` describes resulting image-specific parameters.
+ 
+ ---
  
  3. ``jet`` describes parameters of the jet.
  
@@ -78,6 +82,8 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
             ``n1`` - density [cm^(-3)] on 1 pc from SBH, `n_n`` - minus exponent of
             distance dependence.
   
+ ---
+  
  4. ``integration`` describes parameters of numerical solving of ODEs.
  
      1. ``step_type`` - Step type with possible values:
@@ -99,12 +105,16 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
      parameters when optical depth is higher or equal to ``tau_max``.
      8. ``..._abs/rel_error...`` - absolute or relative error for adaptive type.
     
+ ---
+    
  5. ``output`` describes output files.
  
      1. ``file_tau`` - name of the file with image of optical depth.
      2. ``file_length`` - name of the file with image of geometrical depth [pc].
      3. ``file_i`` - name of the file with image of Stokes *I* intensity
      [Jy/pixel]. The same for each Stokes parameter (*Q*, *U* and *V*).
+ 
+ ---
     
  6. ``calculate`` chooses what to calculate. Possible values are:
      1. ``full`` - calculate all stokes parameters and optical depth
