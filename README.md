@@ -48,16 +48,16 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
          * ``cone`` with parameters ``angle`` and ``scale_pc``.
          * (**not using for now**)``cylinder`` with parameters ``r`` and scale.
         
-        The last one determines geometrical path in case of infinite
-        intersections.
+           The last one determines geometrical path in case of infinite
+           intersections.
         
      * ``bfield`` - magnetic field with possible types:
          * ``spiral_conical`` with parameters ``b_1`` and ``pitch_angle``
          * ``radial_conical`` with parameters ``b_1`` and ``n_b``.
         
-         ``b1`` - value of magnetic field [G] on 1 pc from SBH, ``pitch_angle``
-         - ratio of toroidal to longitudinal components (in observer's frame),
-         ``n_b`` - minus exponent of distance dependence.
+           ``b1`` - value of magnetic field [G] on 1 pc from SBH, ``pitch_angle``
+           \- ratio of toroidal to longitudinal components (in observer's frame),
+           ``n_b`` - minus exponent of distance dependence.
          * ``random_fraction`` - fraction of random B-field. If ``0.0`` then no
          random field.
          * ``model_of_randomness`` - how random B-field is implemented. Possible
@@ -75,8 +75,8 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
          * ``bk`` - power law dependence on distance from SBH with parameters
          ``n_1`` and ``n_n``.
         
-         ``n1`` - density [cm^(-3)] on 1 pc from SBH, `n_n`` - minus exponent of
-         distance dependence.
+           ``n1`` - density [cm^(-3)] on 1 pc from SBH, `n_n`` - minus exponent of
+           distance dependence.
   
  * ``integration`` describes parameters of numerical solving of ODEs.
  
