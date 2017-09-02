@@ -10,6 +10,7 @@ from components import ImageComponent, CGComponent
 from uv_data import UVData
 from model import Model
 from utils import mas_to_rad
+import matplotlib.pyplot as plt
 
 
 # uvdata = UVData('0235+164.x.2006_06_15.uvf')
@@ -365,6 +366,49 @@ def _find_shift_from_difmap_models(freq_difmap_models_dict):
     return result_dict
 
 
+def plot_stripe(sim_fname, difmap_model, simulations_params):
+    """
+    Plot 1D stripe along jet axis.
+
+    :param sim_fname:
+        Path to file with simulations result of Stokes I.
+    :param difmap_model:
+        File with model in difmap format.
+    :param simulations_params:
+        Dictionary with simulations parameters.
+    """
+    difmap_dir, difmap_fn = os.path.split(difmap_model)
+    comps = import_difmap_model(difmap_fn, difmap_dir)
+    core = comps[0]
+
+    image = np.loadtxt(sim_fname)
+    imsize = simulations_params[u'image'][u'number_of_pixels']
+    mas_in_pix = simulations_params[u'image'][u'pixel_size_mas']
+
+    core_position = core.p[1]
+    core_size = core.p[3]
+    flux = core.p[0]
+    # e = core.p[4]
+    e = 1
+    # Originally there was 4
+    core_amp = 2. * np.log(2) * flux / (np.pi * (core_size/mas_in_pix)**2 * e)
+
+    def gauss_1d(x, amp, center, size):
+        sigma = size/(2. * np.sqrt(2. * np.log(2)))
+        return core_amp * (sigma*np.sqrt(np.pi))**(-1) * np.exp(-(x - center)**2/(2.*sigma**2))
+
+    x = np.arange(-20, imsize/2)*mas_in_pix
+    # Plot simulation results
+    plt.figure()
+    plt.plot(x, image[imsize/2, imsize/2-20:])
+    # Plot difmap model
+    plt.plot(x, gauss_1d(x, core_amp, core_position, core_size))
+    # # Distance from SMBH (0,0) in pixels
+    # dr = (np.unravel_index(image.argmax(), image.shape)[1]-imsize/2)
+    # # In mas
+    # dr *= mas_in_pix
+
+
 def find_core_separation_from_jet_using_difmap_model(difmap_model):
     """
     Find separation between core and jet component using difmap modelfit result
@@ -406,7 +450,57 @@ def find_core_separation_from_center_using_simulations(fname,
     return dr
 
 
-def find_shifts_from_true_images(freq_true_images_dict, imsize, pixelsizes_dict):
+def plot_simulations_3d(sim_fname, simulations_params, each=2, delta=100,
+                        contr_delta=10):
+    """
+    Plot simulation results in 3D projection.
+
+    :param sim_fname:
+        Path to file with simulations result of Stokes I.
+    :param simulations_params:
+        Dictionary with simulations parameters.
+    :param each: (optional)
+        Plot each ``each`` pixel. (default: ``2``)
+    :param delta: (optional)
+        Cut image from sides. Image will be shorter by ``2*delta`` pixels from
+        sides. (default: ``100``)
+    :param contr_delta: (optional)
+        Space to leave on contr-jet side. (default: ``10``)
+    :return:
+        Instance of ``Figure``.
+    """
+    # This import is needed for 3D projections
+    from mpl_toolkits.mplot3d import Axes3D
+    # Making transparent color map
+    theCM = cm.get_cmap()
+    theCM._init()
+    alphas = np.abs(np.linspace(-1.0, 1.0, theCM.N))
+    theCM._lut[:-3,-1] = alphas
+
+    image = np.loadtxt(sim_fname)
+    imsize = simulations_params[u'image'][u'number_of_pixels']
+    mas_in_pix = simulations_params[u'image'][u'pixel_size_mas']
+    y = np.arange(-imsize/2+delta, imsize/2-delta, each, dtype=float)
+    x = np.arange(-contr_delta, imsize/2, each, dtype=float)
+    x *= mas_in_pix*each
+    y *= mas_in_pix*each
+    xx, yy = np.meshgrid(x, y)
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    plt.hold(True)
+
+    surf = ax.plot_surface(xx, yy,
+                           image[delta:-delta:each, imsize/2-contr_delta::each],
+                           rstride=1, cstride=1, cmap=theCM, linewidth=0,
+                           antialiased=False)
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+    plt.show()
+    return fig
+
+
+def _find_shifts_from_true_images(freq_true_images_dict, imsize,
+                                  pixelsizes_dict):
     """
   Find shift using true images.
 
@@ -432,8 +526,8 @@ def find_shifts_from_true_images(freq_true_images_dict, imsize, pixelsizes_dict)
     return result_dict
 
 
-def make_plot_i_tau(image_i, image_tau, angle, los_angle, imsize, out_dir=None,
-                    name="", title=None):
+def _make_plot_i_tau(image_i, image_tau, angle, los_angle, imsize, out_dir=None,
+                     name="", title=None):
     if out_dir is None:
         out_dir = os.getcwd()
     image_i = np.loadtxt(image_i)
@@ -453,16 +547,16 @@ def make_plot_i_tau(image_i, image_tau, angle, los_angle, imsize, out_dir=None,
 
 
 if __name__ == '__main__':
+    # Run simulation
     main_dir = '/home/ilya/github/bck/jetshow'
     cfg_file = os.path.join(main_dir, 'config.json')
     path_to_executable = os.path.join(main_dir, 'cmake-build-debug', 'jetshow')
     simulation_params = run_simulations(cfg_file, path_to_executable)
 
-
-
+    # Create artificial data set with BK core and jet component
     exe_dir, exe = os.path.split(path_to_executable)
     # initial_dfm_model = os.path.join(main_dir, 'initial_eg.mdl')
-    initial_dfm_model = os.path.join(main_dir, 'initial_eg_cg.mdl')
+    initial_dfm_model = os.path.join(main_dir, 'initial_cg_cg.mdl')
     uv_fits_template = '/home/ilya/github/vlbi_errors/vlbi_errors/'
     uv_fits_template = os.path.join(uv_fits_template,
                                     '0235+164.u.2006_06_15.uvf')
@@ -472,7 +566,15 @@ if __name__ == '__main__':
                                uv_fits_save_fname="bk.fits",
                                uv_fits_template=uv_fits_template)
 
-    from spydiff import modelfit_difmap, clean_difmap, import_difmap_model
+    # Find measured and true distance of core to jet component
+    dr_obs = find_core_separation_from_jet_using_difmap_model(os.path.join(exe_dir, "bk.mdl"))
+    # Here ``1.`` is because jet component put at 1 mas distance from phase
+    # center of the originaldata set.
+    dr_true = 1. - find_core_separation_from_center_using_simulations(os.path.join(exe_dir, "map_i.txt"),
+                                                                      simulation_params)
+
+    # Plot map with components superimposed
+    from spydiff import clean_difmap, import_difmap_model
     from image import plot as iplot
     from image import find_bbox
     from from_fits import create_clean_image_from_fits_file
@@ -492,7 +594,8 @@ if __name__ == '__main__':
     iplot(ccimage.image, x=ccimage.x, y=ccimage.y, min_abs_level=3*rms,
           beam=beam, show_beam=True, blc=blc, trc=trc, components=comps)
 
-
+    plot_stripe(os.path.join(exe_dir, "map_i.txt"),
+                os.path.join(exe_dir, "bk.mdl"), simulation_params)
 
     # initial_dfm_model = os.path.join(main_dir, 'initial_eg.mdl')
     # executable_dir, _ = os.path.split(path_to_executable)
