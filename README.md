@@ -1,6 +1,6 @@
 ## jetshow
-Synchrotron radiation transfer in inhomogeneous AGN jet model (a.k.a. Blandford
-& Königl jet model - DOI:10.1086/157262).
+Full Stokes (_IQUV_) synchrotron radiation transfer in inhomogeneous AGN jet
+model (a.k.a. Blandford & Königl jet model - DOI:10.1086/157262).
 
 
 ## Installation and building
