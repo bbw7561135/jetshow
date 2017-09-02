@@ -87,6 +87,7 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
  ``integration`` describes parameters of numerical solving of ODEs.
  
  * ``step_type`` - Step type with possible values:
+ 
      * ``constant`` with parameters ``tau_max``, ``n``, ``tau_n_min``,
        ``n_tau_max``
      * ``adaptive`` with parameters ``dl_max_pc``, ``n``, ``abs`` and
