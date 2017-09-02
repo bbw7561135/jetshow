@@ -499,6 +499,32 @@ def plot_simulations_3d(sim_fname, simulations_params, each=2, delta=100,
     return fig
 
 
+def generate_sample_points(uniform_borders, n_samples=100):
+    """
+    Generate
+    :param uniform_borders:
+        Iterable of two-elements containers with borders for uniform
+        distributions.
+    :param n_samples: (optional)
+        Number of samples to get. (default: ``100``)
+    :return:
+        2D numpy array with shape ``(n_samples, n_dim)`` where ``n_dim`` -
+        number of dimensions (this corresponds to number of borders in
+        ``uniform_borders``).
+    """
+    import mcerp
+    import scipy.stats as ss
+    distributions = list()
+    for borders in uniform_borders:
+        # Should be iterable with 2 elements (min & max)
+        assert len(borders) == 2
+        # Low border goes first
+        assert borders[0] < borders[1]
+        distributions.append(ss.uniform(loc=borders[0],
+                                        scale=borders[1]-borders[0]))
+    return mcerp.lhd(dist=distributions, size=n_samples)
+
+
 def _find_shifts_from_true_images(freq_true_images_dict, imsize,
                                   pixelsizes_dict):
     """
