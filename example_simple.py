@@ -391,11 +391,12 @@ def plot_stripe(sim_fname, difmap_model, simulations_params):
     # e = core.p[4]
     e = 1
     # Originally there was 4
-    core_amp = 2. * np.log(2) * flux / (np.pi * (core_size/mas_in_pix)**2 * e)
+    # core_amp = 2. * np.log(2) * flux / (np.pi * (core_size/mas_in_pix)**2 * e)
+    core_amp = flux / (2. * np.pi * (core_size / (4.*np.sqrt(2.*np.log(2))*mas_in_pix)) ** 2)
 
     def gauss_1d(x, amp, center, size):
         sigma = size/(2. * np.sqrt(2. * np.log(2)))
-        return core_amp * (sigma*np.sqrt(np.pi))**(-1) * np.exp(-(x - center)**2/(2.*sigma**2))
+        return core_amp * np.exp(-(x - center)**2/(2.*sigma**2))
 
     x = np.arange(-20, imsize/2)*mas_in_pix
     # Plot simulation results
