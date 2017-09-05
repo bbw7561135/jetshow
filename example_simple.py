@@ -609,6 +609,33 @@ def generate_sample_points(uniform_borders, n_samples=100):
     return mcerp.lhd(dist=distributions, size=n_samples)
 
 
+def gaussian(height, x0, y0, bmaj, e=1.0, bpa=0.0):
+    """
+    Returns a gaussian function with the given parameters.
+
+    :example:
+    create grid:
+        x, y = np.meshgrid(x, y)
+        imshow(gaussian(x, y))
+
+    """
+    import math
+    # This brings PA to VLBI-convention (- = from North counter-clockwise)
+    bpa = -bpa
+    # Now bmaj is sigma
+    bmaj = bmaj / (2. * np.sqrt(2. * np.log(2)))
+    bmin = e * bmaj
+    a = math.cos(bpa) ** 2. / (2. * bmaj ** 2.) + \
+        math.sin(bpa) ** 2. / (2. * bmin ** 2.)
+    b = math.sin(2. * bpa) / (2. * bmaj ** 2.) - \
+        math.sin(2. * bpa) / (2. * bmin ** 2.)
+    c = math.sin(bpa) ** 2. / (2. * bmaj ** 2.) + \
+        math.cos(bpa) ** 2. / (2. * bmin ** 2.)
+    return lambda x, y: height * np.exp(-(a * (x - x0) ** 2 +
+                                          2. * b * (x - x0) * (y - y0) +
+                                          c * (y - y0) ** 2))
+
+
 def _find_shifts_from_true_images(freq_true_images_dict, imsize,
                                   pixelsizes_dict):
     """
