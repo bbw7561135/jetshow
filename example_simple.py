@@ -495,6 +495,81 @@ def plot_simulations_3d(sim_fname, simulations_params, each=2, delta=100,
                            rstride=1, cstride=1, cmap=theCM, linewidth=0,
                            antialiased=False)
     fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    if core is not None:
+        theCM = cm.Reds
+        # theCM._init()
+        # alphas = np.abs(np.linspace(-1.0, 1.0, theCM.N))
+        # theCM._lut[:-3, -1] = alphas
+        amp = core.p[0] / (2.*np.pi*(core.p[3]/(4.*np.sqrt(2.*np.log(2))*each*mas_in_pix))**2)
+        p = [amp, core.p[1], core.p[2], core.p[3]/2] + list(core.p[4:])
+        gaus = gaussian(*p)
+        gaus_image = gaus(xx, yy)
+        print(sum(gaus_image))
+        # mask = gaus_image < 0.0001
+        # gaus_image = np.ma.array(gaus_image, mask=mask)
+        ax.plot_surface(xx, yy, gaus_image, rstride=1, cstride=1, cmap=theCM,
+                        linewidth=2, antialiased=True)
+    # ax.set_zlim([0.0002, None])
+    plt.show()
+    return fig
+
+
+def plot_simulations_2d(sim_fname, simulations_params, each=2, side_delta=100,
+                        jet_delta=50, contr_delta=10, core=None):
+    """
+    Plot simulation results in 2D projection.
+
+    :param sim_fname:
+        Path to file with simulations result of Stokes I.
+    :param simulations_params:
+        Dictionary with simulations parameters.
+    :param each: (optional)
+        Plot each ``each`` pixel. (default: ``2``)
+    :param side_delta: (optional)
+        Cut image from sides. Image will be shorter by ``2*delta`` pixels from
+        sides. (default: ``100``)
+    :param contr_delta: (optional)
+        Space to leave on contr-jet side. (default: ``10``)
+    :param core: (optional)
+        Instance of ``Component`` class to overplot. If ``None`` then don't plot
+        component. (default: ``None``)
+
+    :return:
+        Instance of ``Figure``.
+    """
+    # Making transparent color map
+    from matplotlib import cm
+    theCM = cm.Blues
+    levels = np.logspace(np.log2(0.0001), np.log2(0.001), 10, base=2)
+    image = np.loadtxt(sim_fname)
+    print(sum(image))
+    imsize = simulations_params[u'image'][u'number_of_pixels']
+    mas_in_pix = simulations_params[u'image'][u'pixel_size_mas']
+    y = np.arange(-imsize/2+side_delta, imsize/2-side_delta, each, dtype=float)
+    x = np.arange(-contr_delta, imsize/2-jet_delta, each, dtype=float)
+    x *= mas_in_pix*each
+    y *= mas_in_pix*each
+    xx, yy = np.meshgrid(x, y)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111,aspect='equal')
+    plt.hold(True)
+
+    cont = ax.contour(xx, yy,
+                      image[side_delta:-side_delta:each, imsize/2-contr_delta:imsize-jet_delta:each],
+                      levels=levels)
+    fig.colorbar(cont, shrink=0.5, aspect=5)
+
+    if core is not None:
+        theCM = cm.Reds
+        amp = core.p[0] / (2.*np.pi*(core.p[3]/(4.*np.sqrt(2.*np.log(2))*each*mas_in_pix))**2)
+        p = [amp, core.p[1], core.p[2], core.p[3]/2] + list(core.p[4:])
+        gaus = gaussian(*p)
+        gaus_image = gaus(xx, yy)
+        print(sum(gaus_image))
+        ax.contour(xx, yy, gaus_image, levels=levels)
+    # plt.axes().set_aspect('equal')
     plt.show()
     return fig
 
