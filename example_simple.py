@@ -452,7 +452,7 @@ def find_core_separation_from_center_using_simulations(fname,
 
 
 def plot_simulations_3d(sim_fname, simulations_params, each=2, delta=100,
-                        contr_delta=10):
+                        contr_delta=10, core=None):
     """
     Plot simulation results in 3D projection.
 
@@ -467,18 +467,24 @@ def plot_simulations_3d(sim_fname, simulations_params, each=2, delta=100,
         sides. (default: ``100``)
     :param contr_delta: (optional)
         Space to leave on contr-jet side. (default: ``10``)
+    :param core: (optional)
+        Instance of ``Component`` class to overplot. If ``None`` then don't plot
+        component. (default: ``None``)
+
     :return:
         Instance of ``Figure``.
     """
     # This import is needed for 3D projections
     from mpl_toolkits.mplot3d import Axes3D
     # Making transparent color map
-    theCM = cm.get_cmap()
-    theCM._init()
-    alphas = np.abs(np.linspace(-1.0, 1.0, theCM.N))
-    theCM._lut[:-3,-1] = alphas
+    from matplotlib import cm
+    theCM = cm.Blues
+    # theCM._init()
+    # alphas = np.abs(np.linspace(-1.0, 1.0, theCM.N))
+    # theCM._lut[:-3, -1] = alphas
 
     image = np.loadtxt(sim_fname)
+    print(sum(image))
     imsize = simulations_params[u'image'][u'number_of_pixels']
     mas_in_pix = simulations_params[u'image'][u'pixel_size_mas']
     y = np.arange(-imsize/2+delta, imsize/2-delta, each, dtype=float)
@@ -491,10 +497,12 @@ def plot_simulations_3d(sim_fname, simulations_params, each=2, delta=100,
     ax = fig.gca(projection='3d')
     plt.hold(True)
 
+    # mask = image < 0.0001
+    # image = np.ma.array(image, mask=mask)
     surf = ax.plot_surface(xx, yy,
                            image[delta:-delta:each, imsize/2-contr_delta::each],
-                           rstride=1, cstride=1, cmap=theCM, linewidth=0,
-                           antialiased=False)
+                           rstride=1, cstride=1, cmap=theCM, linewidth=2,
+                           antialiased=True)
     fig.colorbar(surf, shrink=0.5, aspect=5)
 
     if core is not None:
