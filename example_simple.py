@@ -537,8 +537,8 @@ def plot_simulations_3d(sim_fname, simulations_params, each=2, delta=100,
     return fig
 
 
-def plot_simulations_2d(sim_fname, simulations_params, each=2, side_delta=100,
-                        jet_delta=50, contr_delta=10, core=None):
+def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=100,
+                        jet_delta=50, contr_delta=10, core=None, g=None):
     """
     Plot simulation results in 2D projection.
 
@@ -565,6 +565,7 @@ def plot_simulations_2d(sim_fname, simulations_params, each=2, side_delta=100,
     theCM = cm.Blues
     levels = np.logspace(np.log2(0.0001), np.log2(0.001), 10, base=2)
     image = np.loadtxt(sim_fname)
+    print("Flux of simulated image :")
     print(sum(image))
     imsize = simulations_params[u'image'][u'number_of_pixels']
     mas_in_pix = simulations_params[u'image'][u'pixel_size_mas']
@@ -575,7 +576,7 @@ def plot_simulations_2d(sim_fname, simulations_params, each=2, side_delta=100,
     xx, yy = np.meshgrid(x, y)
 
     fig = plt.figure()
-    ax = fig.add_subplot(111,aspect='equal')
+    ax = fig.add_subplot(111, aspect='equal')
     plt.hold(True)
 
     cont = ax.contour(xx, yy,
@@ -584,14 +585,30 @@ def plot_simulations_2d(sim_fname, simulations_params, each=2, side_delta=100,
     fig.colorbar(cont, shrink=0.5, aspect=5)
 
     if core is not None:
-        theCM = cm.Reds
-        amp = core.p[0] / (2.*np.pi*(core.p[3]/(4.*np.sqrt(2.*np.log(2))*each*mas_in_pix))**2)
-        p = [amp, core.p[1], core.p[2], core.p[3]/2] + list(core.p[4:])
+        theCM = cm.viridis
+        if len(core) == 6:
+            e = core.p[4]
+        else:
+            e = 1.
+        # put 2 instead of 4 before sqrt and remove 0.5 before p[3]
+        amp = core.p[0] / (2.*np.pi*e*(core.p[3]/(2.*np.sqrt(2.*np.log(2))*each*mas_in_pix))**2)
+        p = [amp, core.p[1], core.p[2], core.p[3]] + list(core.p[4:])
         gaus = gaussian(*p)
         gaus_image = gaus(xx, yy)
+        print("Flux of difmap model image (should be = {}) : ".format(core.p[0]))
         print(sum(gaus_image))
-        ax.contour(xx, yy, gaus_image, levels=levels)
-    # plt.axes().set_aspect('equal')
+        ax.contour(xx, yy, gaus_image, levels=levels, cmap=theCM)
+
+    if g is not None:
+        theCM = cm.viridis
+        g_image = g(xx, yy)
+        print("Flux of fit of simulated image :")
+        print(sum(g_image))
+        ax.contour(xx, yy, g_image, levels=levels, cmap=theCM)
+
+    ax.set_xlabel("Distance along jet, [mas]")
+    ax.set_ylabel("Distance, [mas]")
+    fig.tight_layout()
     plt.show()
     return fig
 
