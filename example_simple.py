@@ -645,8 +645,43 @@ def gaussian(height, x0, y0, bmaj, e=1.0, bpa=0.0):
     c = math.sin(bpa) ** 2. / (2. * bmaj ** 2.) + \
         math.cos(bpa) ** 2. / (2. * bmin ** 2.)
     return lambda x, y: height * np.exp(-(a * (x - x0) ** 2 +
-                                          2. * b * (x - x0) * (y - y0) +
+                                          b * (x - x0) * (y - y0) +
                                           c * (y - y0) ** 2))
+
+
+def fit_simulations_in_image_plane(sim_fname, simulations_params,
+                                   core=None):
+    from astropy.modeling import models, fitting
+    imsize = simulations_params[u'image'][u'number_of_pixels']
+    mas_in_pix = simulations_params[u'image'][u'pixel_size_mas']
+    y = np.arange(-imsize/2, imsize/2, dtype=float)
+    x = np.arange(-imsize/2, imsize/2, dtype=float)
+    x *= mas_in_pix
+    y *= mas_in_pix
+    xx, yy = np.meshgrid(x, y)
+    image = np.loadtxt(sim_fname)
+
+    p = [1.0, 0.0, 0.0, 0.1, 0.1, 0.0]
+    if core is not None:
+        p = [core.p[0], core.p[1], core.p[2], core.p[3], core.p[3], 0.0]
+
+    def tiedfunc(g_init):
+        y_stddev = g_init.x_stddev
+        return y_stddev
+
+    if len(core) == 4:
+        tied = {'y_stddev': tiedfunc}
+        g_init = models.Gaussian2D(amplitude=p[0], x_mean=p[1], y_mean=p[2],
+                                   x_stddev=p[3], y_stddev=p[3], theta=None,
+                                   tied=tied)
+    elif len(core) == 6:
+        g_init = models.Gaussian2D(amplitude=p[0], x_mean=p[1], y_mean=p[2],
+                                   x_stddev=p[3], y_stddev=p[3], theta=None)
+    else:
+        raise Exception
+
+    fit_g = fitting.LevMarLSQFitter()
+    return fit_g(g_init, xx, yy, image)
 
 
 def _find_shifts_from_true_images(freq_true_images_dict, imsize,
