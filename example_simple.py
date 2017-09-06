@@ -366,7 +366,7 @@ def _find_shift_from_difmap_models(freq_difmap_models_dict):
     return result_dict
 
 
-def plot_stripe(sim_fname, difmap_model, simulations_params):
+def plot_stripe(sim_fname, difmap_model, simulations_params, g=None):
     """
     Plot 1D stripe along jet axis.
 
@@ -385,29 +385,42 @@ def plot_stripe(sim_fname, difmap_model, simulations_params):
     imsize = simulations_params[u'image'][u'number_of_pixels']
     mas_in_pix = simulations_params[u'image'][u'pixel_size_mas']
 
-    core_position = core.p[1]
-    core_size = core.p[3]
-    flux = core.p[0]
-    # e = core.p[4]
-    e = 1
-    # Originally there was 4
-    # core_amp = 2. * np.log(2) * flux / (np.pi * (core_size/mas_in_pix)**2 * e)
-    core_amp = flux / (2. * np.pi * (core_size / (4.*np.sqrt(2.*np.log(2))*mas_in_pix)) ** 2)
+    if g is not None:
+        y = np.arange(-imsize/2, imsize/2, dtype=float)
+        x = np.arange(-imsize/2, imsize/2, dtype=float)
+        x *= mas_in_pix
+        y *= mas_in_pix
+        xx, yy = np.meshgrid(x, y)
+        g_image = g(xx, yy)
 
-    def gauss_1d(x, amp, center, size):
-        sigma = size/(2. * np.sqrt(2. * np.log(2)))
-        return core_amp * np.exp(-(x - center)**2/(2.*sigma**2))
+    if len(core) == 6:
+        e = core.p[4]
+    else:
+        e = 1.
+    # put 2 instead of 4 before sqrt and remove 0.5 before p[3]
+    amp = core.p[0] / (2.*np.pi*e*(core.p[3]/(2.*np.sqrt(2.*np.log(2))*mas_in_pix))**2)
+    p = [amp, core.p[1], core.p[2], core.p[3]] + list(core.p[4:])
+    gaus = gaussian(*p)
+    gaus_image = gaus(xx, yy)
 
     x = np.arange(-20, imsize/2)*mas_in_pix
     # Plot simulation results
     plt.figure()
-    plt.plot(x, image[imsize/2, imsize/2-20:])
+    plt.plot(x, image[imsize/2, imsize/2-20:], lw=2, label="Simulations")
     # Plot difmap model
-    plt.plot(x, gauss_1d(x, core_amp, core_position, core_size))
+    plt.plot(x, gaus_image[imsize/2, imsize/2-20:], label="Difmap fit")
+    # Optionally plot model fitted in image plane
+    if g is not None:
+        plt.plot(x, g_image[imsize/2, imsize/2-20:],
+                 label="Sim. image fit")
     # # Distance from SMBH (0,0) in pixels
     # dr = (np.unravel_index(image.argmax(), image.shape)[1]-imsize/2)
     # # In mas
     # dr *= mas_in_pix
+    plt.xlabel("Distance along jet, [mas]")
+    plt.ylabel("Flux, [Jy/pixel]")
+    plt.legend(loc="best")
+    plt.tight_layout()
 
 
 def find_core_separation_from_jet_using_difmap_model(difmap_model):
