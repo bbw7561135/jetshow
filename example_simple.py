@@ -61,7 +61,6 @@ from image_ops import rms_image
 #
 
 
-
 def deep_update(source, overrides):
     """Update a nested dictionary or similar mapping.
     https://stackoverflow.com/a/30655448
@@ -75,7 +74,6 @@ def deep_update(source, overrides):
         else:
             source[key] = overrides[key]
     return source
-    
     
 
 def update_config(cfg_in, update_dict, cfg_out=None):
@@ -221,7 +219,6 @@ def find_image_params(cfg_file, path_to_executable):
             updated = False
         updated =True
 
-
         os.unlink(os.path.join(exe_dir, 'stripe_tau.txt'))
         params = run_jetshow(cfg_file, path_to_executable,
                              update_params_dict=params)
@@ -240,11 +237,16 @@ def run_simulations(cfg_file, path_to_executable):
         Path to compiled executable of ``jetshow``.
     """
     exe_dir, exe = os.path.split(path_to_executable)
-    number_of_pixels, pixel_size_mas = find_image_params(cfg_file,
-                                                         path_to_executable)
-    update_params_dict={"calculate": "full",
-                        "image": {"number_of_pixels": number_of_pixels,
-                                  "pixel_size_mas": pixel_size_mas}}
+    try:
+        number_of_pixels, pixel_size_mas = find_image_params(cfg_file,
+                                                             path_to_executable)
+    # Hope second pass will help
+    except IndexError:
+        number_of_pixels, pixel_size_mas = find_image_params(cfg_file,
+                                                             path_to_executable)
+    update_params_dict = {"calculate": "full",
+                          "image": {"number_of_pixels": number_of_pixels,
+                                    "pixel_size_mas": pixel_size_mas}}
     update_config(cfg_file, update_params_dict)
     try:
         os.unlink(os.path.join(exe_dir, 'stripe_tau.txt'))
@@ -307,8 +309,8 @@ def modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor,
     model = Model(stokes='I')
     model.add_component(icomp)
 
-    jet_comp = CGComponent(0.5, 1., 0., 0.3)
-    model.add_component(jet_comp)
+    # jet_comp = CGComponent(0.5, 1., 0., 0.3)
+    # model.add_component(jet_comp)
 
     uvdata.substitute([model])
     uvdata.noise_add(noise)
@@ -366,7 +368,8 @@ def _find_shift_from_difmap_models(freq_difmap_models_dict):
     return result_dict
 
 
-def plot_stripe(sim_fname, difmap_model, simulations_params, g=None):
+def plot_stripe(sim_fname, difmap_model, simulations_params, g=None,
+                savefig=None, close=False):
     """
     Plot 1D stripe along jet axis.
 
@@ -421,6 +424,10 @@ def plot_stripe(sim_fname, difmap_model, simulations_params, g=None):
     plt.ylabel("Flux, [Jy/pixel]")
     plt.legend(loc="best")
     plt.tight_layout()
+    if savefig:
+        fig.savefig(savefig)
+    if close:
+        plt.close()
 
 
 def find_core_separation_from_jet_using_difmap_model(difmap_model):
@@ -538,7 +545,8 @@ def plot_simulations_3d(sim_fname, simulations_params, each=2, delta=100,
 
 
 def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=100,
-                        jet_delta=50, contr_delta=10, core=None, g=None):
+                        jet_delta=50, contr_delta=10, core=None, g=None,
+                        savefig=None, close=False):
     """
     Plot simulation results in 2D projection.
 
@@ -610,6 +618,12 @@ def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=100,
     ax.set_ylabel("Distance, [mas]")
     fig.tight_layout()
     plt.show()
+
+    if savefig:
+        fig.savefig(savefig)
+    if close:
+        plt.close()
+
     return fig
 
 
@@ -752,28 +766,30 @@ if __name__ == '__main__':
     # Run simulation
     main_dir = '/home/ilya/github/bck/jetshow'
     cfg_file = os.path.join(main_dir, 'config.json')
+    with open(cfg_file, "r") as jsonFile:
+        simulation_params = json.load(jsonFile)
     path_to_executable = os.path.join(main_dir, 'cmake-build-debug', 'jetshow')
     simulation_params = run_simulations(cfg_file, path_to_executable)
 
     # Create artificial data set with BK core and jet component
     exe_dir, exe = os.path.split(path_to_executable)
-    # initial_dfm_model = os.path.join(main_dir, 'initial_eg.mdl')
-    initial_dfm_model = os.path.join(main_dir, 'initial_cg_cg.mdl')
+    initial_dfm_model = os.path.join(main_dir, 'initial_eg.mdl')
+    # initial_dfm_model = os.path.join(main_dir, 'initial_cg.mdl')
     uv_fits_template = '/home/ilya/github/vlbi_errors/vlbi_errors/'
     uv_fits_template = os.path.join(uv_fits_template,
                                     '0235+164.u.2006_06_15.uvf')
-    modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor=0.01,
-                               out_dfm_model_fn="bk.mdl", out_dir=exe_dir,
+    modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor=1.0,
+                               out_dfm_model_fn="bk_e.mdl", out_dir=exe_dir,
                                params=simulation_params,
                                uv_fits_save_fname="bk.fits",
                                uv_fits_template=uv_fits_template)
 
     # Find measured and true distance of core to jet component
-    dr_obs = find_core_separation_from_jet_using_difmap_model(os.path.join(exe_dir, "bk.mdl"))
+    # dr_obs = find_core_separation_from_jet_using_difmap_model(os.path.join(exe_dir, "bk.mdl"))
     # Here ``1.`` is because jet component put at 1 mas distance from phase
     # center of the originaldata set.
-    dr_true = 1. - find_core_separation_from_center_using_simulations(os.path.join(exe_dir, "map_i.txt"),
-                                                                      simulation_params)
+    # dr_true = 1. - find_core_separation_from_center_using_simulations(os.path.join(exe_dir, "map_i.txt"),
+    #                                                                   simulation_params)
 
     # Plot map with components superimposed
     from spydiff import clean_difmap, import_difmap_model
@@ -792,12 +808,22 @@ if __name__ == '__main__':
     beam = ccimage.beam
     rms = rms_image(ccimage)
     blc, trc = find_bbox(ccimage.image, rms, 10)
-    comps = import_difmap_model('bk.mdl', exe_dir)
+    comps = import_difmap_model('bk_e.mdl', exe_dir)
     iplot(ccimage.image, x=ccimage.x, y=ccimage.y, min_abs_level=3*rms,
           beam=beam, show_beam=True, blc=blc, trc=trc, components=comps)
 
+    g = fit_simulations_in_image_plane(os.path.join(exe_dir, "map_i.txt"),
+                                       simulation_params, core=comps[0])
+
     plot_stripe(os.path.join(exe_dir, "map_i.txt"),
-                os.path.join(exe_dir, "bk.mdl"), simulation_params)
+                os.path.join(exe_dir, "bk_e.mdl"), simulation_params, g=g)
+
+    # plot_simulations_3d(os.path.join(exe_dir, "map_i.txt"),
+    #                     simulation_params, core=comps[0], each=1, delta=130)
+
+    plot_simulations_2d(os.path.join(exe_dir, "map_i.txt"),
+                        simulation_params, core=comps[0], each=1,
+                        side_delta=110, g=g)
 
     # initial_dfm_model = os.path.join(main_dir, 'initial_eg.mdl')
     # executable_dir, _ = os.path.split(path_to_executable)
