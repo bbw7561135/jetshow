@@ -25,10 +25,10 @@ class TotalDisasterException(Exception):
 
 # B = 0.01-10 Gs
 # jet.bfield.parameters.b1
-b_uniform_borders = [np.log10(0.1), np.log10(10)]
+b_uniform_borders = [np.log(0.1), np.log(10)]
 # N = 50-5000 cm**(-3)
 # jet.nfield.parameters.n1
-n_uniform_borders = [np.log10(50), np.log10(5000)]
+n_uniform_borders = [np.log(50), np.log(5000)]
 # LOS = 1/2G - 2/G
 # observation.los_angle
 los_uniform_borders = [2.865*np.pi/180, 11.459*np.pi/180]
@@ -37,13 +37,13 @@ uniform_borders = [b_uniform_borders, n_uniform_borders, los_uniform_borders]
 
 sample = generate_sample_points(uniform_borders, n_samples=30)
 
-b_values = 10.**sample[:, 0]
-n_values = 10.**sample[:, 1]
+b_values = np.exp(sample[:, 0])
+n_values = np.exp(sample[:, 1])
 los_values = sample[:, 2]
 
 # Run simulation
 main_dir = '/home/ilya/github/bck/jetshow'
-out_dir = '/home/ilya/github/bck/jetshow/uvf'
+out_dir = '/home/ilya/github/bck/jetshow/uvf_mf'
 path_to_executable = os.path.join(main_dir, 'cmake-build-debug', 'jetshow')
 exe_dir, exe = os.path.split(path_to_executable)
 cfg_file = os.path.join(main_dir, 'config.json')
@@ -68,7 +68,7 @@ for b, n, los in zip(b_values, n_values, los_values):
                                                           uv_fits_template_x)):
 
         # Cleaning old results if any
-        simulated_maps_old = glob.glob(os.path.join("exe_dir", "map*.txt"))
+        simulated_maps_old = glob.glob(os.path.join(exe_dir, "map*.txt"))
         for to_remove in simulated_maps_old:
             os.unlink(to_remove)
 
@@ -126,7 +126,7 @@ for b, n, los in zip(b_values, n_values, los_values):
         comps = import_difmap_model(out_dfm_model_fn, out_dir)
         fig = iplot(ccimage.image, x=ccimage.x, y=ccimage.y, min_abs_level=3*rms,
                     beam=beam, show_beam=True, blc=blc, trc=trc, components=comps,
-                    close=True)
+                    close=True, colorbar_label="Jy/beam")
         fig.savefig(os.path.join(out_dir, "cc_{}_{}.png".format(str(i).zfill(2),
                                                                 int(freq))))
 
