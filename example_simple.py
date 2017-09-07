@@ -245,8 +245,12 @@ def run_simulations(cfg_file, path_to_executable):
                                                              path_to_executable)
     # Hope second pass will help
     except IndexError:
-        number_of_pixels, pixel_size_mas = find_image_params(cfg_file,
-                                                             path_to_executable)
+        try:
+            number_of_pixels, pixel_size_mas = find_image_params(cfg_file,
+                                                                 path_to_executable)
+        except IndexError:
+            raise FailedFindBestImageParamsException
+
     update_params_dict = {"calculate": "full",
                           "image": {"number_of_pixels": number_of_pixels,
                                     "pixel_size_mas": pixel_size_mas}}
