@@ -337,6 +337,10 @@ def shift_model(nu, a, k):
     return a * nu**(-1./k)
 
 
+def shift_model_dr(nu, a, k, b):
+    return a * nu**(-1./k) + b
+
+
 def _find_shift_from_difmap_models(freq_difmap_models_dict):
     """
     Find shift using difmap model files of core.
