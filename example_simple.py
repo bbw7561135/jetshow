@@ -445,14 +445,18 @@ def find_core_separation_from_jet_using_difmap_model(difmap_model):
     :param difmap_model:
         File with model in difmap format.
     :return:
-        Value of distance between core and jet component.
+        Value of distance between core and jet component. If only core is
+        present then distance between phase center and core
     """
 
     difmap_dir, difmap_fn = os.path.split(difmap_model)
     comps = import_difmap_model(difmap_fn, difmap_dir)
     core = comps[0]
-    jet = comps[1]
-    dr = (jet.p[1] - core.p[1])**2. + (jet.p[2] - core.p[2])**2.
+    try:
+        jet = comps[1].p
+    except IndexError:
+        jet = [0, 0, 0]
+    dr = (jet[1] - core.p[1])**2. + (jet[2] - core.p[2])**2.
     return np.sqrt(dr)
 
 
