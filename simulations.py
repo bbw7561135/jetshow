@@ -64,8 +64,8 @@ for b, n, los in zip(b_values, n_values, los_values):
     for to_remove in simulated_maps_old:
         os.unlink(to_remove)
 
-    update_dict = {"jet": {"bfield": {"parameters": {"b1": b}},
-                   "nfield": {"parameters": {"n1": n}}},
+    update_dict = {"jet": {"bfield": {"parameters": {"b_1": b}},
+                   "nfield": {"parameters": {"n_1": n}}},
                    "observation": {"los_angle": los},
                    "image": {"pixel_size_mas": 0.001, "number_of_pixels": 200}}
     update_config(cfg_file, update_dict)
@@ -100,7 +100,9 @@ for b, n, los in zip(b_values, n_values, los_values):
     # This means smth wrong with jetshow
     if total_flux < 0:
         print("b = {}, n = {}, los = {}".format(b, n, los))
-        raise TotalDisasterException
+        # raise TotalDisasterException
+        open(os.path.join(out_dir, "total_disaster_{}_{}_{}.txt".format(b, n, los)), 'a').close()
+        continue
 
     # Plot map with components superimposed
     cc_fits_save_fname = "bk_cc_{}.fits".format(str(i).zfill(2))
