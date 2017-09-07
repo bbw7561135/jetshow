@@ -72,8 +72,8 @@ for b, n, los in zip(b_values, n_values, los_values):
         for to_remove in simulated_maps_old:
             os.unlink(to_remove)
 
-        update_dict = {"jet": {"bfield": {"parameters": {"b1": b}},
-                               "nfield": {"parameters": {"n1": n}}},
+        update_dict = {"jet": {"bfield": {"parameters": {"b_1": b}},
+                               "nfield": {"parameters": {"n_1": n}}},
                        "observation": {"los_angle": los,
                                        "frequency_ghz": freq},
                        "image": {"pixel_size_mas": 0.001, "number_of_pixels": 200}}
