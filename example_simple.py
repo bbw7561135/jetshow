@@ -555,8 +555,8 @@ def plot_simulations_3d(sim_fname, simulations_params, each=2, delta=100,
     return fig
 
 
-def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=100,
-                        jet_delta=50, contr_delta=10, core=None, g=None,
+def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=None,
+                        jet_delta=None, contr_delta=10, core=None, g=None,
                         savefig=None, close=False):
     """
     Plot simulation results in 2D projection.
@@ -582,10 +582,20 @@ def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=100,
     # Making transparent color map
     from matplotlib import cm
     theCM = cm.Blues
-    levels = np.logspace(np.log2(0.0001), np.log2(0.001), 10, base=2)
     image = np.loadtxt(sim_fname)
+    low = np.percentile(image[image > 0].flatten(), 50)
+    high = np.percentile(image[image > 0].flatten(), 99.99)
+    levels = np.logspace(np.log2(low), np.log2(high), 10, base=2)
+    imsize = image.shape[0]
+
+    blc, trc = find_bbox(image, low)
+    if side_delta is None:
+        side_delta = int(np.mean([blc[1], -trc[1]+imsize]))-50
+    if jet_delta is None:
+        jet_delta = imsize - trc[0]
+
     print("Flux of simulated image :")
-    print(sum(image))
+    print(image.sum())
     imsize = simulations_params[u'image'][u'number_of_pixels']
     mas_in_pix = simulations_params[u'image'][u'pixel_size_mas']
     y = np.arange(-imsize/2+side_delta, imsize/2-side_delta, each, dtype=float)
@@ -600,7 +610,7 @@ def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=100,
 
     cont = ax.contour(xx, yy,
                       image[side_delta:-side_delta:each, imsize/2-contr_delta:imsize-jet_delta:each],
-                      levels=levels)
+                      levels=levels, colors="blue", label="simulations")
     fig.colorbar(cont, shrink=0.5, aspect=5)
 
     if core is not None:
@@ -615,15 +625,17 @@ def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=100,
         gaus = gaussian(*p)
         gaus_image = gaus(xx, yy)
         print("Flux of difmap model image (should be = {}) : ".format(core.p[0]))
-        print(sum(gaus_image))
-        ax.contour(xx, yy, gaus_image, levels=levels, cmap=theCM)
+        print(gaus_image.sum())
+        ax.contour(xx, yy, gaus_image, levels=levels, colors="green",
+                   label="difmap")
 
     if g is not None:
         theCM = cm.viridis
         g_image = g(xx, yy)
         print("Flux of fit of simulated image :")
-        print(sum(g_image))
-        ax.contour(xx, yy, g_image, levels=levels, cmap=theCM)
+        print(g_image.sum())
+        ax.contour(xx, yy, g_image, levels=levels, colors="red",
+                   label="sim. image fit")
 
     ax.set_xlabel("Distance along jet, [mas]")
     ax.set_ylabel("Distance, [mas]")
