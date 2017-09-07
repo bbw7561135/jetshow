@@ -432,7 +432,7 @@ def plot_stripe(sim_fname, difmap_model, simulations_params, g=None,
     plt.legend(loc="best")
     plt.tight_layout()
     if savefig:
-        fig.savefig(savefig)
+        plt.savefig(savefig)
     if close:
         plt.close()
 
