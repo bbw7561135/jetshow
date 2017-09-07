@@ -54,6 +54,10 @@ uv_fits_template_x = os.path.join(uv_fits_template,
                                 '0235+164.x.2006_06_15.uvf')
 uv_fits_template_j = os.path.join(uv_fits_template,
                                 '0235+164.j.2006_06_15.uvf')
+cc_image_u = os.path.join(uv_fits_template, '0235+164.u.2006_06_15_cc.fits')
+cc_image_x = os.path.join(uv_fits_template, '0235+164.x.2006_06_15_cc.fits')
+cc_image_j = os.path.join(uv_fits_template, '0235+164.j.2006_06_15_cc.fits')
+
 path_to_script = '/home/ilya/github/vlbi_errors/difmap/final_clean_nw'
 json_out = os.path.join(out_dir, 'history_mf.json')
 with open(json_out, 'w') as fo:
@@ -63,9 +67,13 @@ i = 1
 for b, n, los in zip(b_values, n_values, los_values):
     print("Running simulations with b={}, n={}, los={}".format(b, n, los))
 
-    for freq, uv_fits_template in zip((15.4, 12.1, 8.1), (uv_fits_template_u,
-                                                          uv_fits_template_j,
-                                                          uv_fits_template_x)):
+    for freq, uv_fits_template, cc_image in zip((15.4, 12.1, 8.1),
+                                                (uv_fits_template_u,
+                                                 uv_fits_template_j,
+                                                 uv_fits_template_x),
+                                                (cc_image_u,
+                                                 cc_image_j,
+                                                 cc_image_x)):
 
         # Cleaning old results if any
         simulated_maps_old = glob.glob(os.path.join(exe_dir, "map*.txt"))
@@ -85,10 +93,17 @@ for b, n, los in zip(b_values, n_values, los_values):
         except FailedFindBestImageParamsException:
             continue
 
+        # Find total flux on simulated image
+        image = os.path.join(exe_dir, "map_i.txt")
+        image = np.loadtxt(image)
+        total_flux = image.sum()
+        noise_factor = image.sum()/cc_image.sum()
+
         initial_dfm_model = os.path.join(main_dir, 'initial_cg.mdl')
         out_dfm_model_fn = "bk_{}_{}.mdl".format(str(i).zfill(2), int(freq))
         uv_fits_save_fname = "bk_{}_{}.fits".format(str(i).zfill(2), int(freq))
-        modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor=0.01,
+        modelfit_simulation_result(exe_dir, initial_dfm_model,
+                                   noise_factor=noise_factor,
                                    out_dfm_model_fn=out_dfm_model_fn,
                                    out_dir=out_dir,
                                    params=simulation_params,
