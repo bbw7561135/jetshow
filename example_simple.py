@@ -611,7 +611,12 @@ def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=None,
     cont = ax.contour(xx, yy,
                       image[side_delta:-side_delta:each, imsize/2-contr_delta:imsize-jet_delta:each],
                       levels=levels, colors="blue", label="simulations")
-    fig.colorbar(cont, shrink=0.5, aspect=5)
+    # fig.colorbar(cont, shrink=0.5, aspect=5)
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="10%", pad=0.00)
+    cb = fig.colorbar(cont, cax=cax)
+    cb.set_label("Jy/pixel")
 
     if core is not None:
         theCM = cm.viridis
@@ -788,6 +793,23 @@ def parse_history(history):
     X = np.atleast_2d(X)
     y = np.array(y)
 
+
+def parse_history_mf(history):
+    with open(history, "r") as fo:
+        data = json.load(fo)
+
+    keys = sorted(data.keys())
+    X = list()
+    y = list()
+    for key in keys:
+        X.append([data[key][u'parameters'][u'b'],
+                  data[key][u'parameters'][u'n'],
+                  data[key][u'parameters'][u'los']])
+        y.append(data[key][u'results'][u'dr_obs'] -
+                 data[key][u'results'][u'dr_true'])
+
+    X = np.atleast_2d(X)
+    y = np.array(y)
 
 
 def _find_shifts_from_true_images(freq_true_images_dict, imsize,
