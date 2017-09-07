@@ -771,6 +771,25 @@ def fit_simulations_in_image_plane(sim_fname, simulations_params,
     return fit_g(g_init, xx, yy, image)
 
 
+def parse_history(history):
+    with open(history, "r") as fo:
+        data = json.load(fo)
+
+    keys = sorted(data.keys())
+    X = list()
+    y = list()
+    for key in keys:
+        X.append([data[key][u'parameters'][u'b'],
+                  data[key][u'parameters'][u'n'],
+                  data[key][u'parameters'][u'los']])
+        y.append(data[key][u'results'][u'dr_obs'] -
+                 data[key][u'results'][u'dr_true'])
+
+    X = np.atleast_2d(X)
+    y = np.array(y)
+
+
+
 def _find_shifts_from_true_images(freq_true_images_dict, imsize,
                                   pixelsizes_dict):
     """
