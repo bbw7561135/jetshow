@@ -109,7 +109,10 @@ for b, n, los in zip(b_values, n_values, los_values):
         # This means smth wrong with jetshow
         if total_flux < 0:
             print("b = {}, n = {}, los = {}".format(b, n, los))
-            raise TotalDisasterException
+            open(os.path.join(out_dir,
+                              "total_disaster_{}_{}_{}_{}.txt".format(b, n, los, freq)), 'a').close()
+            # raise TotalDisasterException
+            continue
 
         # Plot map with components superimposed
         cc_fits_save_fname = "bk_cc_{}_{}.fits".format(str(i).zfill(2),
