@@ -13,6 +13,9 @@ from utils import mas_to_rad
 import matplotlib.pyplot as plt
 
 
+class FailedFindBestImageParamsException(Exception):
+    pass
+
 # uvdata = UVData('0235+164.x.2006_06_15.uvf')
 # imsize = (500,500)
 # mas_in_pix = 0.002
