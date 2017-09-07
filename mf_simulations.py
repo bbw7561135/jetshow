@@ -84,7 +84,7 @@ for b, n, los in zip(b_values, n_values, los_values):
                                "nfield": {"parameters": {"n_1": n}}},
                        "observation": {"los_angle": los,
                                        "frequency_ghz": freq},
-                       "image": {"pixel_size_mas": 0.001, "number_of_pixels": 200}}
+                       "image": {"pixel_size_mas": 0.005, "number_of_pixels": 1000}}
         update_config(cfg_file, update_dict)
 
         # If we failed to find best image params - just continue
@@ -115,11 +115,6 @@ for b, n, los in zip(b_values, n_values, los_values):
                                                                                out_dfm_model_fn))
         dr_true = find_core_separation_from_center_using_simulations(os.path.join(exe_dir, "map_i.txt"),
                                                                      simulation_params)
-
-        # Find total flux on simulated image
-        image = os.path.join(exe_dir, "map_i.txt")
-        image = np.loadtxt(image)
-        total_flux = image.sum()
 
         # This means smth wrong with jetshow
         if total_flux < 0:
