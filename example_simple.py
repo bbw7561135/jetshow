@@ -676,6 +676,39 @@ def generate_sample_points(uniform_borders, n_samples=100):
     return mcerp.lhd(dist=distributions, size=n_samples)
 
 
+def find_bbox(array, level, delta=0.):
+    """
+    Find bounding box for part of image containing source.
+
+    :param array:
+        Numpy 2D array with image.
+    :param level:
+        Level at which threshold image in image units.
+    :param delta:
+        Extra space to add symmetrically [pixels].
+    :return:
+        Tuples of BLC & TRC.
+    """
+    from scipy.ndimage.measurements import label
+    from scipy.ndimage.morphology import generate_binary_structure
+    from skimage.measure import regionprops
+
+    signal = array > level
+    s = generate_binary_structure(2, 2)
+    labeled_array, num_features = label(signal, structure=s)
+    props = regionprops(labeled_array, intensity_image=array)
+
+    max_prop = props[0]
+    for prop in props[1:]:
+        if prop.max_intensity > max_prop.max_intensity:
+            max_prop = prop
+
+    bbox = max_prop.bbox
+    blc = (int(bbox[1] - delta), int(bbox[0] - delta))
+    trc = (int(bbox[3] + delta), int(bbox[2] + delta))
+    return blc, trc
+
+
 def gaussian(height, x0, y0, bmaj, e=1.0, bpa=0.0):
     """
     Returns a gaussian function with the given parameters.
