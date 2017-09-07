@@ -96,7 +96,7 @@ def update_config(cfg_in, update_dict, cfg_out=None):
         json.dump(data, jsonFile)
 
 
-def analyze_tau_stripe(fname, log10_tau_small=-4.0, border_tau1=(0.1, 0.3),
+def analyze_tau_stripe(fname, log10_tau_small=-4.0, border_tau1=(0.001, 0.3),
                        border_tau_min=(0.5, 1), min_pixels_to_tau1=20):
     tau = np.loadtxt(fname)
     length = len(tau)
@@ -192,7 +192,7 @@ def find_image_params(cfg_file, path_to_executable):
     updated = False
 
     # Until image parameters are OK for us
-    updates_steps = np.linspace(1., 2., 10)[::-1]
+    updates_steps = np.linspace(1.4, 2., 10)[::-1]
     update_step_n = 0
     update_step_size = 0
 
@@ -849,13 +849,123 @@ def parse_history_mf(history, freqs=(8, 12, 15)):
         # Calculate ``k``
         drs_obs = [dr_8_15_obs, dr_12_15_obs, 0.0]
         drs_true = [dr_8_15_true, dr_12_15_true, 0.0]
-        res_obs = curve_fit(shift_model_dr, freqs, drs_obs, p0=[1.0, 1.0, -0.1])
-        res_true = curve_fit(shift_model_dr, freqs, drs_true, p0=[1.0, 1.0, -0.1])
+        res_obs = curve_fit(shift_model_dr, freqs, drs_obs, p0=[1.0, 1.0, -0.1],
+                            bounds=((0.0, 0.0, -5.0), (10.0, 5.0, 0.0)),
+                            method='trf')
+        res_true = curve_fit(shift_model_dr, freqs, drs_true,
+                             p0=[1.0, 1.0, -0.1], method='trf',
+                             bounds=((0.0, 0.0, -5.0), (10.0, 5.0, 0.0)))
 
         y.append([bias_8_15, bias_12_15, bias_8_15_frac, bias_12_15_frac,
-                  res_obs[1], res_true[1], res_obs[1]-res_true[1]])
+                  res_obs[0][1], res_true[0][1], res_obs[0][1]-res_true[0][1]])
 
-    return X, y
+    return np.atleast_2d(X), np.atleast_2d(y)
+
+
+def parse_history_mf_(history, freqs=(8, 12, 15)):
+    """
+    Parse history json-file of simulations.
+
+    :param history:
+        Location of json history file.
+    :param freqs: (optional)
+        Iterable of simulation frequencies (from low to high).
+    :return:
+        Two 2D numpy array. First one with ``b, n, los`` for each simulation and
+        second one with ``k_obs, k_true, bias_k`` for each simulation.
+    """
+    with open(history, "r") as fo:
+        data = json.load(fo)
+
+    def key_func(simulation_number, freq):
+        return simulation_number+'_{}'.format(freq)
+
+    keys = sorted(data.keys())
+    simulation_numbers = sorted(list(set([key.split('_')[0] for key in keys])))
+
+    X = list()
+    y = list()
+    for simulation_number in simulation_numbers:
+        key = key_func(simulation_number, freqs[0])
+        X.append([data[key][u'parameters'][u'b'],
+                  data[key][u'parameters'][u'n'],
+                  data[key][u'parameters'][u'los']])
+
+        dr_8_obs = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_obs']
+        dr_12_obs = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_obs']
+        dr_15_obs = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_obs']
+
+        dr_8_true = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_true']
+        dr_12_true = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_true']
+        dr_15_true = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_true']
+
+
+        # Calculate ``k``
+        drs_obs = [dr_8_obs, dr_12_obs, dr_15_obs]
+        drs_true = [dr_8_true, dr_12_true, dr_15_true]
+        res_obs = curve_fit(shift_model, freqs, drs_obs, p0=[1.0, 1.0],
+                            bounds=((0.0, 0.0), (10.0, 5.0)),
+                            method='trf')
+        res_true = curve_fit(shift_model, freqs, drs_true,
+                             p0=[1.0, 1.0], method='trf',
+                             bounds=((0.0, 0.0), (10.0, 5.0)))
+
+        y.append([res_obs[0][1], res_true[0][1], res_obs[0][1]-res_true[0][1]])
+
+    return np.atleast_2d(X), np.atleast_2d(y)
+
+
+def parse_history_mf__(history, freqs=(8, 12, 15)):
+    """
+    Parse history json-file of simulations.
+
+    :param history:
+        Location of json history file.
+    :param freqs: (optional)
+        Iterable of simulation frequencies (from low to high).
+    :return:
+        Two 2D numpy array. First one with ``b, n, los`` for each simulation and
+        second one with ``k_obs, k_true, bias_k`` for each simulation.
+    """
+    with open(history, "r") as fo:
+        data = json.load(fo)
+
+    def key_func(simulation_number, freq):
+        return simulation_number+'_{}'.format(freq)
+
+    keys = sorted(data.keys())
+    simulation_numbers = sorted(list(set([key.split('_')[0] for key in keys])))
+
+    X = list()
+    y = list()
+    for simulation_number in simulation_numbers:
+        key = key_func(simulation_number, freqs[0])
+        X.append([data[key][u'parameters'][u'b'],
+                  data[key][u'parameters'][u'n'],
+                  data[key][u'parameters'][u'los']])
+
+        dr_8_obs = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_obs']
+        dr_12_obs = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_obs']
+        dr_15_obs = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_obs']
+
+        dr_8_true = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_true']
+        dr_12_true = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_true']
+        dr_15_true = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_true']
+
+
+        # Calculate ``k``
+        drs_obs = [dr_8_obs-dr_15_obs, dr_12_obs-dr_15_obs, 0]
+        drs_true = [dr_8_true-dr_15_true, dr_12_true-dr_15_true, 0]
+        res_obs = curve_fit(shift_model_dr, freqs, drs_obs, p0=[1.0, 1.0, -0.1],
+                            bounds=((0.0, 0.0, -5.0), (10.0, 5.0, 0.0)),
+                            method='trf')
+        res_true = curve_fit(shift_model_dr, freqs, drs_true,
+                             p0=[1.0, 1.0, -0.1], method='trf',
+                             bounds=((0.0, 0.0, -5.0), (10.0, 5.0, 0.0)))
+
+        y.append([res_obs[0][1], res_true[0][1], res_obs[0][1]-res_true[0][1]])
+
+    return np.atleast_2d(X), np.atleast_2d(y)
 
 
 def _find_shifts_from_true_images(freq_true_images_dict, imsize,
