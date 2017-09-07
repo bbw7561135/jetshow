@@ -97,7 +97,7 @@ def update_config(cfg_in, update_dict, cfg_out=None):
 
 
 def analyze_tau_stripe(fname, log10_tau_small=-4.0, border_tau1=(0.1, 0.3),
-                       border_tau_min=(0.75, 1), min_pixels_to_tau1=20):
+                       border_tau_min=(0.5, 1), min_pixels_to_tau1=20):
     tau = np.loadtxt(fname)
     length = len(tau)
     idx_tau1 = np.argmin(np.abs(np.log10(tau) - 0.0))
