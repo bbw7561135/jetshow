@@ -347,8 +347,8 @@ def n1_equipartition(b1, gama_min=1):
 
     :param b1:
         Magnetic field value on 1 pc [G].
-    :param gama_min:
-        Minimum particles lorentz factor.
+    :param gama_min: (optional)
+        Minimum particles lorentz factor. (default: ``1``)
     :return:
         Value of particle density [cm**(-3)] at 1 pc.
 
@@ -368,8 +368,8 @@ def b1_equipartition(n1, gama_min=1):
 
     :param n1:
         Particle density value [cm**(-3)] on 1 pc.
-    :param gama_min:
-        Minimum particles lorentz factor.
+    :param gama_min: (optional)
+        Minimum particles lorentz factor. (default: ``1``)
     :return:
         Magnetic field value on 1 pc [G].
 
@@ -381,6 +381,29 @@ def b1_equipartition(n1, gama_min=1):
               ``K = 1/log(gamma_max/gamma_min) = 0.1``. See 2005ApJ...619...73H
     """
     return np.sqrt(n1*gama_min*9.11*10**(-28)*9.0*10**20*8*np.pi/0.1)
+
+
+def b_to_n_energy_ratio(b1, n1, gamma_min=1):
+    """
+    Ratio of magnetic energy density to particle energy density.
+
+    :param b1:
+        Magnetic field value on 1 pc [G].
+    :param n1:
+        Particle density value [cm**(-3)] on 1 pc.
+    :param gamma_min: (optional)
+        Minimum particles lorentz factor. (default: ``1``)
+    :return:
+        Value of ratio.
+
+    :note:
+    Assumptions used:
+
+        * ``n = 2*m``
+        * ``\alpha=-0.5``, ``gamma_max = 10**4.34 * gamma_min`` - needs for
+          ``K = 1/log(gamma_max/gamma_min) = 0.1``. See 2005ApJ...619...73H
+    """
+    return 0.1*b1**2/(8*np.pi*n1*gamma_min*9.11*10**(-28)*9.0*10**20)
 
 
 def _find_shift_from_difmap_models(freq_difmap_models_dict):
