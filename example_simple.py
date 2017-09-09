@@ -406,6 +406,61 @@ def b_to_n_energy_ratio(b1, n1, gamma_min=1):
     return 0.1*b1**2/(8*np.pi*n1*gamma_min*9.11*10**(-28)*9.0*10**20)
 
 
+def t_syn(b, D, nu):
+    """
+    Synchrotron lifetime for given frequency.
+
+    :param b:
+    :param D:
+    :param nu:
+    :return:
+    """
+    # Thompson cross-section [cm**2]
+    sigma_t = 6.65 * 10**(-25)
+    m_e = 9.109382*1E-28
+    q_e = 4.8*1E-10
+    c = 3.0*10**10
+    return 3./sigma_t * np.sqrt(2*np.pi*c*m_e*q_e/(b**3*D))*nu**(-0.5)
+
+
+def tb(flux, freq, size, z=0., D=1.):
+    """
+    Brightness temperature.
+
+    :param flux:
+        Flux in Jy.
+    :param freq:
+        Frequency in GHz.
+    :param size:
+        Size in mas.
+    :return:
+        Value of true brightness temperature (corrected for Doppler and
+        redhsift).
+    """
+    k = 1.38 * 10**(-16)
+    c = 3.0 * 10 ** 10
+    mas_to_rad = 4.8481368 * 1E-09
+    freq *= 10**9
+    size *= mas_to_rad
+    flux *= 10**(-23)
+    Tb = c**2*flux/(2.*np.pi*k*size**2*freq**2)
+    return (1.+z)*Tb/D
+
+
+def tb_comp(flux, bmaj, freq, z=0, bmin=None, D=1):
+    mas_to_rad = 4.8481368 * 1E-09
+    c = 3.0 * 10 ** 10
+    k = 1.38 * 10 ** (-16)
+    bmaj *= mas_to_rad
+    if bmin is None:
+        bmin = bmaj
+    else:
+        bmin *= mas_to_rad
+    freq *= 10**9
+    flux *= 10**(-23)
+    return 2.*np.log(2)*(1.+z)*flux*c**2/(freq**2*np.pi*k*bmaj*bmin*D)
+
+
 def _find_shift_from_difmap_models(freq_difmap_models_dict):
     """
     Find shift using difmap model files of core.
