@@ -982,7 +982,7 @@ def parse_history_mf(history, freqs=(8, 12, 15)):
     return np.atleast_2d(X), np.atleast_2d(y)
 
 
-def parse_history_mf_(history, freqs=(8, 12, 15)):
+def parse_history_mf_(history, freqs=(1.665, 8.1, 12.1, 15.4)):
     """
     Parse history json-file of simulations.
 
@@ -1011,18 +1011,20 @@ def parse_history_mf_(history, freqs=(8, 12, 15)):
                   data[key][u'parameters'][u'n'],
                   data[key][u'parameters'][u'los']])
 
-        dr_8_obs = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_obs']
-        dr_12_obs = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_obs']
-        dr_15_obs = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_obs']
+        dr_1_obs = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_obs']
+        dr_8_obs = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_obs']
+        dr_12_obs = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_obs']
+        dr_15_obs = data[key_func(simulation_number, freqs[3])][u'results'][u'dr_obs']
 
-        dr_8_true = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_true']
-        dr_12_true = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_true']
-        dr_15_true = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_true']
+        dr_1_true = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_true']
+        dr_8_true = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_true']
+        dr_12_true = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_true']
+        dr_15_true = data[key_func(simulation_number, freqs[3])][u'results'][u'dr_true']
 
 
         # Calculate ``k``
-        drs_obs = [dr_8_obs, dr_12_obs, dr_15_obs]
-        drs_true = [dr_8_true, dr_12_true, dr_15_true]
+        drs_obs = [dr_1_obs, dr_8_obs, dr_12_obs, dr_15_obs]
+        drs_true = [dr_1_true, dr_8_true, dr_12_true, dr_15_true]
         res_obs = curve_fit(shift_model, freqs, drs_obs, p0=[1.0, 1.0],
                             bounds=((0.0, 0.0), (10.0, 5.0)),
                             method='trf')
@@ -1035,7 +1037,7 @@ def parse_history_mf_(history, freqs=(8, 12, 15)):
     return np.atleast_2d(X), np.atleast_2d(y)
 
 
-def parse_history_mf__(history, freqs=(8, 12, 15)):
+def parse_history_mf__(history, freqs=(1.665, 8.1, 12.1, 15.4)):
     """
     Parse history json-file of simulations.
 
@@ -1064,24 +1066,26 @@ def parse_history_mf__(history, freqs=(8, 12, 15)):
                   data[key][u'parameters'][u'n'],
                   data[key][u'parameters'][u'los']])
 
-        dr_8_obs = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_obs']
-        dr_12_obs = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_obs']
-        dr_15_obs = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_obs']
+        dr_1_obs = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_obs']
+        dr_8_obs = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_obs']
+        dr_12_obs = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_obs']
+        dr_15_obs = data[key_func(simulation_number, freqs[3])][u'results'][u'dr_obs']
 
-        dr_8_true = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_true']
-        dr_12_true = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_true']
-        dr_15_true = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_true']
+        dr_1_true = data[key_func(simulation_number, freqs[0])][u'results'][u'dr_true']
+        dr_8_true = data[key_func(simulation_number, freqs[1])][u'results'][u'dr_true']
+        dr_12_true = data[key_func(simulation_number, freqs[2])][u'results'][u'dr_true']
+        dr_15_true = data[key_func(simulation_number, freqs[3])][u'results'][u'dr_true']
 
 
         # Calculate ``k``
-        drs_obs = [dr_8_obs-dr_15_obs, dr_12_obs-dr_15_obs, 0]
-        drs_true = [dr_8_true-dr_15_true, dr_12_true-dr_15_true, 0]
-        res_obs = curve_fit(shift_model_dr, freqs, drs_obs, p0=[1.0, 1.0, -0.1],
-                            bounds=((0.0, 0.0, -5.0), (10.0, 5.0, 0.0)),
+        drs_obs = [1 - dr_1_obs, 1 - dr_8_obs, 1 - dr_12_obs, 1 - dr_15_obs]
+        drs_true = [1 - dr_1_true, 1 - dr_8_true, 1 - dr_12_true, 1 - dr_15_true]
+        res_obs = curve_fit(shift_model_dr, freqs, drs_obs, p0=[-1.0, 1.0, 1],
+                            bounds=((-5.0, 0.0, 0.0), (0.0, 5.0, 5.0)),
                             method='trf')
         res_true = curve_fit(shift_model_dr, freqs, drs_true,
-                             p0=[1.0, 1.0, -0.1], method='trf',
-                             bounds=((0.0, 0.0, -5.0), (10.0, 5.0, 0.0)))
+                             p0=[-1.0, 1.0, 1], method='trf',
+                             bounds=((-5.0, 0.0, 0.0), (0.0, 5.0, 5.0)))
 
         y.append([res_obs[0][1], res_true[0][1], res_obs[0][1]-res_true[0][1]])
 
