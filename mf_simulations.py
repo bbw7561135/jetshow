@@ -25,10 +25,10 @@ class TotalDisasterException(Exception):
 
 # B = 0.01-10 Gs
 # jet.bfield.parameters.b1
-b_uniform_borders = [np.log(0.1), np.log(10)]
+b_uniform_borders = [np.log(0.01), np.log(10)]
 # N = 50-5000 cm**(-3)
 # jet.nfield.parameters.n1
-n_uniform_borders = [np.log(50), np.log(5000)]
+n_uniform_borders = [np.log(5), np.log(5000)]
 # LOS = 1/2G - 2/G
 # observation.los_angle
 los_uniform_borders = [2.865*np.pi/180, 11.459*np.pi/180]
@@ -54,26 +54,34 @@ uv_fits_template_x = os.path.join(uv_fits_template,
                                 '0235+164.x.2006_06_15.uvf')
 uv_fits_template_j = os.path.join(uv_fits_template,
                                 '0235+164.j.2006_06_15.uvf')
+uv_fits_template_18 = os.path.join(uv_fits_template,
+                                   '0235+164.18cm.2010_06_23.uvf')
 cc_image_u = os.path.join(uv_fits_template, '0235+164.u.2006_06_15_cc.fits')
 cc_image_x = os.path.join(uv_fits_template, '0235+164.x.2006_06_15_cc.fits')
 cc_image_j = os.path.join(uv_fits_template, '0235+164.j.2006_06_15_cc.fits')
+cc_image_18 = os.path.join(uv_fits_template, '0235+164.18cm.2010_06_23_cc.fits')
+
 
 path_to_script = '/home/ilya/github/vlbi_errors/difmap/final_clean_nw'
 json_out = os.path.join(out_dir, 'history_mf.json')
-with open(json_out, 'w') as fo:
-    json.dump(nested_dict(), fo)
+
+if not os.path.exists(json_out):
+    with open(json_out, 'w') as fo:
+        json.dump(nested_dict(), fo)
 
 i = 1
 for b, n, los in zip(b_values, n_values, los_values):
     print("Running simulations with b={}, n={}, los={}".format(b, n, los))
 
-    for freq, uv_fits_template, cc_image in zip((15.4, 12.1, 8.1),
+    for freq, uv_fits_template, cc_image in zip((15.4, 12.1, 8.1, 1.665),
                                                 (uv_fits_template_u,
                                                  uv_fits_template_j,
-                                                 uv_fits_template_x),
+                                                 uv_fits_template_x,
+                                                 uv_fits_template_18),
                                                 (cc_image_u,
                                                  cc_image_j,
-                                                 cc_image_x)):
+                                                 cc_image_x,
+                                                 cc_image_18)):
 
         # Cleaning old results if any
         simulated_maps_old = glob.glob(os.path.join(exe_dir, "map*.txt"))
@@ -84,7 +92,7 @@ for b, n, los in zip(b_values, n_values, los_values):
                                "nfield": {"parameters": {"n_1": n}}},
                        "observation": {"los_angle": los,
                                        "frequency_ghz": freq},
-                       "image": {"pixel_size_mas": 0.005, "number_of_pixels": 1000}}
+                       "image": {"pixel_size_mas": 0.01, "number_of_pixels": 500}}
         update_config(cfg_file, update_dict)
 
         # If we failed to find best image params - just continue
@@ -97,7 +105,8 @@ for b, n, los in zip(b_values, n_values, los_values):
         image = os.path.join(exe_dir, "map_i.txt")
         image = np.loadtxt(image)
         total_flux = image.sum()
-        noise_factor = image.sum()/cc_image.sum()
+        cc_image = create_clean_image_from_fits_file(cc_image)
+        noise_factor = image.sum()/cc_image.cc.sum()
 
         initial_dfm_model = os.path.join(main_dir, 'initial_cg.mdl')
         out_dfm_model_fn = "bk_{}_{}.mdl".format(str(i).zfill(2), int(freq))
@@ -165,7 +174,7 @@ for b, n, los in zip(b_values, n_values, los_values):
 
         with open(json_out, 'r') as fo:
             history = json.load(fo)
-        history["{}_{}".format(str(i).zfill(2), int(freq))] = {"parameters": {"b": b,
+        history["{}_{}".format(str(i).zfill(2), freq)] = {"parameters": {"b": b,
                                                                               "n": n,
                                                                               "los": los},
                                                                "results": {"dr_obs": dr_obs,
