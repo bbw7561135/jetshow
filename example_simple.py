@@ -13,6 +13,10 @@ from utils import mas_to_rad
 import matplotlib.pyplot as plt
 
 
+mas_to_rad = 4.8481368 * 1E-09
+rad_to_mas = 1. / mas_to_rad
+
+
 class FailedFindBestImageParamsException(Exception):
     pass
 
@@ -192,7 +196,8 @@ def find_image_params(cfg_file, path_to_executable):
     updated = False
 
     # Until image parameters are OK for us
-    updates_steps = np.linspace(1.4, 2., 10)[::-1]
+    updates_steps_size = np.linspace(1.5, 2, 20)[::-1]
+    updates_steps_n = np.linspace(1, 1.25, 20)[::-1]
     update_step_n = 0
     update_step_size = 0
 
@@ -201,19 +206,19 @@ def find_image_params(cfg_file, path_to_executable):
             decision_dict = analyze_tau_stripe(os.path.join(exe_dir,
                                                             'stripe_tau.txt'))
         if decision_dict["increase_pixel_size"]:
-            params[u'image'][u'pixel_size_mas'] *= updates_steps[update_step_size]
+            params[u'image'][u'pixel_size_mas'] *= updates_steps_size[update_step_size]
             update_step_size += 1
         elif decision_dict["decrease_pixels_size"]:
-            params[u'image'][u'pixel_size_mas'] /= updates_steps[update_step_size]
+            params[u'image'][u'pixel_size_mas'] /= updates_steps_size[update_step_size]
             update_step_size += 1
         elif decision_dict["increase_number_of_pixels"]:
-            new_number = int(updates_steps[update_step_n]*params[u'image'][u'number_of_pixels'])
+            new_number = int(updates_steps_n[update_step_n]*params[u'image'][u'number_of_pixels'])
             update_step_n += 1
             if new_number % 2:
                 new_number += 1
             params[u'image'][u'number_of_pixels'] = new_number
         elif decision_dict["decrease_number_of_pixels"]:
-            new_number = int(params[u'image'][u'number_of_pixels']/updates_steps[update_step_n])
+            new_number = int(params[u'image'][u'number_of_pixels']/updates_steps_n[update_step_n])
             update_step_n += 1
             if new_number % 2:
                 new_number += 1
@@ -308,6 +313,8 @@ def modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor,
 
     image_i_file = os.path.join(exe_dir, params[u'output'][u'file_i'])
     image_i = np.loadtxt(image_i_file)
+    image_i[image_i < 0] = 0
+    image_i[image_i > 10.0] = 0
     icomp = ImageComponent(image_i, y_rad[0, :], z_rad[:, 0])
 
     noise = uvdata.noise(use_V=True)
@@ -383,6 +390,10 @@ def b1_equipartition(n1, gama_min=1):
     return np.sqrt(n1*gama_min*9.11*10**(-28)*9.0*10**20*8*np.pi/0.1)
 
 
+def log_base(x, base):
+    return np.log(x)/np.log(base)
+
+
 def b_to_n_energy_ratio(b1, n1, gamma_min=1):
     """
     Ratio of magnetic energy density to particle energy density.
@@ -406,7 +417,7 @@ def b_to_n_energy_ratio(b1, n1, gamma_min=1):
     return 0.1*b1**2/(8*np.pi*n1*gamma_min*9.11*10**(-28)*9.0*10**20)
 
 
-def t_syn(b, D, nu):
+def t_syn(b, nu, D=1.0):
     """
     Synchrotron lifetime for given frequency.
 
@@ -414,6 +425,7 @@ def t_syn(b, D, nu):
     :param D:
     :param nu:
     :return:
+        Lifetime [s].
     """
     # Thompson cross-section [cm**2]
     sigma_t = 6.65 * 10**(-25)
@@ -516,6 +528,8 @@ def plot_stripe(sim_fname, difmap_model, simulations_params, g=None,
     core = comps[0]
 
     image = np.loadtxt(sim_fname)
+    image[image < 0] = 0
+    image[image > 10.0] = 0
     imsize = simulations_params[u'image'][u'number_of_pixels']
     mas_in_pix = simulations_params[u'image'][u'pixel_size_mas']
 
@@ -707,6 +721,8 @@ def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=None,
     from matplotlib import cm
     theCM = cm.Blues
     image = np.loadtxt(sim_fname)
+    image[image < 0] = 0
+    image[image > 10.0] = 0
     low = np.percentile(image[image > 0].flatten(), 50)
     high = np.percentile(image[image > 0].flatten(), 99.99)
     levels = np.logspace(np.log2(low), np.log2(high), 10, base=2)
@@ -768,6 +784,7 @@ def plot_simulations_2d(sim_fname, simulations_params, each=1, side_delta=None,
 
     ax.set_xlabel("Distance along jet, [mas]")
     ax.set_ylabel("Distance, [mas]")
+    # ax.set_title("")
     fig.tight_layout()
     plt.show()
 
@@ -876,6 +893,8 @@ def fit_simulations_in_image_plane(sim_fname, simulations_params,
     y *= mas_in_pix
     xx, yy = np.meshgrid(x, y)
     image = np.loadtxt(sim_fname)
+    image[image < 0] = 0
+    image[image > 10.0] = 0
 
     p = [1.0, 0.0, 0.0, 0.1, 0.1, 0.0]
     if core is not None:
@@ -898,6 +917,19 @@ def fit_simulations_in_image_plane(sim_fname, simulations_params,
 
     fit_g = fitting.LevMarLSQFitter()
     return fit_g(g_init, xx, yy, image)
+
+
+def plot_fitted_model(simulated_uv_fits, comps, savefig=None):
+    uvdata = UVData(simulated_uv_fits)
+    fig = uvdata.uvplot()
+    model = Model(stokes="I")
+    model.add_components(*comps)
+    uvdata.substitute([model])
+    fig = uvdata.uvplot(color='r', fig=fig)
+    if savefig is not None:
+        fig.savefig(savefig, dpi=300)
+    plt.close()
+    return fig
 
 
 def parse_history(history):
@@ -1090,6 +1122,418 @@ def parse_history_mf__(history, freqs=(1.665, 8.1, 12.1, 15.4)):
         y.append([res_obs[0][1], res_true[0][1], res_obs[0][1]-res_true[0][1]])
 
     return np.atleast_2d(X), np.atleast_2d(y)
+
+
+def find_parameters_with_flux_between(json_history, flux_min, flux_max,
+                                      freq=None):
+    """
+    Find simulation parameters that results in flux higher than specified.
+
+    :param json_history:
+        Location of json-format history file.
+    :param flux_min:
+        Minimum value of total flux.
+    :param flux_max:
+        Maximum value of total flux.
+    :param freq: (optional)
+        Frequency to consider. If ``None`` then consider all frequencies.
+        (default: ``None``)
+    :return:
+        2D numpy array of simulation parameters [``b``, ``n``, ``los``].
+    """
+    assert flux_min < flux_max
+    if freq is not None:
+        assert str(freq) in ("15.4", "12.1", "8.1", "1.665")
+    with open(json_history, "r") as fo:
+        data = json.load(fo)
+    params = list()
+    keys = data.keys()
+    if freq is not None:
+        keys = select_keys_with_given_frequency(keys, freq)
+    for key in keys:
+        if flux_min < data[key][u'results'][u'flux'] < flux_max:
+            params.append([data[key][u'parameters'][u'b'],
+                           data[key][u'parameters'][u'n'],
+                           data[key][u'parameters'][u'los']])
+    return np.atleast_2d(params)
+
+
+def find_params_for_given_keys(json_history, keys):
+    with open(json_history, "r") as fo:
+        data = json.load(fo)
+    params = list()
+    for key in keys:
+        if key not in data.keys():
+            raise Exception("No key {} in {} keys!".format(key, json_history))
+        params.append([data[key][u'parameters'][u'b'],
+                       data[key][u'parameters'][u'n'],
+                       data[key][u'parameters'][u'los']])
+    return np.atleast_2d(params)
+
+
+def find_keys_with_flux_between(json_history, flux_min, flux_max):
+    """
+    Find keys of results in flux higher than specified.
+
+    :param json_history:
+        Location of json-format history file.
+    :param flux_min:
+        Minimum value of total flux.
+    :param flux_max:
+        Maximum value of total flux.
+    :return:
+        Iterable of keys.
+    """
+    assert flux_min < flux_max
+    with open(json_history, "r") as fo:
+        data = json.load(fo)
+    keys = list()
+    for key in data.keys():
+        if flux_min < data[key][u'results'][u'flux'] < flux_max:
+            keys.append(key)
+    return keys
+
+
+def select_keys_with_given_frequency(keys, freq):
+    """
+    Among iterable of keys select only those corresponding to given frequency.
+
+    :param keys:
+        Iterable of keys.
+    :param freq:
+        Frequency (``15.4``, ``12.1``, ``8.1`` or ``1.665``).
+    :return:
+        Iterable of keys.
+    """
+    new_keys = list()
+    for key in keys:
+        if str(freq) in key:
+            new_keys.append(key)
+    return new_keys
+
+
+def find_tb_for_given_keys(json_history, keys):
+    """
+    Retrieve brightness temperatures for given keys.
+
+    :param json_history:
+        Location of json-format history file.
+    :param keys:
+        Iterable of keys.
+    :return:
+        2D numpy array with brightness temperatures - for simulation image
+        pixels and for difmap models.
+    """
+
+    with open(json_history, "r") as fo:
+        data = json.load(fo)
+    tb = list()
+    for key in keys:
+        tb.append([data[key][u'results'][u'tb_pix'],
+                   data[key][u'results'][u'tb_difmap']])
+    return np.atleast_2d(tb)
+
+
+def find_flux_for_given_keys(json_history, keys):
+    with open(json_history, "r") as fo:
+        data = json.load(fo)
+    fluxes = list()
+    for key in keys:
+        if key not in data.keys():
+            raise Exception("No key {} in {} keys!".format(key, json_history))
+        fluxes.append(data[key][u'results'][u'flux'])
+    return np.array(fluxes)
+
+
+def strip_frequency_from_keys(keys):
+    """
+    Convert full keys (with frequency) to two-decimal keys, e.g.
+    ``32_15.4`` -> ``32``.
+
+    :param keys:
+        Iterable of keys with frequencies.
+    :return:
+        Iterable of keys without frequencies.
+    """
+    return list(set([key.split('_')[0] for key in keys]))
+
+
+def find_shifts_for_given_keys_and_freqs(json_history, keys, freq_low,
+                                         freq_high):
+    """
+    Get shifts between given frequencies for given keys.
+
+    :param json_history:
+        Location of json-format history file.
+    :param keys:
+        Iterable of keys that consists of only 2 digit integer, e.g. ``23`` or
+        ``keys = [str(i).zfill(2) for i in range(1, 34)]``
+    :param freq_low:
+        Lowest frequency to consider. (``15.4``, ``12.1``, ``8.1`` or ``1.665``)
+    :param freq_high:
+        Highest frequency to consider. (``15.4``, ``12.1``, ``8.1`` or
+        ``1.665``)
+    :return:
+        2D numpy array with shifts between ``freq_low`` and ``freq_high`` for
+        given keys - observed value, true, value and their difference.
+    """
+    assert float(freq_low) < float(freq_high)
+    with open(json_history, "r") as fo:
+        data = json.load(fo)
+    shifts = list()
+    for key in keys:
+        key_low = u'{}_{}'.format(key, freq_low)
+        key_high = u'{}_{}'.format(key, freq_high)
+
+        dr_obs_low = data[key_low][u'results'][u'dr_obs']
+        dr_obs_high = data[key_high][u'results'][u'dr_obs']
+        shift_obs = dr_obs_low - dr_obs_high
+
+        dr_true_low = data[key_low][u'results'][u'dr_true']
+        dr_true_high = data[key_high][u'results'][u'dr_true']
+        shift_true = dr_true_low - dr_true_high
+
+        shifts.append([shift_obs, shift_true, shift_obs-shift_true])
+    return np.atleast_2d(shifts)
+
+
+def join_json_histories(result_json_history, overwrite=False, *json_histories):
+    """
+    Join several json-format history files in one.
+
+    :param result_json_history:
+        Location of resulted json history file.
+    :param overwrite: (optional)
+        Boolean - overwrite repeating keys in resulting history? (default:
+        ``False``)
+    :param json_histories:
+        Iterable of json-format history files to concatenate.
+    :return:
+        Json-format history file with all info from others included.
+    """
+    histories = nested_dict()
+    for json_history in json_histories:
+        with open(json_history, 'r') as fo:
+            history = json.load(fo)
+        keys = history.keys()
+        for key in keys:
+            if key in histories.keys():
+                if not overwrite:
+                    print("Resulted json already has key {}! Skipping".format(key))
+                    continue
+            histories[key] = history[key]
+
+    with open(result_json_history, 'w') as fo:
+        json.dump(histories, fo)
+
+
+def fit_parameters_to_flux(json_history, flux_min, flux_max, freq):
+    """
+    :param json_history:
+    :param flux_min:
+    :param flux_max:
+    :param freq:
+    :return:
+
+    :note:
+        Get parameters that results in fluxes between 0.3 and 0.5:
+        ``X[np.logical_and(y>0.3, y<0.5)]``
+    """
+    from mpl_toolkits.mplot3d import Axes3D
+    keys = find_keys_with_flux_between(json_history, flux_min, flux_max)
+    keys = select_keys_with_given_frequency(keys, freq)
+    parameters = find_params_for_given_keys(json_history, keys)
+    fluxes = find_flux_for_given_keys(json_history, keys)
+    from sklearn import gaussian_process
+    from sklearn.preprocessing import MinMaxScaler
+    mms = MinMaxScaler()
+    X = mms.fit_transform(np.log10(parameters))
+    y = fluxes.copy()
+    y -= np.median(fluxes)
+    gp = gaussian_process.GaussianProcess(thetaL=(0.1, 0.1, 0.1),
+                                          thetaU=(0.5, 0.5, 0.5),
+                                          theta0=(0.25, 0.25, 0.25),
+                                          nugget=0.05**2,
+                                          storage_mode='full')
+    gp.fit(X, y)
+    XX, YY, ZZ = np.meshgrid(np.linspace(0, 1, 50),
+                             np.linspace(0, 1, 50),
+                             np.linspace(0, 1, 50))
+    X_ = np.vstack((XX.ravel(), YY.ravel(), ZZ.ravel())).T
+    y_ = gp.predict(X_)
+    y_ = y_.reshape(XX.shape)
+    y_ += np.median(fluxes)
+    X = np.atleast_2d([np.linspace(0, 1, 50),
+                       np.linspace(0, 1, 50),
+                       np.linspace(0, 1, 50)]).T
+    X = 10**mms.inverse_transform(X)
+    XX, YY, ZZ = np.meshgrid(X[:, 0], X[:, 1], X[:, 2])
+    plt.matshow(y_[:,:,0])
+    plt.contour(XX[:,:,0], YY[:,:,0], y_[:,:,0])
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(XX[:,:,0], YY[:,:,0], y_[:,:,0], c='r', marker='o')
+
+    return X_, y_
+
+
+def plot_stripe_for_given_key(simulated_image_low, simulated_image_high,
+                              json_history, key_low, key_high,
+                              difmap_model_low, difmap_model_high,
+                              delta=100, savefig=None):
+    """
+     Plot 1D stripe along jet axis.
+     """
+    fig, axes = matplotlib.pyplot.subplots(nrows=2, ncols=1, sharex=True,
+                                           sharey=False)
+    for i, image, key, difmap_model in zip((0, 1),
+                                           (simulated_image_low, simulated_image_high),
+                                           (key_low, key_high),
+                                           (difmap_model_low, difmap_model_high)):
+        difmap_dir, difmap_fn = os.path.split(difmap_model)
+        comps = import_difmap_model(difmap_fn, difmap_dir)
+        core = comps[0]
+
+        image = np.loadtxt(simulated_image)
+        image[image < 0] = 0
+        image[image > 10.0] = 0
+        with open(json_history, 'r') as fo:
+            simulations_params = json.load(fo)
+        imsize = simulations_params[key][u'image'][u'number_of_pixels']
+        mas_in_pix = simulations_params[key][u'image'][u'pixel_size_mas']
+
+        y = np.arange(-imsize/2, imsize/2, dtype=float)
+        x = np.arange(-imsize/2, imsize/2, dtype=float)
+        x *= mas_in_pix
+        y *= mas_in_pix
+        xx, yy = np.meshgrid(x, y)
+
+        # Fit simulated image in image plane
+        p = [1.0, 0.0, 0.0, 0.1, 0.1, 0.0]
+        if core is not None:
+            p = [core.p[0], core.p[1], core.p[2], core.p[3], core.p[3], 0.0]
+
+        def tiedfunc(g_init):
+            y_stddev = g_init.x_stddev
+            return y_stddev
+
+        if len(core) == 4:
+            tied = {'y_stddev': tiedfunc}
+            g_init = models.Gaussian2D(amplitude=p[0], x_mean=p[1], y_mean=p[2],
+                                       x_stddev=p[3], y_stddev=p[3], theta=None,
+                                       tied=tied)
+        elif len(core) == 6:
+            g_init = models.Gaussian2D(amplitude=p[0], x_mean=p[1], y_mean=p[2],
+                                       x_stddev=p[3], y_stddev=p[3], theta=None)
+        else:
+            raise Exception
+
+        fit_g = fitting.LevMarLSQFitter()
+        g = fit_g(g_init, xx, yy, image)
+        g_image = g(xx, yy)
+
+        if len(core) == 6:
+            e = core.p[4]
+        else:
+            e = 1.
+        # put 2 instead of 4 before sqrt and remove 0.5 before p[3]
+        amp = core.p[0] / (2. * np.pi * e * (core.p[3] / (2. * np.sqrt(2. * np.log(2)) * mas_in_pix)) ** 2)
+        p = [amp, core.p[1], core.p[2], core.p[3]] + list(core.p[4:])
+        gaus = gaussian(*p)
+        gaus_image = gaus(xx, yy)
+
+        x = np.arange(-20, imsize / 2 - delta) * mas_in_pix
+
+        colors = plt.rcParams['axes.color_cycle']
+        # Plot simulation results
+        axes[i].plot(x, image[imsize / 2, imsize / 2 - 20:-delta], lw=2, label="Simulations",
+                  color=colors[0])
+        axes[i].axvline(x[np.argmax(image[imsize / 2, imsize / 2 - 20:-delta])], lw=1,
+                        color=colors[0])
+        axes[i].axvline(core.p[1], lw=2, color=colors[1])
+        # Plot difmap model
+        axes[i].plot(x, gaus_image[imsize / 2, imsize / 2 - 20:-delta], label="Difmap fit",
+                  color=colors[1])
+        ratio = image[imsize / 2, imsize / 2 - 20:-delta].max()/gaus_image[imsize / 2, imsize / 2 - 20:-delta].max()
+        axes[i].plot(x, ratio*gaus_image[imsize / 2, imsize / 2 - 20:-delta], ':',
+                  color=colors[1], lw=1)
+        # Optionally plot model fitted in image plane
+        axes[i].plot(x, g_image[imsize / 2, imsize / 2 - 20:-delta], label="Sim. image fit",
+                  color=colors[2])
+        axes[i].axvline(core.p[1], lw=2, color=colors[1])
+        axes[i].set_ylabel("Flux, [Jy/pixel]", fontsize=14)
+        plt.legend(loc="best", fontsize=14)
+    axes[i].set_xlabel("Distance along jet, [mas]", fontsize=14)
+    fig.tight_layout()
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight', dpi=300)
+
+
+def comoving_transverse_distance(z, H_0=73.0, omega_M=0.3, omega_V=0.7,
+                                 format="pc"):
+    """
+    Given redshift ``z``, Hubble constant ``H_0`` [km/s/Mpc] and
+    density parameters ``omega_M`` and ``omega_V``, returns comoving transverse
+    distance (see arXiv:astro-ph/9905116v4 formula 14). Angular diameter
+    distance is factor (1 + z) lower and luminosity distance is the same factor
+    higher.
+
+    """
+    from scipy.integrate import quad
+    fmt_dict = {"cm": 9.26 * 10.0 ** 27.0, "pc": 3. * 10 ** 9, "Mpc": 3000.0}
+
+    result = (H_0 / 100.0) ** (-1.) * quad(lambda x: (omega_M * (1. + x ** 3) +
+                                                      omega_V) ** (-0.5),
+                                           0, z)[0]
+    try:
+        return fmt_dict[format] * result
+    except KeyError:
+        raise Exception('Format  \"pc\", \"cm\" or \"Mpc\"')
+
+
+def pc_to_mas(z):
+    """
+    Return scale factor that convert from parsecs to milliarcseconds .
+
+    """
+    # Angular distance in pc
+    d_a = comoving_transverse_distance(z, format='pc') / (1. + z)
+    # Angle in radians
+    angle = 1. / d_a
+    return rad_to_mas * angle
+
+
+def mas_to_pc(z):
+    """
+    Return scale factor that convert from milliarcseconds to parsecs.
+
+    """
+    # Angular distance in pc
+    d_a = comoving_transverse_distance(z, format='pc') / (1. + z)
+    return mas_to_rad * d_a
+
+
+def distance_from_SMBH(dr_mas, los_rad, z):
+    """
+    Returns distance from SMBH [pc] at given projected distance [mas].
+    :param dr_mas:
+    :param los_rad:
+    :param z:
+    :return:
+    """
+    return dr_mas*mas_to_pc(z)/np.sin(los_rad)
+
+
+def b_field(b1, r_pc, m=1):
+    """
+    Value of B field at ``r_pc`` distance [pc]f rom apex.
+
+    :param b1:
+    :param r_pc:
+    :param m:
+    :return:
+    """
+    return b1 * (r_pc)**(-m)
 
 
 def _find_shifts_from_true_images(freq_true_images_dict, imsize,
