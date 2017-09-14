@@ -15,14 +15,14 @@ uvdata = UVData(uv_file)
 fig = uvdata.uvplot(stokes=["LL"])
 
 images = list()
-angles = [45, 90, 135]
-image = '/home/ilya/github/bck/jetshow/uvf_mf_adds/map_i_01_8.1.txt'
+angles = range(0, 180, 10)
+image = '/home/ilya/github/bck/jetshow/uvf/map_i_09_C.txt'
 image = np.loadtxt(image)
 images.append(image)
 
-imsize = 916
+imsize = 1096
 imsize = (imsize, imsize)
-mas_in_pix = 0.002533
+mas_in_pix = 0.005
 y, z = np.meshgrid(np.arange(imsize[0]), np.arange(imsize[1]))
 y = y - imsize[0] / 2. + 0.5
 z = z - imsize[0] / 2. + 0.5
@@ -45,7 +45,7 @@ for image in images:
     model = Model(stokes='LL')
     model.add_component(icomp)
     uvdata.substitute([model])
-    fig = uvdata.uvplot(stokes=["LL"], fig=fig, color='r')
+    fig = uvdata.uvplot(stokes=["LL"], fig=fig, color='r', alpha=0.1)
 
 fig.savefig('/home/ilya/github/bck/jetshow/uvf_mf_adds/ra.png',
             bbox_inches='tight', dpi=300)
