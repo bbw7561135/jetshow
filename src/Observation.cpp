@@ -29,9 +29,9 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	// Actually, the best user-time:
 	// #pragma omp parallel for num_threads(4) schedule(dynamic) collapse(2)
   for (int j = 0; j < image_size.first; ++j) {
-    for (int k = 0; k < image_size.second; ++k) {
+    for (int k = image_size.second/2; k < image_size.second; ++k) {
       int n_pix = image_size.first*j + k + 1;
-      std::cout << "Running on pixel # " << n_pix << std::endl;
+//      std::cout << "Running on pixel # " << n_pix << std::endl;
       auto &ray = rays[j*image_size.first+k];
       auto &pxl = pixels[j*image_size.first+k];
 
@@ -381,7 +381,7 @@ void Observation::run_stripe(int n, double tau_max, double tau_min) {
 		for (int k = 0; k < image_size.second; ++k) {
 			if (j == image_size.first / 2) {
 				int n_pix = image_size.first * j + k + 1;
-				std::cout << "Running on pixel # " << n_pix << std::endl;
+//				std::cout << "Running on pixel # " << n_pix << std::endl;
 				auto &ray = rays[j * image_size.first + k];
 				auto &pxl = pixels[j * image_size.first + k];
 
