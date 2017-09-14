@@ -457,7 +457,8 @@ void test_stripe() {
 	auto image_size = std::make_pair(number_of_pixels, number_of_pixels);
 	auto pc_in_mas = mas_to_pc(z);
 //		auto cm_in_mas = pc * pc_in_mas;
-	auto pixel_size = pixel_size_mas*0.25*pc_in_mas*pc;
+	std::cout << "Setting pixel size to " << pixel_size_mas << " mas" << std::endl;
+	auto pixel_size = pixel_size_mas*pc_in_mas*pc;
 	auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, z);
 
 	ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
