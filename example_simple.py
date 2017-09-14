@@ -11,6 +11,7 @@ from uv_data import UVData
 from model import Model
 from utils import mas_to_rad
 import matplotlib.pyplot as plt
+from astropy.modeling import models, fitting
 
 
 mas_to_rad = 4.8481368 * 1E-09
@@ -1092,6 +1093,7 @@ def parse_history_mf__(history, freqs=(1.665, 8.1, 12.1, 15.4)):
 
     X = list()
     y = list()
+    fluxes = list()
     for simulation_number in simulation_numbers:
         key = key_func(simulation_number, freqs[0])
         X.append([data[key][u'parameters'][u'b'],
@@ -1258,8 +1260,8 @@ def strip_frequency_from_keys(keys):
     return list(set([key.split('_')[0] for key in keys]))
 
 
-def find_shifts_for_given_keys_and_freqs(json_history, keys, freq_low,
-                                         freq_high):
+def find_shifts_and_fluxes_for_given_keys_and_freqs(json_history, keys,
+                                                    freq_low, freq_high):
     """
     Get shifts between given frequencies for given keys.
 
@@ -1281,6 +1283,7 @@ def find_shifts_for_given_keys_and_freqs(json_history, keys, freq_low,
     with open(json_history, "r") as fo:
         data = json.load(fo)
     shifts = list()
+    fluxes = list()
     for key in keys:
         key_low = u'{}_{}'.format(key, freq_low)
         key_high = u'{}_{}'.format(key, freq_high)
@@ -1294,7 +1297,49 @@ def find_shifts_for_given_keys_and_freqs(json_history, keys, freq_low,
         shift_true = dr_true_low - dr_true_high
 
         shifts.append([shift_obs, shift_true, shift_obs-shift_true])
-    return np.atleast_2d(shifts)
+        fluxes.append(data[key_high][u'results'][u'flux'])
+    return np.atleast_2d(shifts), np.array(fluxes)
+
+
+def find_shifts_and_los_for_given_keys_and_freqs(json_history, keys,
+                                                 freq_low, freq_high):
+    """
+    Get shifts between given frequencies for given keys.
+
+    :param json_history:
+        Location of json-format history file.
+    :param keys:
+        Iterable of keys that consists of only 2 digit integer, e.g. ``23`` or
+        ``keys = [str(i).zfill(2) for i in range(1, 34)]``
+    :param freq_low:
+        Lowest frequency to consider. (``15.4``, ``12.1``, ``8.1`` or ``1.665``)
+    :param freq_high:
+        Highest frequency to consider. (``15.4``, ``12.1``, ``8.1`` or
+        ``1.665``)
+    :return:
+        2D numpy array with shifts between ``freq_low`` and ``freq_high`` for
+        given keys - observed value, true, value and their difference.
+    """
+    assert float(freq_low) < float(freq_high)
+    with open(json_history, "r") as fo:
+        data = json.load(fo)
+    shifts = list()
+    los = list()
+    for key in keys:
+        key_low = u'{}_{}'.format(key, freq_low)
+        key_high = u'{}_{}'.format(key, freq_high)
+
+        dr_obs_low = data[key_low][u'results'][u'dr_obs']
+        dr_obs_high = data[key_high][u'results'][u'dr_obs']
+        shift_obs = dr_obs_low - dr_obs_high
+
+        dr_true_low = data[key_low][u'results'][u'dr_true']
+        dr_true_high = data[key_high][u'results'][u'dr_true']
+        shift_true = dr_true_low - dr_true_high
+
+        shifts.append([shift_obs, shift_true, shift_obs-shift_true])
+        los.append(data[key_high][u'parameters'][u'los'])
+    return np.atleast_2d(shifts), np.array(los)
 
 
 def join_json_histories(result_json_history, overwrite=False, *json_histories):
@@ -1384,9 +1429,11 @@ def plot_stripe_for_given_key(simulated_image_low, simulated_image_high,
     """
      Plot 1D stripe along jet axis.
      """
-    fig, axes = matplotlib.pyplot.subplots(nrows=2, ncols=1, sharex=True,
-                                           sharey=False)
-    for i, image, key, difmap_model in zip((0, 1),
+    fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=False)
+    text = ['{} GHz'.format(key_low.split('_')[1]),
+            '{} GHz'.format(key_high.split('_')[1])]
+    positions = [(0.95, 0.8), (0.95, 0.10)]
+    for i, simulated_image, key, difmap_model in zip((0, 1),
                                            (simulated_image_low, simulated_image_high),
                                            (key_low, key_high),
                                            (difmap_model_low, difmap_model_high)):
@@ -1462,11 +1509,16 @@ def plot_stripe_for_given_key(simulated_image_low, simulated_image_high,
                   color=colors[2])
         axes[i].axvline(core.p[1], lw=2, color=colors[1])
         axes[i].set_ylabel("Flux, [Jy/pixel]", fontsize=14)
+        axes[i].text(positions[i][0], positions[i][1], text[i],
+                     transform=axes[i].transAxes, fontsize=14,
+                     horizontalalignment='right')
         plt.legend(loc="best", fontsize=14)
     axes[i].set_xlabel("Distance along jet, [mas]", fontsize=14)
     fig.tight_layout()
     if savefig:
         plt.savefig(savefig, bbox_inches='tight', dpi=300)
+
+    return fig
 
 
 def comoving_transverse_distance(z, H_0=73.0, omega_M=0.3, omega_V=0.7,
