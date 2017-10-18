@@ -236,7 +236,7 @@ def find_image_params(cfg_file, path_to_executable):
             params[u'image'][u'pixel_size_mas'])
 
 
-def run_simulations(cfg_file, path_to_executable):
+def run_simulations(cfg_file, path_to_executable, map_size=None):
     """
     Run simulation of BK jet, fit results.
 
@@ -244,27 +244,34 @@ def run_simulations(cfg_file, path_to_executable):
         Path to configuration file in JSON format.
     :param path_to_executable:
         Path to compiled executable of ``jetshow``.
+    :param map_size: (optional)
+        Iterable of number of pixels and pixel size in map. If ``None`` then
+        determine using optical depth calculation. (default: ``None``)
     """
     exe_dir, exe = os.path.split(path_to_executable)
-    try:
-        number_of_pixels, pixel_size_mas = find_image_params(cfg_file,
-                                                             path_to_executable)
-    # Hope second pass will help
-    except IndexError:
+    if map_size is not None:
+        number_of_pixels, pixel_size_mas = map_size
+    else:
         try:
             number_of_pixels, pixel_size_mas = find_image_params(cfg_file,
                                                                  path_to_executable)
+        # Hope second pass will help
         except IndexError:
-            raise FailedFindBestImageParamsException
+            try:
+                number_of_pixels, pixel_size_mas = find_image_params(cfg_file,
+                                                                     path_to_executable)
+            except IndexError:
+                raise FailedFindBestImageParamsException
 
     update_params_dict = {"calculate": "full",
                           "image": {"number_of_pixels": number_of_pixels,
                                     "pixel_size_mas": pixel_size_mas}}
     update_config(cfg_file, update_params_dict)
-    try:
-        os.unlink(os.path.join(exe_dir, 'stripe_tau.txt'))
-    except OSError:
-        pass
+    if map_size is None:
+        try:
+            os.unlink(os.path.join(exe_dir, 'stripe_tau.txt'))
+        except OSError:
+            pass
     params = run_jetshow(cfg_file, path_to_executable)
     return params
 
