@@ -158,16 +158,31 @@ def abc_simulations(param,
         for to_remove in simulated_maps_old:
             os.unlink(to_remove)
 
+        # Checking if simulations on highest frequency are done. If so then use
+        # scaled image parameters
+        if freqs[0] in history[p].keys():
+            pixel_size_mas = history[p][freqs[0]]["pixel_size_mas"]*freqs[0]/freq
+            number_of_pixels = history[p][freqs[0]]["number_of_pixels"]*freq/freqs[0]
+            map_size = (number_of_pixels, pixel_size_mas)
+            print("Using scaled image parameters: {}, {}".format(number_of_pixels,
+                                                                 pixel_size_mas))
+        else:
+            pixel_size_mas = 0.01
+            number_of_pixels = 400
+            map_size = None
+
         update_dict = {"jet": {"bfield": {"parameters": {"b_1": b}},
                                "nfield": {"parameters": {"n_1": n}}},
                        "observation": {"los_angle": los,
                                        "frequency_ghz": freq,
                                        "redshift": z},
-                       "image": {"pixel_size_mas": 0.01, "number_of_pixels": 400}}
+                       "image": {"pixel_size_mas": pixel_size_mas,
+                                 "number_of_pixels": number_of_pixels}}
         update_config(cfg_file, update_dict)
 
         # FIXME: Handle ``FailedFindBestImageParamsException`` during ABC run
-        simulation_params = run_simulations(cfg_file, path_to_executable)
+        simulation_params = run_simulations(cfg_file, path_to_executable,
+                                            map_size=map_size)
 
         # Find total flux on simulated image
         image = os.path.join(exe_dir, "map_i.txt")
