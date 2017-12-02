@@ -606,6 +606,45 @@ def find_core_separation_from_jet_using_difmap_model(difmap_model):
     return np.sqrt(dr)
 
 
+def find_core_separation_from_jet_using_difmap_model_(difmap_model):
+    """
+    Find separation between core and some reference point.
+
+    :param difmap_model:
+        File with model in difmap format.
+    :return:
+        Value of distance between core and reference point.
+    """
+
+    difmap_dir, difmap_fn = os.path.split(difmap_model)
+    comps = import_difmap_model(difmap_fn, difmap_dir)
+    core = comps[0]
+    jet = [0, 1, 0]
+    dr = (jet[1] - core.p[1])**2. + (jet[2] - core.p[2])**2.
+    return np.sqrt(dr)
+
+
+def find_core_separation_from_center_using_difmap_model(difmap_model):
+    """
+    Find separation between core and phase center using difmap modelfit result
+    file.
+
+    :param difmap_model:
+        File with model in difmap format.
+    :return:
+        Value of distance between core and phase center.
+
+    :notes:
+        As this function is only supposed to deal with artificail data set of
+        Blandford-Konigle model, the phase center is supposed to be SBH.
+    """
+
+    difmap_dir, difmap_fn = os.path.split(difmap_model)
+    comps = import_difmap_model(difmap_fn, difmap_dir)
+    core = comps[0]
+    return np.hypot(core.p[1], core.p[2])
+
+
 def find_core_separation_from_center_using_simulations(fname,
                                                        simulations_params):
     """
@@ -1178,6 +1217,20 @@ def find_params_for_given_keys(json_history, keys):
                        data[key][u'parameters'][u'n'],
                        data[key][u'parameters'][u'los']])
     return np.atleast_2d(params)
+
+
+def convert_json_history_to_params_dictionary(json_history):
+    with open(json_history, "r") as fo:
+        data = json.load(fo)
+    keys = data.keys()
+    params_dict = dict()
+    for key in keys:
+        if key not in data.keys():
+            raise Exception("No key {} in {} keys!".format(key, json_history))
+        params_dict.update({key.split('_')[0]: [data[key][u'parameters'][u'b'],
+                                                data[key][u'parameters'][u'n'],
+                                                data[key][u'parameters'][u'los']]})
+    return params_dict
 
 
 def find_keys_with_flux_between(json_history, flux_min, flux_max):
