@@ -399,36 +399,155 @@ def plot(contours=None, colors=None, vectors=None, vectors_values=None, x=None,
     return fig
 
 
+def gaussian(height, x0, y0, bmaj, e, bpa):
+    """
+    Returns a gaussian function with the given parameters.
+
+    :example:
+    create grid:
+        x, y = np.meshgrid(x, y)
+        imshow(gaussian(x, y))
+
+    """
+    # This brings PA to VLBI-convention (- = from NOrth counterclocwise)
+    bpa = -bpa
+    bmaj = bmaj / (2. * np.sqrt(2. * np.log(2)))
+    bmin = e * bmaj
+    a = math.cos(bpa) ** 2. / (2. * bmaj ** 2.) + \
+        math.sin(bpa) ** 2. / (2. * bmin ** 2.)
+    b = math.sin(2. * bpa) / (2. * bmaj ** 2.) - \
+        math.sin(2. * bpa) / (2. * bmin ** 2.)
+    c = math.sin(bpa) ** 2. / (2. * bmaj ** 2.) + \
+        math.cos(bpa) ** 2. / (2. * bmin ** 2.)
+    return lambda x, y: height * np.exp(-(a * (x - x0) ** 2 +
+                                          b * (x - x0) * (y - y0) +
+                                          c * (y - y0) ** 2))
+
+
+def plot_gaussian_2d(p, x1range, x2range, n=100):
+    """
+    Surface plot of 2d gaussian.
+
+    :param p:
+        Iterable of gaussian parameters [height, x0, y0, bmaj, e, bpa].
+    """
+    from mpl_toolkits.mplot3d import Axes3D
+    # Making transparent color map
+    theCM = cm.get_cmap()
+    theCM._init()
+    alphas = np.abs(np.linspace(-1.0, 1.0, theCM.N))
+    theCM._lut[:-3,-1] = alphas
+
+
+    x1 = np.linspace(x1range[0], x1range[1], 100)
+    x2 = np.linspace(x2range[0], x2range[1], 100)
+    x1, x2 = np.meshgrid(x1, x2)
+    model = gaussian(*p)
+    y = model(x1, x2)
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    plt.hold(True)
+    surf = ax.plot_surface(x1, x2, y, rstride=1, cstride=1, cmap=theCM,
+                           linewidth=0, antialiased=False)
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+    plt.show()
+    return fig
+
+
+def plot_simulations(sim_fname, imsize, mas_in_pix, delta=300,
+                     contr_delta=10, each=1, jet_delta=250, rstride=1,
+                     cstride=1):
+    """
+    Plot simulation results in 3D projection.
+
+    :param sim_fname:
+        Path to file with simulations result of Stokes I.
+    :param delta: (optional)
+        Cut image from sides. Image will be shorter by ``2*delta`` pixels from
+        sides. (default: ``100``)
+    :param contr_delta: (optional)
+        Space to leave on contr-jet side. (default: ``10``)
+
+    :return:
+        Instance of ``Figure``.
+    """
+    from mpl_toolkits.mplot3d import Axes3D
+    from matplotlib import cm
+    image = np.loadtxt(sim_fname)
+    y = np.arange(-imsize/2+delta, imsize/2-delta, each, dtype=float)
+    x = np.arange(-contr_delta, imsize/2-jet_delta, each, dtype=float)
+    x *= mas_in_pix*each
+    y *= mas_in_pix*each
+    xx, yy = np.meshgrid(x, y)
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.grid(False)
+    plt.hold(True)
+
+    # mask = image < 0.0001
+    # image = np.ma.array(image, mask=mask)
+    surf = ax.plot_surface(xx, yy,
+                           image[delta:-delta:each,
+                           imsize/2-contr_delta:imsize-jet_delta:each],
+                           cmap='OrRd', linewidth=1, rstride=rstride,
+                           cstride=cstride,
+                           antialiased=True)
+    # fig.colorbar(surf, shrink=0.5, aspect=5)
+    ax.set_xlabel("[mas]", fontsize=14)
+    ax.set_ylabel("[mas]", fontsize=14)
+    ax.set_zlabel("Flux [Jy/pix]", fontsize=14)
+
+    # ax.set_zlim([0.0002, None])
+    fig.tight_layout()
+    plt.show()
+    return fig
+
+
 if __name__ == '__main__':
-    import os
-    import json
-    main_dir = '/home/ilya/github/bck/jetshow'
-    cfg_file = os.path.join(main_dir, 'config.json')
-    data_dir = os.path.join(main_dir, 'cmake-build-debug')
-    i_image = np.loadtxt(os.path.join(data_dir, 'map_i.txt'))
-    q_image = np.loadtxt(os.path.join(data_dir, 'map_q.txt'))
-    u_image = np.loadtxt(os.path.join(data_dir, 'map_u.txt'))
-    v_image = np.loadtxt(os.path.join(data_dir, 'map_v.txt'))
-    p_image = np.sqrt(q_image**2+u_image**2)
-    chi_image = 0.5*np.arctan2(u_image, q_image)
+    simulation_file = '/home/ilya/github/bck/jetshow/uvf_mf_adds/map_i_09_15.4.txt'
+    pixel_size_mas = 0.002533
+    imsize = 756
+    from matplotlib import rcParams
 
-    with open(cfg_file, "r") as jsonFile:
-        params = json.load(jsonFile)
-    mas_in_pixel = params[u'image'][u'pixel_size_mas']
+    rcParams[u'patch.force_edgecolor'] = True
+    rcParams[u'figure.edgecolor'] = 'black'
+    fig = plot_simulations(simulation_file, imsize, pixel_size_mas, each=1,
+                           delta=300, jet_delta=250, rstride=6, cstride=6)
 
-    colors_mask = i_image < i_image.max()*0.03
-    blc, trc = find_bbox(i_image, 0.03*i_image.max(), 10)
-    plot(contours=i_image, colors=p_image/i_image, vectors=chi_image,
-         vectors_values=p_image, colors_mask=colors_mask, min_rel_level=3,
-         blc=blc, trc=trc, vinc=4, vectors_mask=colors_mask,
-         mas_in_pixel=mas_in_pixel, cmap='gist_rainbow', plot_title='BK jet',
-         colorbar_label='Frac. LP')
-
-    # fig = plt.figure()
-    # ax = fig.gca(projection='3d')
-    # x, y, z = np.meshgrid(np.arange(-5., 5., 1.0),
-    #                       np.arange(-5., 5., 1.0),
-    #                       np.arange(0.1, 10., 1.0))
-    # result = beta(x, y, z)
-    # ax.quiver(x, y, z, result[0], result[1], result[2], length=1.0)
-    # plt.show()
+    #
+    #
+    #
+    # import os
+    # import json
+    # main_dir = '/home/ilya/github/bck/jetshow'
+    # cfg_file = os.path.join(main_dir, 'config.json')
+    # data_dir = os.path.join(main_dir, 'cmake-build-debug')
+    # i_image = np.loadtxt(os.path.join(data_dir, 'map_i.txt'))
+    # q_image = np.loadtxt(os.path.join(data_dir, 'map_q.txt'))
+    # u_image = np.loadtxt(os.path.join(data_dir, 'map_u.txt'))
+    # v_image = np.loadtxt(os.path.join(data_dir, 'map_v.txt'))
+    # p_image = np.sqrt(q_image**2+u_image**2)
+    # chi_image = 0.5*np.arctan2(u_image, q_image)
+    #
+    # with open(cfg_file, "r") as jsonFile:
+    #     params = json.load(jsonFile)
+    # mas_in_pixel = params[u'image'][u'pixel_size_mas']
+    #
+    # colors_mask = i_image < i_image.max()*0.03
+    # blc, trc = find_bbox(i_image, 0.03*i_image.max(), 10)
+    # plot(contours=i_image, colors=p_image/i_image, vectors=chi_image,
+    #      vectors_values=p_image, colors_mask=colors_mask, min_rel_level=3,
+    #      blc=blc, trc=trc, vinc=4, vectors_mask=colors_mask,
+    #      mas_in_pixel=mas_in_pixel, cmap='gist_rainbow', plot_title='BK jet',
+    #      colorbar_label='Frac. LP')
+    #
+    # # fig = plt.figure()
+    # # ax = fig.gca(projection='3d')
+    # # x, y, z = np.meshgrid(np.arange(-5., 5., 1.0),
+    # #                       np.arange(-5., 5., 1.0),
+    # #                       np.arange(0.1, 10., 1.0))
+    # # result = beta(x, y, z)
+    # # ax.quiver(x, y, z, result[0], result[1], result[2], length=1.0)
+    # # plt.show()
