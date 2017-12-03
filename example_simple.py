@@ -8,6 +8,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 from components import ImageComponent, CGComponent
 from uv_data import UVData
+from automodel_bk import automodel_bk
 from model import Model
 from utils import mas_to_rad
 import matplotlib.pyplot as plt
@@ -342,6 +343,77 @@ def modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor,
     modelfit_difmap(uv_fits_save_fname, initial_dfm_model_fn, out_dfm_model_fn,
                     niter=niter, path=out_dir, mdl_path=initial_dfm_dir,
                     out_path=out_dir)
+
+
+def automodelfit_simulation_result(exe_dir, noise_factor,
+                                   out_dfm_model_fn, out_dir,
+                                   params, uv_fits_save_fname,
+                                   uv_fits_template,
+                                   core_elliptic=False,
+                                   n_max_components=20,
+                                   mapsize_clean=(512, 0.1)):
+    """
+    Modelfit result of simulations FT to uv-plane by substituting some real
+    data and using automatic modelling.
+
+    :param exe_dir:
+        Directory with results of the simulations (it should contain exe-file).
+    :param initial_dfm_model:
+        Initial model used in difmap fitting.
+    :param noise_factor:
+        Float value that scales noise from real data set added to FT of
+        simulation result.
+    :param out_dfm_model_fn:
+        File name of the modelfit result txt-file.
+    :param out_dir:
+        Directory to save modelfit result txt-file.
+    :param params:
+        Dictionary with parameters used for simulation.
+    :param uv_fits_save_fname:
+        File name of generated uv-data to save.
+    :param uv_fits_template:
+        Path to fits file used as template for substituting by FT of simulation
+        result.
+    :param niter: (optional)
+        Number of iterations for difmap fitting. (default: ``300``)
+    """
+    uvdata = UVData(uv_fits_template)
+
+    # Create coordinate grid
+    imsize = params[u'image'][u'number_of_pixels']
+    imsize = (imsize, imsize)
+    mas_in_pix = params[u'image'][u'pixel_size_mas']
+    y, z = np.meshgrid(np.arange(imsize[0]), np.arange(imsize[1]))
+    y = y - imsize[0] / 2. + 0.5
+    z = z - imsize[0] / 2. + 0.5
+    y_mas = y * mas_in_pix
+    z_mas = z * mas_in_pix
+    y_rad = mas_to_rad * y_mas
+    z_rad = mas_to_rad * z_mas
+
+    image_i_file = os.path.join(exe_dir, params[u'output'][u'file_i'])
+    image_i = np.loadtxt(image_i_file)
+    # Care of rare cases with strange pixel flux
+    image_i[image_i < 0] = 0
+    image_i[image_i > 10.0] = 0
+    icomp = ImageComponent(image_i, y_rad[0, :], z_rad[:, 0])
+
+    noise = uvdata.noise(use_V=True)
+    for key, value in noise.items():
+        noise[key] = noise_factor * value
+    model = Model(stokes='I')
+    model.add_component(icomp)
+
+    uvdata.substitute([model])
+    uvdata.noise_add(noise)
+    uvdata.save(os.path.join(out_dir, uv_fits_save_fname), rewrite=True)
+    # initial_dfm_dir, initial_dfm_model_fn = os.path.split(initial_dfm_model)
+    # Fit model in difmap
+    automodel_bk(os.path.join(out_dir, uv_fits_save_fname),
+                 os.path.join(out_dir, out_dfm_model_fn),
+                 core_elliptic=core_elliptic,
+                 n_max_components=n_max_components,
+                 mapsize_clean=mapsize_clean)
 
 
 def nested_dict():
