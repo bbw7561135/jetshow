@@ -101,9 +101,26 @@ def comoving_transverse_distance(z, H_0=73.0, omega_M=0.3, omega_V=0.7,
 
 def s_obs(b1, n1, nu_obs, Gamma, fi, theta, z, m=1):
     """
-    Observed flux of BK jet for m={1, 2} and fixed n=2, alpha_0=0.5,
+    Observed flux (Jy) of BK jet for m={1, 2} and fixed n=2, alpha_0=0.5,
     alpha_si=alpha_s1 (that is nu_obs < nu_sM - characteristic frequency at the
-    minimum distance of a core.
+    minimum distance of a core).
+
+    :param b1:
+        B at r=1pc [G].
+    :param n1:
+        N at r=1pc [cm^(-3)].
+    :param nu_obs:
+        Observed frequency [Hz].
+    :param Gamma:
+        Jet bulk motion Lorenz-factor.
+    :param fi:
+        Jet opening angle [rad].
+    :param theta:
+        LOS of jet.
+    :param z:
+        Redshift.
+    :param m: (optional)
+        Radial dependence of the magnetic field. (default: ``1``)
     """
     n = 2.0
     S1 = {1: -0.17, 2: -0.40}
