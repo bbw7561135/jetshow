@@ -371,6 +371,7 @@ Observation::integrate_full_stokes_adaptive(std::list<Intersection> &list_inters
 	}
 }
 
+// FIXME: Should calculate from center (don't need counter-jet)
 void Observation::run_stripe(int n, double tau_max, double tau_min) {
 	auto image_size = getImageSize();
 	vector<Pixel>& pixels = imagePlane->getPixels();
@@ -378,7 +379,7 @@ void Observation::run_stripe(int n, double tau_max, double tau_min) {
 	// Comment out for easy debug printing
 #pragma omp parallel for schedule(dynamic)
 	for (int j = 0; j < image_size.first; ++j) {
-		for (int k = 0; k < image_size.second; ++k) {
+		for (int k = image_size.second / 2; k < image_size.second; ++k) {
 			if (j == image_size.first / 2) {
 				int n_pix = image_size.first * j + k + 1;
 //				std::cout << "Running on pixel # " << n_pix << std::endl;
