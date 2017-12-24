@@ -10,6 +10,7 @@ from example_simple import (generate_sample_points, update_config,
                             fit_simulations_in_image_plane,
                             plot_stripe, plot_simulations_2d,
                             modelfit_simulation_result,
+                            automodelfit_simulation_result,
                             nested_dict,
                             FailedFindBestImageParamsException,
                             b_to_n_energy_ratio,
@@ -140,8 +141,12 @@ los_values = sample[:, 2]
 #     n_values = [n1_equipartition(b) for b in b_values]
 
 # Run simulation
+# Only simulations result with flux between these two are analyzed
 total_flux_min = 0.1
 total_flux_max = 3.0
+# We adding noise that is equal to
+# ``noise_scale * (model flux / original flux) * original_noise``
+noise_scale = 0.1
 main_dir = '/home/ilya/github/bck/jetshow'
 out_dir = '/home/ilya/github/bck/jetshow/uvf_mf_adds'
 path_to_executable = os.path.join(main_dir, 'cmake-build-debug', 'jetshow')
@@ -219,7 +224,7 @@ for b, n, los in zip(b_values, n_values, los_values):
                 break
         max_flux = image.max()
         cc_image = create_clean_image_from_fits_file(cc_image)
-        noise_factor = 0.1*image.sum()/cc_image.cc.sum()
+        noise_factor = noise_scale*image.sum()/cc_image.cc.sum()
 
         initial_dfm_model = os.path.join(main_dir, 'initial_cg.mdl')
         out_dfm_model_fn = "bk_{}_{}.mdl".format(str(i).zfill(2), freq)
@@ -231,6 +236,19 @@ for b, n, los in zip(b_values, n_values, los_values):
                                    params=simulation_params,
                                    uv_fits_save_fname=uv_fits_save_fname,
                                    uv_fits_template=uv_fits_template)
+
+        # Modelfit results of simulations by first FT model to template uv-fits,
+        # adding specified fraction of the observed noise and automodel
+        # automodelfit_simulation_result(exe_dir,
+        #                                noise_factor=noise_factor,
+        #                                out_dfm_model_fn=out_dfm_model_fn,
+        #                                out_dir=out_dir,
+        #                                params=simulation_params,
+        #                                uv_fits_save_fname=uv_fits_save_fname,
+        #                                uv_fits_template=uv_fits_template,
+        #                                core_elliptic=False,
+        #                                n_max_components=20,
+        #                                mapsize_clean=(512, 0.1))
 
         # Find measured and true distance of core to jet component
         dr_obs = find_core_separation_from_jet_using_difmap_model(os.path.join(out_dir,
