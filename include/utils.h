@@ -52,7 +52,7 @@ double k_u(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 double k_v(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
-double k_F_c(Vector3d &b, Vector3d &n_los, double nu, double n, double s = 2.5);
+double k_F_c(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 double k_C_c(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
