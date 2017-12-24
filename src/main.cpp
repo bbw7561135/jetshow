@@ -228,6 +228,10 @@ void test_observations_full() {
 		double b_1 = root.get<double>("jet.bfield.parameters.b_1");
 		double pitch_angle = root.get<double>("jet.bfield.parameters.pitch_angle");
 		bfield = new SpiralConicalBField(b_1, pitch_angle);
+	} else if (btype == "toroidal") {
+		double b_1 = root.get<double>("jet.bfield.parameters.b_1");
+		double n_b = root.get<double>("jet.bfield.parameters.n_b");
+		bfield = new ToroidalBField(b_1, n_b);
 	};
 
 	// Create ``Cells`` instance
@@ -419,7 +423,12 @@ void test_stripe() {
 		double b_1 = root.get<double>("jet.bfield.parameters.b_1");
 		double pitch_angle = root.get<double>("jet.bfield.parameters.pitch_angle");
 		bfield = new SpiralConicalBField(b_1, pitch_angle);
+	} else if (btype == "toroidal") {
+		double b_1 = root.get<double>("jet.bfield.parameters.b_1");
+		double n_b = root.get<double>("jet.bfield.parameters.n_b");
+		bfield = new ToroidalBField(b_1, n_b);
 	};
+
 
 	// Create ``Cells`` instance
 //	int N = 1000;
