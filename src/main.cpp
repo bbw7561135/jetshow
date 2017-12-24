@@ -382,6 +382,7 @@ void test_observations_full() {
 }
 
 
+// THIS IS MASTER FUNCTION
 void test_stripe() {
 	// Create a root
 	pt::ptree root;
@@ -412,6 +413,7 @@ void test_stripe() {
 		geometry = new Cone(origin, direction, cone_angle, scale);
 //				geometry = geometry_;
 	}
+
 
 	std::string btype = root.get<std::string>("jet.bfield.type");
 	std::cout << "B-field type : " << btype << std::endl;
