@@ -39,6 +39,16 @@ private:
 };
 
 
+class ToroidalBField : public BField {
+public:
+		ToroidalBField(double b_0, double n_b) ;
+		Vector3d bf(const Vector3d &point) const override ;
+private:
+		double b_0_;
+		double n_b_;
+};
+
+
 class HelicalCylinderBField : public BField {
 public:
     HelicalCylinderBField(double b_0, double pitch_angle) ;

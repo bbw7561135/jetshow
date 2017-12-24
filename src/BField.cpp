@@ -33,6 +33,20 @@ Vector3d RadialConicalBField::bf(const Vector3d &point) const {
 }
 
 
+
+ToroidalBField::ToroidalBField(double b_0, double n_b) : b_0_(b_0),
+                                                         n_b_(n_b){};
+
+Vector3d ToroidalBField::bf(const Vector3d &point) const {
+	double x = point[0];
+	double y = point[1];
+	double z = point[2];
+	double fi = atan(y/x);
+	double b = b_0_*pow(z/pc, -n_b_);
+	return Vector3d(-sin(fi)*b, cos(fi)*b, 0);
+}
+
+
 HelicalCylinderBField::HelicalCylinderBField(double b_0, double pitch_angle) :
         b_0_(b_0), pitch_angle_(pitch_angle) {};
 
@@ -119,3 +133,4 @@ Vector3d RandomPointBField::direction(const Vector3d &point) const {
 	std::vector<double> res = randoms_on_sphere[omp_get_thread_num()]();
 	return std::move(Vector3d(std::move(res.data())));
 }
+
