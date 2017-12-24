@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import KFold
@@ -136,14 +137,14 @@ def s_obs(b1, n1, nu_obs, Gamma, fi, theta, z, m=1):
 
 
 # n_generate = 1000
-# full_file = '/home/ilya/Dropbox/papers/accuracy/data/z_core_flux.txt'
-# z_file = '/home/ilya/Dropbox/papers/accuracy/data/z.txt'
-# names = ['source', 'epoch', 'class', 'z', 'S_core']
-# df_z = pd.read_table(z_file, delim_whitespace=True, names=names,
-#                      engine='python', usecols=[0, 1, 2, 3, 4])
-# df = pd.read_table(full_file, delim_whitespace=True, names=names,
-#                    engine='python', usecols=[0, 1, 2, 3, 4])
-# zs = df_z['z'].values
+full_file = '/home/ilya/Dropbox/papers/accuracy/data/z_core_flux.txt'
+z_file = '/home/ilya/Dropbox/papers/accuracy/data/z.txt'
+names = ['source', 'epoch', 'class', 'z', 'S_core']
+df_z = pd.read_table(z_file, delim_whitespace=True, names=names,
+                     engine='python', usecols=[0, 1, 2, 3, 4])
+df = pd.read_table(full_file, delim_whitespace=True, names=names,
+                   engine='python', usecols=[0, 1, 2, 3, 4])
+zs = df_z['z'].values
 # lzs = np.log(zs)
 # # zs_mirrored = np.concatenate((zs, -zs), axis=0)
 # cv = KFold(n_splits=5, shuffle=True)
@@ -152,9 +153,53 @@ def s_obs(b1, n1, nu_obs, Gamma, fi, theta, z, m=1):
 # # Generate redshifts
 # new_zs = np.exp(kde_lz.sample(n_generate)[:, 0])
 #
-# fluxes = df['S_core']
+fluxes = df['S_core']
 # lfluxes = np.log(fluxes)
 # kde_lf = fit_kde(lfluxes, cv=cv)
 #
 # # Generate fluxes
 # new_fluxes = np.exp(kde_lf.sample(n_generate)[:, 0])
+
+z_grid = list()
+dz = 0.05
+z = np.min(zs)
+z_grid.append(z)
+while z <= np.max(zs):
+    z += dz
+    print("dz = {}".format(dz))
+    if z <= np.max(zs):
+        z_grid.append(z)
+    dz *= 1.2
+print(z_grid, len(z_grid))
+# z_grid = np.linspace(np.min(zs), np.max(zs), 40)
+b_grid = np.logspace(-5, 2, 10)
+n_grid = np.logspace(-3, 5, 10)
+gamma_grid = [5, 10, 20]
+nu_obs = 15.*10**9
+z_parameters_dict = dict()
+for z in z_grid:
+    z_parameters_dict[z] = list()
+    for b in b_grid:
+        for n in n_grid:
+            for gamma in gamma_grid:
+                fi = 0.26/gamma
+                for theta in [1./(2.*gamma), 1./gamma, 2./gamma]:
+                    observed_flux = s_obs(b, n, nu_obs, gamma, fi, theta, z)
+                    if np.min(fluxes) < observed_flux < np.max(fluxes):
+                        z_parameters_dict[z].append((b, n, gamma, theta,
+                                                     observed_flux))
+
+# Count number of parameters configurations
+np.sum([len(_) for z, _ in z_parameters_dict.items()])
+
+# Plot dependence of the median B1 on z
+bs = [np.unique([a[0] for a in z_parameters_dict[z]]) for z in
+      sorted(z_parameters_dict.keys())]
+plt.plot(sorted(z_parameters_dict.keys()), [np.median(b) for b in bs])
+
+# Plot dependence of the median N1 on z
+ns = [np.unique([a[1] for a in z_parameters_dict[z]]) for z in
+      sorted(z_parameters_dict.keys())]
+plt.plot(sorted(z_parameters_dict.keys()), [np.median(n) for n in ns])
+
+#
