@@ -49,7 +49,7 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
  ``jet`` describes parameters of the jet.
  
  * ``geometry`` with possible ``type``:
-     * ``cone`` with parameters ``angle`` and ``scale_pc``.
+     * ``cone`` with parameters ``angle`` (half-opening angle) and ``scale_pc``.
      * (**not using for now**)``cylinder`` with parameters ``r`` and scale.
         
        The last one determines geometrical path in case of infinite
