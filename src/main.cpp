@@ -531,7 +531,10 @@ void test_stripe() {
 		image = observation.getImage(value);
 		std::string file_i = root.get<std::string>("output.file_i");
 		fs.open(file_i, std::ios::out | std::ios::app);
-		double scale = 1E-23/pix_solid_angle;
+//		double scale = 1E-23/pix_solid_angle;
+		// I_{\nu}/\nu^3 = inv
+//		double scale = 1E-23/pix_solid_angle;
+		double scale = 1E-23*(1.+z)*(1.+z)*(1.+z)/pix_solid_angle;
 		std::cout << "Scaling Stokes I by " << scale << std::endl;
 
 		if (fs.is_open())
