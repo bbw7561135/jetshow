@@ -239,7 +239,7 @@ def find_image_params(cfg_file, path_to_executable):
 
 def run_simulations(cfg_file, path_to_executable, map_size=None):
     """
-    Run simulation of BK jet, fit results.
+    Run simulation of BK jet.
 
     :param cfg_file:
         Path to configuration file in JSON format.
@@ -1766,69 +1766,69 @@ def _make_plot_i_tau(image_i, image_tau, angle, los_angle, imsize, out_dir=None,
     plt.savefig(os.path.join(out_dir, "image_I_tau_{}.png".format(name)))
     plt.close()
 
-
-if __name__ == '__main__':
-    # Run simulation
-    main_dir = '/home/ilya/github/bck/jetshow'
-    cfg_file = os.path.join(main_dir, 'config.json')
-    with open(cfg_file, "r") as jsonFile:
-        simulation_params = json.load(jsonFile)
-    path_to_executable = os.path.join(main_dir, 'cmake-build-debug', 'jetshow')
-    simulation_params = run_simulations(cfg_file, path_to_executable)
-
-    # Create artificial data set with BK core and jet component
-    exe_dir, exe = os.path.split(path_to_executable)
-    initial_dfm_model = os.path.join(main_dir, 'initial_eg.mdl')
-    # initial_dfm_model = os.path.join(main_dir, 'initial_cg.mdl')
-    uv_fits_template = '/home/ilya/github/vlbi_errors/vlbi_errors/'
-    uv_fits_template = os.path.join(uv_fits_template,
-                                    '0235+164.u.2006_06_15.uvf')
-    modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor=1.0,
-                               out_dfm_model_fn="bk_e.mdl", out_dir=exe_dir,
-                               params=simulation_params,
-                               uv_fits_save_fname="bk.fits",
-                               uv_fits_template=uv_fits_template)
-
-    # Find measured and true distance of core to jet component
-    # dr_obs = find_core_separation_from_jet_using_difmap_model(os.path.join(exe_dir, "bk.mdl"))
-    # Here ``1.`` is because jet component put at 1 mas distance from phase
-    # center of the originaldata set.
-    # dr_true = 1. - find_core_separation_from_center_using_simulations(os.path.join(exe_dir, "map_i.txt"),
-    #                                                                   simulation_params)
-
-    # Plot map with components superimposed
-    from spydiff import clean_difmap, import_difmap_model
-    from image import plot as iplot
-    from image import find_bbox
-    from from_fits import create_clean_image_from_fits_file
-    from image_ops import rms_image
-
-    path_to_script = '/home/ilya/github/vlbi_errors/difmap/final_clean_nw'
-    clean_difmap('bk.fits', 'bk_cc.fits', 'I', (1024, 0.1), path=exe_dir,
-                 path_to_script=path_to_script, show_difmap_output=True,
-                 outpath=exe_dir)
-
-    ccimage = create_clean_image_from_fits_file(os.path.join(exe_dir,
-                                                             'bk_cc.fits'))
-    beam = ccimage.beam
-    rms = rms_image(ccimage)
-    blc, trc = find_bbox(ccimage.image, rms, 10)
-    comps = import_difmap_model('bk_e.mdl', exe_dir)
-    iplot(ccimage.image, x=ccimage.x, y=ccimage.y, min_abs_level=3*rms,
-          beam=beam, show_beam=True, blc=blc, trc=trc, components=comps)
-
-    g = fit_simulations_in_image_plane(os.path.join(exe_dir, "map_i.txt"),
-                                       simulation_params, core=comps[0])
-
-    plot_stripe(os.path.join(exe_dir, "map_i.txt"),
-                os.path.join(exe_dir, "bk_e.mdl"), simulation_params, g=g)
-
-    # plot_simulations_3d(os.path.join(exe_dir, "map_i.txt"),
-    #                     simulation_params, core=comps[0], each=1, delta=130)
-
-    plot_simulations_2d(os.path.join(exe_dir, "map_i.txt"),
-                        simulation_params, core=comps[0], each=1,
-                        side_delta=110, g=g)
+#
+# if __name__ == '__main__':
+#     # Run simulation
+#     main_dir = '/home/ilya/github/bck/jetshow'
+#     cfg_file = os.path.join(main_dir, 'config.json')
+#     with open(cfg_file, "r") as jsonFile:
+#         simulation_params = json.load(jsonFile)
+#     path_to_executable = os.path.join(main_dir, 'cmake-build-debug', 'jetshow')
+#     simulation_params = run_simulations(cfg_file, path_to_executable)
+#
+#     # Create artificial data set with BK core and jet component
+#     exe_dir, exe = os.path.split(path_to_executable)
+#     initial_dfm_model = os.path.join(main_dir, 'initial_eg.mdl')
+#     # initial_dfm_model = os.path.join(main_dir, 'initial_cg.mdl')
+#     uv_fits_template = '/home/ilya/github/vlbi_errors/vlbi_errors/'
+#     uv_fits_template = os.path.join(uv_fits_template,
+#                                     '0235+164.u.2006_06_15.uvf')
+#     modelfit_simulation_result(exe_dir, initial_dfm_model, noise_factor=1.0,
+#                                out_dfm_model_fn="bk_e.mdl", out_dir=exe_dir,
+#                                params=simulation_params,
+#                                uv_fits_save_fname="bk.fits",
+#                                uv_fits_template=uv_fits_template)
+#
+#     # Find measured and true distance of core to jet component
+#     # dr_obs = find_core_separation_from_jet_using_difmap_model(os.path.join(exe_dir, "bk.mdl"))
+#     # Here ``1.`` is because jet component put at 1 mas distance from phase
+#     # center of the originaldata set.
+#     # dr_true = 1. - find_core_separation_from_center_using_simulations(os.path.join(exe_dir, "map_i.txt"),
+#     #                                                                   simulation_params)
+#
+#     # Plot map with components superimposed
+#     from spydiff import clean_difmap, import_difmap_model
+#     from image import plot as iplot
+#     from image import find_bbox
+#     from from_fits import create_clean_image_from_fits_file
+#     from image_ops import rms_image
+#
+#     path_to_script = '/home/ilya/github/vlbi_errors/difmap/final_clean_nw'
+#     clean_difmap('bk.fits', 'bk_cc.fits', 'I', (1024, 0.1), path=exe_dir,
+#                  path_to_script=path_to_script, show_difmap_output=True,
+#                  outpath=exe_dir)
+#
+#     ccimage = create_clean_image_from_fits_file(os.path.join(exe_dir,
+#                                                              'bk_cc.fits'))
+#     beam = ccimage.beam
+#     rms = rms_image(ccimage)
+#     blc, trc = find_bbox(ccimage.image, rms, 10)
+#     comps = import_difmap_model('bk_e.mdl', exe_dir)
+#     iplot(ccimage.image, x=ccimage.x, y=ccimage.y, min_abs_level=3*rms,
+#           beam=beam, show_beam=True, blc=blc, trc=trc, components=comps)
+#
+#     g = fit_simulations_in_image_plane(os.path.join(exe_dir, "map_i.txt"),
+#                                        simulation_params, core=comps[0])
+#
+#     plot_stripe(os.path.join(exe_dir, "map_i.txt"),
+#                 os.path.join(exe_dir, "bk_e.mdl"), simulation_params, g=g)
+#
+#     # plot_simulations_3d(os.path.join(exe_dir, "map_i.txt"),
+#     #                     simulation_params, core=comps[0], each=1, delta=130)
+#
+#     plot_simulations_2d(os.path.join(exe_dir, "map_i.txt"),
+#                         simulation_params, core=comps[0], each=1,
+#                         side_delta=110, g=g)
 
     # initial_dfm_model = os.path.join(main_dir, 'initial_eg.mdl')
     # executable_dir, _ = os.path.split(path_to_executable)
