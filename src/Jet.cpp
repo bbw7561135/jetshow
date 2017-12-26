@@ -1,4 +1,5 @@
 #include "Jet.h"
+#include <math.h>
 
 
 Jet::Jet(Geometry *newgeo, VField *newvfield, BField *newbField,
@@ -174,7 +175,9 @@ double Jet::getEtaV(Vector3d &point, Vector3d &n_los, double nu) {
 	auto D = getD(n_los, v);
 	auto gamma = getG(v);
 	double n = getN(point);
-	auto b_prime = getBprime(b, v);
+//	auto b_prime = getBprime(b, v);
+	// This means that we are using B-fields specification in the plasma frame
+	auto b_prime = bfield_->bf(point);
 	auto n_los_prime = get_n_los_prime(n_los, v);
 	auto nu_prime = nu/D;
 	auto n_prime = n/gamma;
