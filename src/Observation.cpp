@@ -18,8 +18,8 @@ Observation::Observation(Jet *newjet, ImagePlane *newimagePlane, double newnu) :
 
 // ``dt_max`` - max. step in pc.
 void Observation::run(int n, double tau_max, double dt_max, double tau_min,
-                      string type, int n_max, double tau_n_min,
-                      double tau_n_max) {
+                      string integration_type, string output_type, int n_max,
+                      double tau_n_min, double tau_n_max) {
 	dt_max *= pc;
   auto image_size = getImageSize();
 	vector<Pixel>& pixels = imagePlane->getPixels();
@@ -42,10 +42,10 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
       } else {
 
 	      std::pair<double,double> tau_l_end;
-	      if (type == "constant") {
+	      if (integration_type == "constant") {
 	        tau_l_end = integrate_tau(list_intersect, ray_direction, nu, tau_max,
 	                                  n);
-	      } else if (type == "adaptive") {
+	      } else if (integration_type == "adaptive") {
 		      tau_l_end = integrate_tau_adaptive(list_intersect, ray_direction, nu,
 		                                         tau_max, n, dt_max);
 	      }
@@ -54,6 +54,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 
 	      // Write final values here inside integrate_i
 				state_type background_iquv{0., 0., 0., 0};
+	      double background_I = 0.;
 				// Calculate I only if optical depth is high enough
 				if (background_tau > tau_min) {
 					string local_type;
@@ -64,32 +65,46 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 						local_type = "constant";
 					}
 					// If adaptive everywhere => then adaptive here too
-					if (type == "adaptive") {
+					if (integration_type == "adaptive") {
 						local_type = "adaptive";
 					}
 					if (local_type == "constant") {
-//						integrate_i(list_intersect, ray_direction, nu, n, background_tau,
-//					              tau_n_min, tau_n_max, background_iquv);
+						integrate_i(list_intersect, ray_direction, nu, n, background_tau,
+						            tau_n_min, tau_n_max, background_I);
 					} else if (local_type == "adaptive") {
-						integrate_full_stokes_adaptive(list_intersect, ray_direction, nu, n,
-						                               background_tau, background_iquv);
-					}
+							if (output_type == "I") {
+								integrate_i_adaptive(list_intersect, ray_direction, nu, n,
+								                     background_tau, background_I);
+							}
+							else if (output_type == "full") {
+								integrate_full_stokes_adaptive(list_intersect, ray_direction, nu, n,
+								                               background_tau, background_iquv);
+							}
+						}
 				} else {
 //					std::cout << "Too small optical depth..." << std::endl;
 				}
         // Write values to pixel
 				std::string value ("tau");
         pxl.setValue(value, background_tau);
-				value = "I";
-				pxl.setValue(value, background_iquv[0]);
-	      value = "Q";
-	      pxl.setValue(value, background_iquv[1]);
-	      value = "U";
-	      pxl.setValue(value, background_iquv[2]);
-	      value = "V";
-	      pxl.setValue(value, background_iquv[3]);
-				value = "l";
-				pxl.setValue(value, thickness);
+	      if (output_type == "I") {
+		      value = "I";
+		      pxl.setValue(value, background_I);
+		      value = "l";
+		      pxl.setValue(value, thickness);
+	      }
+	      else if (output_type == "full") {
+					value = "I";
+					pxl.setValue(value, background_iquv[0]);
+	        value = "Q";
+	        pxl.setValue(value, background_iquv[1]);
+	        value = "U";
+	        pxl.setValue(value, background_iquv[2]);
+	        value = "V";
+	        pxl.setValue(value, background_iquv[3]);
+					value = "l";
+					pxl.setValue(value, thickness);
+	      }
       }
     }
   }
