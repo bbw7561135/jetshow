@@ -31,7 +31,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
   for (int j = 0; j < image_size.first; ++j) {
     for (int k = image_size.second/2; k < image_size.second; ++k) {
       int n_pix = image_size.first*j + k + 1;
-//      std::cout << "Running on pixel # " << n_pix << std::endl;
+      std::cout << "Running on pixel # " << n_pix << " " << j << "," << k << std::endl;
       auto &ray = rays[j*image_size.first+k];
       auto &pxl = pixels[j*image_size.first+k];
 
