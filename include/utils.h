@@ -38,7 +38,9 @@ const double pi = boost::math::constants::pi<double>();
 
 double nu_p(double n);
 
-double nu_b(Vector3d &b, Vector3d &n_los);;
+double nu_b(Vector3d &b, Vector3d &n_los);
+
+double sin_theta(Vector3d &b, Vector3d &n_los);
 
 double k_0(Vector3d &b, Vector3d &n_los, double nu, double n);
 
