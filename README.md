@@ -49,7 +49,7 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
  ``jet`` describes parameters of the jet.
  
  * ``geometry`` with possible ``type``:
-     * ``cone`` with parameters ``angle`` (half-opening angle) and ``scale_pc``.
+     * ``cone`` with parameters ``angle`` (full-opening angle) and ``scale_pc``.
      * (**not using for now**)``cylinder`` with parameters ``r`` and scale.
         
        The last one determines geometrical path in case of infinite
@@ -58,6 +58,7 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
  * ``bfield`` - magnetic field with possible types:
      * ``spiral_conical`` with parameters ``b_1`` and ``pitch_angle``
      * ``radial_conical`` with parameters ``b_1`` and ``n_b``.
+     * ``toroidal`` with parameters ``b_1`` and ``n_b``
         
        ``b1`` - value of magnetic field [G] on 1 pc from SBH, ``pitch_angle``
         \- ratio of toroidal to longitudinal components (in observer's frame),
@@ -72,6 +73,8 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
            distance 1 pc there are nearly ``n_cells_1pc`` cells.
         
  * ``vfield`` - velocity field with possible types:
+     * ``const_flat`` with parameter ``gamma`` (lorentz factor of bulk
+       motion). This corresponds to flat velocity field.
      * ``const_central`` with parameter ``gamma`` (lorentz factor of bulk
        motion). This corresponds to radial velocity field.
         
@@ -85,9 +88,8 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
  ---
   
  ``integration`` describes parameters of numerical solving of ODEs.
- 
+
  * ``step_type`` - Step type with possible values:
- 
      * ``constant`` with parameters ``tau_max``, ``n``, ``tau_n_min``,
        ``n_tau_max``
      * ``adaptive`` with parameters ``dl_max_pc``, ``n``, ``abs`` and
@@ -119,7 +121,8 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
     
  ``calculate`` chooses what to calculate. Possible values are:
  
- * ``full`` - calculate all stokes parameters and optical depth
+ * ``I`` - calculate only ``I`` Stokes parameter
+ * ``full`` - calculate all Stokes parameters and optical depth
  * ``tau`` - calculate only stripe of the optical depth along the jet, which
    is used while iteratively finding the best image parameters.
     
