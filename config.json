@@ -1,16 +1,16 @@
-{"observation": {"frequency_ghz": 15.4, "los_angle": 0.07, "redshift": 0.5},
-    "jet": {"geometry": {"type": "cone", "parameters": {"angle": 0.00875,
-        "scale_pc": 1000.0}}, "bfield": {"type": "radial_conical",
+{"observation": {"frequency_ghz": 15.4, "los_angle": 0.05, "redshift": 0.5},
+    "jet": {"geometry": {"type": "cone", "parameters": {"angle": 0.0085,
+        "scale_pc": 1000.0}}, "bfield": {"type": "toroidal",
         "parameters": {"model_of_randomness": "points", "pitch_angle": 1.5,
-            "random_fraction": 5.0, "n_cells_1pc": 10, "b_1": 1.0, "n_b":
+            "random_fraction": 0.0, "n_cells_1pc": 10, "b_1": 1.0, "n_b":
             1.0}}, "vfield": {"type": "const_central", "parameters": {"gamma":
             10.0}}, "nfield": {"type": "bk", "parameters": {"n_n": 2.0, "n_1":
-            52800.0}}}, "image": {"pixel_size_mas": 0.001, "number_of_pixels":
+            52800.0}}}, "image": {"pixel_size_mas": 0.0005, "number_of_pixels":
             1000}, "integration": {"step_type": "adaptive", "parameters":
             {"n_tau_max": 1000, "log10_abs_error_I": -9.0, "tau_max": 1000.0,
                 "log10_tau_min": -2.0, "n": 100, "dl_max_pc": 0.01,
-                "log10_rel_error_tau": -3.0, "log10_abs_error_tau": -2.0,
-                "tau_n_min": 0.1, "log10_rel_error_I": -2.0}}, "output":
+                "log10_rel_error_tau": -5.0, "log10_abs_error_tau": -4.0,
+                "tau_n_min": 0.1, "log10_rel_error_I": -3.0}}, "output":
                 {"file_tau_stripe": "stripe_tau.txt", "file_u": "map_u.txt",
                     "file_v": "map_v.txt", "file_q": "map_q.txt", "file_i":
                     "map_i.txt", "file_tau": "map_tau.txt", "file_length":
