@@ -41,7 +41,9 @@ double Jet::getKQ(Vector3d &point, Vector3d &n_los, double nu) {
 	auto D = getD(n_los, v);
 	auto gamma = getG(v);
 	double n = getN(point);
-	auto b_prime = getBprime(b, v);
+//	auto b_prime = getBprime(b, v);
+	// This means that we are using B-fields specification in the plasma frame
+	auto b_prime = bfield_->bf(point);
 	auto n_los_prime = get_n_los_prime(n_los, v);
 	auto nu_prime = nu/D;
 	auto n_prime = n/gamma;
@@ -55,7 +57,9 @@ double Jet::getKU(Vector3d &point, Vector3d &n_los, double nu) {
 	auto D = getD(n_los, v);
 	auto gamma = getG(v);
 	double n = getN(point);
-	auto b_prime = getBprime(b, v);
+//	auto b_prime = getBprime(b, v);
+	// This means that we are using B-fields specification in the plasma frame
+	auto b_prime = bfield_->bf(point);
 	auto n_los_prime = get_n_los_prime(n_los, v);
 	auto nu_prime = nu/D;
 	auto n_prime = n/gamma;
@@ -69,7 +73,9 @@ double Jet::getKV(Vector3d &point, Vector3d &n_los, double nu) {
 	auto D = getD(n_los, v);
 	auto gamma = getG(v);
 	double n = getN(point);
-	auto b_prime = getBprime(b, v);
+//	auto b_prime = getBprime(b, v);
+	// This means that we are using B-fields specification in the plasma frame
+	auto b_prime = bfield_->bf(point);
 	auto n_los_prime = get_n_los_prime(n_los, v);
 	auto nu_prime = nu/D;
 	auto n_prime = n/gamma;
@@ -83,7 +89,9 @@ double Jet::getKF(Vector3d &point, Vector3d &n_los, double nu) {
 	auto D = getD(n_los, v);
 	auto gamma = getG(v);
 	double n = getN(point);
-	auto b_prime = getBprime(b, v);
+//	auto b_prime = getBprime(b, v);
+	// This means that we are using B-fields specification in the plasma frame
+	auto b_prime = bfield_->bf(point);
 	auto n_los_prime = get_n_los_prime(n_los, v);
 	auto nu_prime = nu/D;
 	auto n_prime = n/gamma;
@@ -97,7 +105,9 @@ double Jet::getKC(Vector3d &point, Vector3d &n_los, double nu) {
 	auto D = getD(n_los, v);
 	auto gamma = getG(v);
 	double n = getN(point);
-	auto b_prime = getBprime(b, v);
+//	auto b_prime = getBprime(b, v);
+	// This means that we are using B-fields specification in the plasma frame
+	auto b_prime = bfield_->bf(point);
 	auto n_los_prime = get_n_los_prime(n_los, v);
 	auto nu_prime = nu/D;
 	auto n_prime = n/gamma;
@@ -111,7 +121,9 @@ double Jet::gethQ(Vector3d &point, Vector3d &n_los, double nu) {
 	auto D = getD(n_los, v);
 	auto gamma = getG(v);
 	double n = getN(point);
-	auto b_prime = getBprime(b, v);
+//	auto b_prime = getBprime(b, v);
+	// This means that we are using B-fields specification in the plasma frame
+	auto b_prime = bfield_->bf(point);
 	auto n_los_prime = get_n_los_prime(n_los, v);
 	auto nu_prime = nu/D;
 	auto n_prime = n/gamma;
@@ -151,7 +163,9 @@ double Jet::getEtaQ(Vector3d &point, Vector3d &n_los, double nu) {
 	auto D = getD(n_los, v);
 	auto gamma = getG(v);
 	double n = getN(point);
-	auto b_prime = getBprime(b, v);
+//	auto b_prime = getBprime(b, v);
+	// This means that we are using B-fields specification in the plasma frame
+	auto b_prime = bfield_->bf(point);
 	auto n_los_prime = get_n_los_prime(n_los, v);
 	auto nu_prime = nu/D;
 	auto n_prime = n/gamma;
@@ -165,7 +179,9 @@ double Jet::getEtaU(Vector3d &point, Vector3d &n_los, double nu) {
 	auto D = getD(n_los, v);
 	auto gamma = getG(v);
 	double n = getN(point);
-	auto b_prime = getBprime(b, v);
+//	auto b_prime = getBprime(b, v);
+	// This means that we are using B-fields specification in the plasma frame
+	auto b_prime = bfield_->bf(point);
 	auto n_los_prime = get_n_los_prime(n_los, v);
 	auto nu_prime = nu/D;
 	auto n_prime = n/gamma;
@@ -179,7 +195,9 @@ double Jet::getEtaV(Vector3d &point, Vector3d &n_los, double nu) {
 	auto D = getD(n_los, v);
 	auto gamma = getG(v);
 	double n = getN(point);
-	auto b_prime = getBprime(b, v);
+//	auto b_prime = getBprime(b, v);
+	// This means that we are using B-fields specification in the plasma frame
+	auto b_prime = bfield_->bf(point);
 	auto n_los_prime = get_n_los_prime(n_los, v);
 	auto nu_prime = nu/D;
 	auto n_prime = n/gamma;

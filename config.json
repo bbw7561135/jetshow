@@ -14,4 +14,4 @@
                 {"file_tau_stripe": "stripe_tau.txt", "file_u": "map_u.txt",
                     "file_v": "map_v.txt", "file_q": "map_q.txt", "file_i":
                     "map_i.txt", "file_tau": "map_tau.txt", "file_length":
-                    "map_l.txt"}, "calculate": "I"}
+                    "map_l.txt"}, "calculate": "full"}
