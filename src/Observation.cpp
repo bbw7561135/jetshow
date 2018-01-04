@@ -29,7 +29,8 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	// Actually, the best user-time:
 	// #pragma omp parallel for num_threads(4) schedule(dynamic) collapse(2)
   for (int j = 0; j < image_size.first; ++j) {
-    for (int k = image_size.second/2; k < image_size.second; ++k) {
+	  // Don't need countr-jet side
+	  for (int k = image_size.second/2; k < image_size.second; ++k) {
       int n_pix = image_size.first*j + k + 1;
 //      std::cout << "Running on pixel # " << n_pix << " " << j << "," << k << std::endl;
       auto &ray = rays[j*image_size.first+k];
@@ -226,6 +227,7 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 		// This is out State
 		double optDepth = 0.0;
 		typedef runge_kutta_dopri5< double > stepper_type;
+		// Abs./Rel. error were -3, -14
     auto stepper = make_dense_output(1E-3, 1E-14, dt_max,
                                      stepper_type());
 		using namespace std::placeholders;
@@ -345,6 +347,7 @@ void Observation::integrate_i_adaptive(std::list<Intersection> &list_intersect,
 		double stI = background_I;
 		// TODO: Add ``dt_max`` constrains (using ``make_dense_output``)
 		// One can add observer function at the end of the argument list.
+		// Abs./Rel. error were -9, -9
 		integrate_adaptive(make_controlled(1E-9, 1E-9, stepper_type()),
 		                   stokesI,
 		                   stI, 0.0, length, dt);
@@ -386,7 +389,6 @@ Observation::integrate_full_stokes_adaptive(std::list<Intersection> &list_inters
 	}
 }
 
-// FIXME: Should calculate from center (don't need counter-jet)
 void Observation::run_stripe(int n, double tau_max, double tau_min) {
 	auto image_size = getImageSize();
 	vector<Pixel>& pixels = imagePlane->getPixels();
@@ -394,6 +396,7 @@ void Observation::run_stripe(int n, double tau_max, double tau_min) {
 	// Comment out for easy debug printing
 #pragma omp parallel for schedule(dynamic)
 	for (int j = 0; j < image_size.first; ++j) {
+		// Don't need countr-jet side
 		for (int k = image_size.second / 2; k < image_size.second; ++k) {
 			if (j == image_size.first / 2) {
 				int n_pix = image_size.first * j + k + 1;
