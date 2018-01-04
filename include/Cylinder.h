@@ -15,7 +15,7 @@ public:
              const double &r_);
 
     std::list<Intersection> hit(Ray &ray) const override;
-    const Vector3d& origin() const;
+    const Vector3d& origin() const override;
     const Vector3d& direction() const;
     double r() const;
     bool is_within(Vector3d& point) const override;

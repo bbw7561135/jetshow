@@ -14,7 +14,7 @@ public:
 
 class ConstFlatVField: public VField {
 public:
-    ConstFlatVField(double gamma);
+		explicit ConstFlatVField(double gamma);
     Vector3d v(const Vector3d& point) const override;
 
 private:
@@ -48,7 +48,7 @@ private:
 
 class ConstCentralVField: public VField {
 public:
-    ConstCentralVField(double gamma);
+		explicit ConstCentralVField(double gamma);
     Vector3d v(const Vector3d& point) const override;
 
 private:

@@ -12,7 +12,7 @@ public:
 
 class ConstNField: public NField {
 public:
-		ConstNField(double n);
+		explicit ConstNField(double n);
 		double n(const Vector3d &point) const override;
 
 private:
