@@ -44,9 +44,15 @@ double sin_theta(Vector3d &b, Vector3d &n_los);
 
 double k_0(Vector3d &b, Vector3d &n_los, double nu, double n);
 
+// For random B-field
+double k_0(double b, Vector3d &n_los, double nu, double n);
+
 // Absorption coefficient for given vector of magnetic field ``b``, unit LOS
 // vector ``n_los`` and others measured in emission frame
 double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
+
+// For random B-field
+double k_i(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 double k_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
@@ -72,9 +78,15 @@ double h_Q(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 double eta_0(Vector3d &b, Vector3d &n_los, double nu, double n);
 
+// For random B-field
+double eta_0(double b, Vector3d &n_los, double nu, double n);
+
 // Emission coefficient for given vector of magnetic field ``b``, unit LOS
 // vector ``n_los`` and others measured in emission frame
 double eta_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
+
+// For random B-field
+double eta_i(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 double eta_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
