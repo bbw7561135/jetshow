@@ -388,7 +388,7 @@ void test_stripe() {
 	pt::ptree root;
 
 	Geometry* geometry;
-	BField* bfield;
+	RandomScalarBField* bfield;
 	VField* vfield;
 	NField* nfield;
 
@@ -417,37 +417,40 @@ void test_stripe() {
 
 	std::string btype = root.get<std::string>("jet.bfield.type");
 	std::cout << "B-field type : " << btype << std::endl;
-	if (btype == "radial_conical") {
-		double b_1 = root.get<double>("jet.bfield.parameters.b_1");
-		double n_b = root.get<double>("jet.bfield.parameters.n_b");
-		bfield = new RadialConicalBField(b_1, n_b);
-	} else if (btype == "spiral_conical") {
-		double b_1 = root.get<double>("jet.bfield.parameters.b_1");
-		double pitch_angle = root.get<double>("jet.bfield.parameters.pitch_angle");
-		bfield = new SpiralConicalBField(b_1, pitch_angle);
-	} else if (btype == "toroidal") {
-		double b_1 = root.get<double>("jet.bfield.parameters.b_1");
-		double n_b = root.get<double>("jet.bfield.parameters.n_b");
-		bfield = new ToroidalBField(b_1, n_b);
-	};
+//	if (btype == "radial_conical") {
+//		double b_1 = root.get<double>("jet.bfield.parameters.b_1");
+//		double n_b = root.get<double>("jet.bfield.parameters.n_b");
+//		bfield = new RadialConicalBField(b_1, n_b);
+//	} else if (btype == "spiral_conical") {
+//		double b_1 = root.get<double>("jet.bfield.parameters.b_1");
+//		double pitch_angle = root.get<double>("jet.bfield.parameters.pitch_angle");
+//		bfield = new SpiralConicalBField(b_1, pitch_angle);
+//	} else if (btype == "toroidal") {
+//		double b_1 = root.get<double>("jet.bfield.parameters.b_1");
+//		double n_b = root.get<double>("jet.bfield.parameters.n_b");
+//		bfield = new ToroidalBField(b_1, n_b);
+//	};
 
+	double b_1 = root.get<double>("jet.bfield.parameters.b_1");
+	double n_b = root.get<double>("jet.bfield.parameters.n_b");
+	bfield = new RandomScalarBField(b_1, n_b);
 
-	double rnd_fraction = root.get<double>("jet.bfield.parameters.random_fraction");
-	if (rnd_fraction > 0.01) {
-		// Create ``Cells`` instance
-		int N = root.get<int>("jet.bfield.parameters.n_cells_1pc");
-		RandomCellsInSphere cells(N, 2.0);
-		double cone_angle = root.get<double>("jet.geometry.parameters.angle");
-		double scale_pc = root.get<double>("jet.geometry.parameters.scale_pc");
-		cells.setGeometry(scale_pc * pc, cone_angle);
-		cells.create();
-		// Create ``RandomBField`` instance
-		RandomCellsBField rnd_bfield(&cells, bfield, rnd_fraction);
-		unsigned int seed = 123;
-		if (rnd_fraction > 0) {
-			bfield = new RandomPointBField(bfield, rnd_fraction, seed);
-		}
-	}
+//	double rnd_fraction = root.get<double>("jet.bfield.parameters.random_fraction");
+//	if (rnd_fraction > 0.01) {
+//		// Create ``Cells`` instance
+//		int N = root.get<int>("jet.bfield.parameters.n_cells_1pc");
+//		RandomCellsInSphere cells(N, 2.0);
+//		double cone_angle = root.get<double>("jet.geometry.parameters.angle");
+//		double scale_pc = root.get<double>("jet.geometry.parameters.scale_pc");
+//		cells.setGeometry(scale_pc * pc, cone_angle);
+//		cells.create();
+//		// Create ``RandomBField`` instance
+//		RandomCellsBField rnd_bfield(&cells, bfield, rnd_fraction);
+//		unsigned int seed = 123;
+//		if (rnd_fraction > 0) {
+//			bfield = new RandomPointBField(bfield, rnd_fraction, seed);
+//		}
+//	}
 
 	std::string vtype = root.get<std::string>("jet.vfield.type");
 	std::cout << "Velocity type : " << vtype << std::endl;
