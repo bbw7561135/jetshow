@@ -18,6 +18,17 @@ public:
 };
 
 
+class RandomScalarBField {
+public:
+		RandomScalarBField(double b_0, double m_b);
+		double bf(const Vector3d &point) const;
+
+private:
+		double b_0_;
+		double m_b_;
+};
+
+
 class ConstCylinderBField : public BField {
 public:
     ConstCylinderBField(double b_0, double n_b) ;

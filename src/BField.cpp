@@ -12,6 +12,15 @@ using Eigen::Vector3d;
 typedef boost::variate_generator<gen_type&, boost::uniform_on_sphere<double>> gg;
 
 
+RandomScalarBField::RandomScalarBField(double b_0, double m_b) :
+		b_0_(b_0), m_b_(m_b) {}
+
+double RandomScalarBField::bf(const Vector3d &point) const {
+	double r = point.norm();
+	return b_0_ * pow(r/pc, -m_b_);
+};
+
+
 ConstCylinderBField::ConstCylinderBField(double b_0, double n_b) : b_0_(b_0),
                                                                    n_b_(n_b) {};
 
