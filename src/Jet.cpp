@@ -2,13 +2,14 @@
 #include <math.h>
 
 
-Jet::Jet(Geometry *newgeo, VField *newvfield, BField *newbField,
+Jet::Jet(Geometry *newgeo, VField *newvfield, RandomScalarBField *newbField,
          NField *newnField) {
     geometry_ = newgeo;
     vfield_ = newvfield;
     bfield_ = newbField;
     nfield_ = newnField;
 }
+
 
 // This is k_i in lab frame that could be integrated along LOS.
 double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
