@@ -35,7 +35,8 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     auto n_los_prime = get_n_los_prime(n_los, v);
     auto nu_prime = nu/D;
     auto n_prime = n/gamma;
-    auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
+//    auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
+		auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
     return k_i_prime/D;
 }
 

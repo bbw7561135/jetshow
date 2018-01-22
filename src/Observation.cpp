@@ -108,6 +108,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	      }
       }
     }
+
   }
 }
 
@@ -393,6 +394,10 @@ void Observation::run_stripe(int n, double tau_max, double tau_min) {
 	auto image_size = getImageSize();
 	vector<Pixel>& pixels = imagePlane->getPixels();
 	vector<Ray>& rays = imagePlane->getRays();
+
+	// Don't need countr-jet side
+	int j = image_size.first/2;
+
 	// Comment out for easy debug printing
 #pragma omp parallel for schedule(dynamic)
 	for (int j = 0; j < image_size.first; ++j) {
