@@ -45,11 +45,19 @@ double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
 // For random B-field
 double k_i(double b, Vector3d &n_los, double nu, double n, double s) {
 	double factor = (pow(3., (s+1.)/2.)/4.)*tgamma(s/4.+11./6.)*tgamma(s/4.+1./6.);
-//  	return sin_theta(b, n_los) * k_0_value(b, nu, n) * pow(nu_b(b, n_los)/nu, s/2.) * factor;
 	double rnd_factor = sqrt(pi/4.)*tgamma((6.+s)/4.)/tgamma((8.+s)/4.);
-//	std::cout << "Kappa RND factor = " << rnd_factor << std::endl;
 	factor = factor*rnd_factor;
 	return k_0(b, n_los, nu, n) * pow(nu_b(b)/nu, s/2.) * factor;
+}
+
+// For random B-field - alternative formulation
+double k_i_(double b, Vector3d &n_los, double nu, double n, double s) {
+	double alpha = (s-1.)/2.;
+	double factor = sqrt(pi/4.)*tgamma((7.+2.*alpha)/4.)/tgamma((9.+2.*alpha)/4.);
+	factor = factor*pow(m_e*c*c, 2.*alpha)*(sqrt(3.)*pow(q_e, 3.)/(8.*pi*m_e));
+	factor = factor*pow((3.*q_e)/(2.*pi*pow(m_e, 3.)*pow(c, 5.)), alpha+0.5);
+	factor = factor*tgamma((6.*alpha+5.)/12.)*tgamma((6.*alpha+25.)/12.);
+	return factor*pow(b, alpha+1.5)*n*pow(nu, -alpha-2.5);
 }
 
 double k_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
@@ -95,7 +103,6 @@ double h_Q(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
 }
 
 
-
 double eta_0(Vector3d &b, Vector3d &n_los, double n) {
     return pi*nu_p(n)*nu_p(n)*nu_b(b, n_los)*m_e/c;
 }
@@ -118,7 +125,6 @@ double eta_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
 double eta_i(double b, Vector3d &n_los, double nu, double n, double s) {
 	double factor = pow(3., s/2.)/(2.*(s+1))*tgamma(s/4.+19./12.)*tgamma(s/4.-1./12.);
 	double rnd_factor = sqrt(pi/4.)*tgamma((5.+s)/4.)/tgamma((7.+s)/4.);
-//	std::cout << "Eta RND factor = " << rnd_factor << std::endl;
 	factor = factor*rnd_factor;
 	return eta_0(b, n_los, n) * pow(nu_b(b)/nu, (s-1.)/2.) * factor;
 }
