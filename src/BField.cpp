@@ -21,6 +21,15 @@ double RandomScalarBField::bf(const Vector3d &point) const {
 };
 
 
+RandomScalarBFieldZ::RandomScalarBFieldZ(double b_0, double m_b) :
+		b_0_(b_0), m_b_(m_b) {}
+
+double RandomScalarBFieldZ::bf(const Vector3d &point) const {
+	double r = abs(point[2]);
+	return b_0_ * pow(r/pc, -m_b_);
+};
+
+
 ConstCylinderBField::ConstCylinderBField(double b_0, double n_b) : b_0_(b_0),
                                                                    n_b_(n_b) {};
 
@@ -29,6 +38,14 @@ Vector3d ConstCylinderBField::bf(const Vector3d &point) const {
 	return Vector3d(0.0, 0.0, b_0_*pow(r/pc, -n_b_));
 }
 
+
+ConstCylinderBFieldZ::ConstCylinderBFieldZ(double b_0, double n_b) : b_0_(b_0),
+                                                                   n_b_(n_b) {};
+
+Vector3d ConstCylinderBFieldZ::bf(const Vector3d &point) const {
+	double r = abs(point[2]);
+	return Vector3d(0.0, 0.0, b_0_*pow(r/pc, -n_b_));
+}
 
 
 RadialConicalBField::RadialConicalBField(double b_0, double n_b) : b_0_(b_0),
