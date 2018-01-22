@@ -524,7 +524,6 @@ void test_stripe() {
 	else {
 		observation.run(n, tau_max, dt_max, tau_min, step_type, calculate,
 		                n_tau_max, tau_n_min, tau_max);
-
 		string value = "tau";
 		auto image = observation.getImage(value);
 		std::fstream fs;
@@ -541,10 +540,14 @@ void test_stripe() {
 		image = observation.getImage(value);
 		std::string file_i = root.get<std::string>("output.file_i");
 		fs.open(file_i, std::ios::out | std::ios::app);
-//		double scale = 1E-23/pix_solid_angle;
-		// I_{\nu}/\nu^3 = inv
-//		double scale = 1E-23/pix_solid_angle;
-		double scale = 1E-23*(1.+z)*(1.+z)*(1.+z)/pix_solid_angle;
+    // double scale = 1E-23/pix_solid_angle;
+		// I_{\nu}/\nu^3 = inv => to get Flux in the observer frame in Jy:
+//		double scale = 1E-23*(1.+z)*(1.+z)*(1.+z)/pix_solid_angle;
+
+		// Now convert to observed flux using luminosity distance
+		double da = comoving_transfer_distance(z)/(1.+z);
+		double scale = 1E-23*da*da*(1.+z)*(1.+z)*(1.+z)/(pixel_size_mas*pc_in_mas*pixel_size_mas*pc_in_mas);
+
 		std::cout << "Scaling Stokes I by " << scale << std::endl;
 
 		if (fs.is_open())
