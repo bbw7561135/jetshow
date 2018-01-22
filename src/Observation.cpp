@@ -245,9 +245,9 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 			// the dense out stepper now covers the interval where the condition changes
 	    // improve the solution by bisection
 	    double t0 = stepper.previous_time();
-			std::cout << "Original t_0 = " << t0 << std::endl;
+//			std::cout << "Original t_0 = " << t0 << std::endl;
 	    double t1 = stepper.current_time();
-			std::cout << "Original t_1 = " << t1 << std::endl;
+//			std::cout << "Original t_1 = " << t1 << std::endl;
 	    double t_m;
 	    double x_m = found_tau;
 	    // use odeint's resizing functionality to allocate memory for x_m
@@ -255,7 +255,7 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 	    while(std::abs(x_m - tau_max) > tau_precision) {
 	        t_m = 0.5 * (t0 + t1);  // get the mid point time
 	        stepper.calc_state(t_m, x_m); // obtain the corresponding state
-		      std::cout << "Current x_m = " << x_m << std::endl;
+//		      std::cout << "Current x_m = " << x_m << std::endl;
 	        if (x_m > tau_max)
 	            t1 = t_m;  // condition changer lies before midpoint
 	        else
@@ -264,8 +264,8 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 	    // we found the interval of size eps, take it's midpoint as final guess
 	    t_m = 0.5 * (t0 + t1);
 	    stepper.calc_state(t_m, x_m);
-			std::cout << "Found precise cross value tau = " << x_m << std::endl;
-			std::cout << "Originally it was tau = " << found_iter.get_state() << std::endl;
+//			std::cout << "Found precise cross value tau = " << x_m << std::endl;
+//			std::cout << "Originally it was tau = " << found_iter.get_state() << std::endl;
 			double t_tau_max = t_m;
 //			double t_tau_max = stepper.current_time();
 
@@ -420,7 +420,7 @@ void Observation::run_stripe(int n, double tau_max, double tau_min) {
 			                          n);
 			double background_tau = tau_l_end.first;
 			double thickness = tau_l_end.second;
-			std::cout << "Tau = " << background_tau << std::endl;
+//			std::cout << "Tau = " << background_tau << std::endl;
 
 			// Write values to pixel
 			std::string value("tau");
