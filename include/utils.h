@@ -17,7 +17,7 @@ using Eigen::Vector3d;
 const double mas_to_rad = 4.8481368*1E-9;
 const double rad_to_mas = 1./mas_to_rad;
 // Parsec [cm]
-const double pc = 3.0857*1E18;
+const double pc = 3.0857*1E+18;
 // Mass of electron [g]
 const double m_e = 9.109382*1E-28;
 // Mass of proton [g]
@@ -53,6 +53,9 @@ double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 // For random B-field
 double k_i(double b, Vector3d &n_los, double nu, double n, double s=2.5);
+
+// For random B-field - alternative formulation
+double k_i_(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 double k_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
