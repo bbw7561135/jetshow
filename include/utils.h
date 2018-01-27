@@ -52,7 +52,7 @@ double k_0(double b, Vector3d &n_los, double nu, double n);
 double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 // For random B-field
-double k_i(double b, Vector3d &n_los, double nu, double n, double s=2.5);
+double k_i(double b, Vector3d &n_los, double nu, double n, double s=2.0);
 
 // For random B-field - alternative formulation
 double k_i_(double b, Vector3d &n_los, double nu, double n, double s=2.5);
@@ -114,7 +114,7 @@ double eta_0(double b, Vector3d &n_los, double nu, double n);
 double eta_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 // For random B-field
-double eta_i(double b, Vector3d &n_los, double nu, double n, double s=2.5);
+double eta_i(double b, Vector3d &n_los, double nu, double n, double s=2.0);
 
 double eta_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
@@ -163,6 +163,9 @@ public:
 // factor (1 + z) lower and luminosity distance is the same factor higher.
 double comoving_transfer_distance(double z, double H0=73., double omega_M=0.3,
 																  double omega_V=0.7);
+
+
+double da_old(double z, double H0=50., double q0=0.05);
 
 
 // Return scale factor that converts from parsecs to milliarcseconds

@@ -220,6 +220,7 @@ write_vector(std::ostream &os, std::vector<double> &v, double scale) {
 
 double pixel_solid_angle(double pixel_size_mas, double z) {
 	double pixel_size_pc = pixel_size_mas * mas_to_pc(z);
+//	double d_a = da_old(z);
 	double d_a = comoving_transfer_distance(z)/(1.+z);
 	return pixel_size_pc*pixel_size_pc/(d_a*d_a);
 
@@ -344,6 +345,10 @@ int steps_schedule(double tau, int n_min, int n_max, double tau_min,
 	double n = k * pow((log(tau) + b), 2.0) + n_min;
 	return ceil(n);
 	}
+}
+
+double da_old(double z, double H0, double q0) {
+	return 3.*1E+11*pow(H0*q0*q0, -1.)*(z*q0+(q0-1.)*(sqrt(2.0*q0*z+1.)-1.0))/(1.0+z)/(1.0+z);
 }
 
 
