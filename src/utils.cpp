@@ -180,11 +180,13 @@ double comoving_transfer_distance(double z, double H0, double omega_M,
 
 double pc_to_mas(double z) {
 	double d_a = comoving_transfer_distance(z)/(1.+z);
+//	double d_a = da_old(z);
 	double angle_rads = 1./d_a;
 	return rad_to_mas*angle_rads;
 }
 
 double mas_to_pc(double z) {
+//	double d_a = da_old(z);
 	double d_a = comoving_transfer_distance(z)/(1.+z);
 	return mas_to_rad*d_a;
 }
