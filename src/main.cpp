@@ -433,6 +433,7 @@ void test_stripe() {
 
 	double b_1 = root.get<double>("jet.bfield.parameters.b_1");
 	double n_b = root.get<double>("jet.bfield.parameters.n_b");
+	std::cout << "B-field value, exponent : " << b_1 << " " << n_b << std::endl;
 	bfield = new RandomScalarBField(b_1, n_b);
 
 //	double rnd_fraction = root.get<double>("jet.bfield.parameters.random_fraction");
@@ -522,7 +523,6 @@ void test_stripe() {
 	}
 
 
-		//
 	else {
 		observation.run(n, tau_max, dt_max, tau_min, step_type, calculate,
 		                n_tau_max, tau_n_min, tau_max);
@@ -562,15 +562,16 @@ void test_stripe() {
 			fs.close();
 		}
 
-		value = "l";
-		image = observation.getImage(value);
-		std::string file_length = root.get<std::string>("output.file_length");
-		fs.open(file_length, std::ios::out | std::ios::app);
-
-		if (fs.is_open()) {
-			write_2dvector(fs, image, pc);
-			fs.close();
-		}
+		// TODO: Don't save l
+//		value = "l";
+//		image = observation.getImage(value);
+//		std::string file_length = root.get<std::string>("output.file_length");
+//		fs.open(file_length, std::ios::out | std::ios::app);
+//
+//		if (fs.is_open()) {
+//			write_2dvector(fs, image, pc);
+//			fs.close();
+//		}
 
 
 		if (calculate == "full") {
@@ -613,15 +614,16 @@ void test_stripe() {
 				fs.close();
 			}
 
-			value = "l";
-			image = observation.getImage(value);
-			std::string file_length = root.get<std::string>("output.file_length");
-			fs.open(file_length, std::ios::out | std::ios::app);
-
-			if (fs.is_open()) {
-				write_2dvector(fs, image, pc);
-				fs.close();
-			}
+			// TODO: Don't save l
+//			value = "l";
+//			image = observation.getImage(value);
+//			std::string file_length = root.get<std::string>("output.file_length");
+//			fs.open(file_length, std::ios::out | std::ios::app);
+//
+//			if (fs.is_open()) {
+//				write_2dvector(fs, image, pc);
+//				fs.close();
+//			}
 		}
 	}
 }
