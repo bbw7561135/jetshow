@@ -52,7 +52,7 @@ double k_0(double b, Vector3d &n_los, double nu, double n);
 double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 // For random B-field
-double k_i(double b, Vector3d &n_los, double nu, double n, double s=2.0);
+double k_i(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 // For random B-field - alternative formulation
 double k_i_(double b, Vector3d &n_los, double nu, double n, double s=2.5);
@@ -114,7 +114,7 @@ double eta_0(double b, Vector3d &n_los, double nu, double n);
 double eta_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 // For random B-field
-double eta_i(double b, Vector3d &n_los, double nu, double n, double s=2.0);
+double eta_i(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 double eta_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
