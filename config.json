@@ -1,18 +1,1 @@
-{"observation": {"redshift": 0.5, "frequency_ghz": 15.4, "los_angle": 0.7854},
-    "jet": {"geometry": {"type": "cone", "parameters": {"angle": 0.0574533,
-        "scale_pc": 100.0}}, "bfield": {"type": "random", "parameters":
-        {"model_of_randomness": "point", "pitch_angle": 1.0, "random_fraction":
-            0.0, "n_cells_1pc": 100, "b_1": 1.0, "n_b": 1}}, "vfield": {"type":
-            "const_flat", "parameters": {"gamma": 1}}, "nfield": {"type":
-            "bk", "parameters": {"n_n": 2.0, "n_1": 5280}}}, "image":
-            {"pixel_size_mas": 0.002, "number_of_pixels": 1000},
-            "integration": {"step_type": "adaptive", "parameters":
-                {"n_tau_max": 1000, "log10_abs_error_I": -9.0, "tau_max":
-                    1000.0, "log10_tau_min": -4.0, "n": 100, "dl_max_pc":
-                    0.001, "log10_rel_error_tau": -9.0, "log10_abs_error_tau":
-                    -3.0, "tau_n_min": 0.1, "log10_rel_error_I": -5.0}},
-                    "output": {"file_tau_stripe": "stripe_tau.txt", "file_u":
-                        "map_u.txt", "file_v": "map_v.txt", "file_q":
-                        "map_q.txt", "file_i": "map_i.txt", "file_tau":
-                        "map_tau.txt", "file_length": "map_l.txt"},
-                        "calculate": "I"}
+{"calculate": "I", "jet": {"geometry": {"type": "cone", "parameters": {"angle": 0.026000000000000002, "scale_pc": 100.0}}, "bfield": {"type": "random", "parameters": {"model_of_randomness": "point", "pitch_angle": 1.0, "random_fraction": 0.0, "n_cells_1pc": 100, "b_1": 27.825594022071257, "n_b": 1}}, "vfield": {"type": "const_central", "parameters": {"gamma": 5.0}}, "nfield": {"type": "bk", "parameters": {"n_n": 2.0, "n_1": 12915.496650148827}}}, "image": {"pixel_size_mas": 0.003439052935687982, "number_of_pixels": 852}, "integration": {"step_type": "adaptive", "parameters": {"n_tau_max": 2000, "log10_abs_error_I": -9.0, "tau_max": 1000.0, "log10_tau_min": -4.0, "n": 100, "dl_max_pc": 0.001, "log10_rel_error_tau": -9.0, "log10_abs_error_tau": -3.0, "tau_n_min": 0.1, "log10_rel_error_I": -5.0}}, "aux": {"flux": 1.2971143584036358, "r_tau_low": 308.41860027964145, "r_tau1_pc": 36.818292088409756}, "output": {"file_tau_stripe": "stripe_tau.txt", "file_u": "map_u.txt", "file_v": "map_v.txt", "file_q": "map_q.txt", "file_i": "map_i.txt", "file_tau": "map_tau.txt", "file_length": "map_l.txt"}, "observation": {"frequency_ghz": 15.4, "los_angle": 0.1, "redshift": 1.9840621120639996}}
