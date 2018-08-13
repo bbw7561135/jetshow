@@ -16,7 +16,7 @@ CompositeBKNField::CompositeBKNField(double n_0, double n_n_inner, double n_n_ou
 
 
 double CompositeBKNField::n(const Vector3d &point) const {
-    double z = point[2];
+    double z = abs(point[2]);
     if (z > z0_) {
         return outer_field_.n(point);
     }
