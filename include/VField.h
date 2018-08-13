@@ -80,4 +80,78 @@ private:
 		double theta_sheath_;
 };
 
+
+class ConstParabolicVField: public VField {
+public:
+    ConstParabolicVField(double gamma, double R0);
+    Vector3d v(const Vector3d& point) const override;
+
+private:
+    double gamma_;
+    double R0_;
+};
+
+
+// gamma(z) = gamma0*sqrt(z)
+class AccParabolicVField: public VField {
+public:
+    AccParabolicVField(double gamma0, double R0);
+    Vector3d v(const Vector3d& point) const override;
+
+private:
+    double gamma0_;
+    double R0_;
+};
+
+
+class ShearedAccParabolicVField: public VField {
+public:
+    ShearedAccParabolicVField(double gamma_axis0, double gamma_border0, double R0, double R0_border);
+    Vector3d v(const Vector3d& point) const override ;
+
+private:
+    double gamma_axis0_;
+    double gamma_border0_;
+    double R0_;
+    double R0_border_;
+};
+
+
+//class ConstParabolicConstConeVField: public VField {
+//public:
+//    ConstParabolicConstConeVField(double gamma, double R0, double z0);
+//    Vector3d v(const Vector3d& point) const override;
+//
+//private:
+//    double z0_;
+//    ConstCentralVField conev;
+//    ConstParabolicVField parav;
+//};
+
+
+class AccParabolicConstConeVField: public VField {
+public:
+    AccParabolicConstConeVField(double gamma0, double R0, double z0);
+    Vector3d v(const Vector3d& point) const override;
+
+private:
+    double z0_;
+    ConstCentralVField conev;
+    AccParabolicVField parav;
+};
+
+
+class ShearedAccParabolicConstConeVField: public VField {
+public:
+    ShearedAccParabolicConstConeVField(double gamma_axis0, double gamma_border0, double R0, double R0_border,
+            double z0);
+    Vector3d v(const Vector3d& point) const override;
+
+private:
+    double z0_;
+    ShearedCentralVField conev;
+    ShearedAccParabolicVField parav;
+};
+
+
 #endif //JETSHOW_VFIELD_H

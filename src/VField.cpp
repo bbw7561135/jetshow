@@ -95,3 +95,86 @@ Vector3d SheathCentralVField::v(const Vector3d &point) const {
 	double v_r = c*sqrt(1. - 1./(gamma*gamma));
 	return Vector3d(v_r*x/r, v_r*y/r, v_r*z/r);
 }
+
+
+ConstParabolicVField::ConstParabolicVField(double gamma, double R0) : gamma_(gamma), R0_(R0) {}
+
+Vector3d ConstParabolicVField::v(const Vector3d &point) const {
+    double x = point[0];
+    double y = point[1];
+    double r = std::hypot(x, y);
+    double v = c*sqrt(1. - 1./(gamma_*gamma_));
+    double alpha = atan(2*r/sqrt(R0_));
+    return Vector3d(v*cos(alpha)*x/r, v*cos(alpha)*y/r, v*sin(alpha));
+};
+
+
+AccParabolicVField::AccParabolicVField(double gamma0, double R0) : gamma0_(gamma0), R0_(R0) {}
+
+Vector3d AccParabolicVField::v(const Vector3d &point) const {
+    double x = point[0];
+    double y = point[1];
+    double z = point[2];
+    double r = std::hypot(x, y);
+    double gamma = gamma0_*sqrt(z)
+    double v = c*sqrt(1. - 1./(gamma*gamma));
+    double alpha = atan(2*r/sqrt(R0_));
+    return Vector3d(v*cos(alpha)*x/r, v*cos(alpha)*y/r, v*sin(alpha));
+};
+
+
+ShearedAccParabolicVField::ShearedAccParabolicVField(double gamma_axis0, double gamma_border0, double R0,
+        double R0_border) :
+        gamma_axis0_(gamma_axis0), gamma_border0_(gamma_border0), R0_(R0), R0_border_(R0_border) {}
+
+Vector3d ShearedAccParabolicVField::v(const Vector3d &point) const {
+    double x = point[0];
+    double y = point[1];
+    double z = point[2];
+    double r = std::hypot(x, y);
+    double gamma0 = gamma_axis0_-(gamma_axis0_-gamma_border0_)*r/R0_border_;
+    double gamma = gamma0*sqrt(z);
+    double v = c*sqrt(1. - 1./(gamma*gamma));
+    double alpha = atan(2*r/sqrt(R0_));
+    return Vector3d(v*cos(alpha)*x/r, v*cos(alpha)*y/r, v*sin(alpha));
+}
+//ConstParabolicConstConeVField::ConstParabolicConstConeVField(double gamma, double R0, double z0) :
+//z0_(z0), conev(gamma), parav(gamma, R0) {}
+//
+//Vector3d ConstParabolicConstConeVField::v(const Vector3d &point) const {
+//    if (point[2] > z0_) {
+//        return conev.v(point);
+//    }
+//    else {
+//        return parav.v(point);
+//    }
+//};
+
+
+AccParabolicConstConeVField::AccParabolicConstConeVField(double gamma0, double R0, double z0) :
+        z0_(z0), conev(gamma0), parav(gamma0, R0) {}
+
+Vector3d AccParabolicConstConeVField::v(const Vector3d &point) const {
+    if (point[2] > z0_) {
+        return conev.v(point);
+    }
+    else {
+        return parav.v(point);
+    }
+};
+
+
+ShearedAccParabolicConstConeVField::ShearedAccParabolicConstConeVField(double gamma_axis0, double gamma_border0,
+        double R0, double R0_border, double z0) :
+        z0_(z0),
+        conev(gamma_axis0, gamma_border0, acos(z0/R0_border)),
+        parav(gamma_axis0, gamma_border0, R0, R0_border) {}
+
+Vector3d ShearedAccParabolicConstConeVField::v(const Vector3d &point) const {
+    if (point[2] > z0_) {
+        return conev.v(point);
+    }
+    else {
+        return parav.v(point);
+    }
+};
