@@ -30,6 +30,20 @@ double RandomScalarBFieldZ::bf(const Vector3d &point) const {
 };
 
 
+CompositeRandomScalarBFieldZ::CompositeRandomScalarBFieldZ(double b_0, double m_b_inner, double m_b_outer, double z0) :
+        z0_(z0), inner_field_(b_0, m_b_inner), outer_field_(b_0, m_b_outer) {}
+
+double CompositeRandomScalarBFieldZ::bf(const Vector3d &point) const {
+    double r = abs(point[2]);
+    if (r > z0_) {
+        return outer_field_.bf(point);
+    }
+    else {
+        return inner_field_.bf(point);
+    }
+};
+
+
 ConstCylinderBField::ConstCylinderBField(double b_0, double n_b) : b_0_(b_0),
                                                                    n_b_(n_b) {};
 

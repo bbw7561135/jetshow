@@ -40,6 +40,18 @@ private:
 };
 
 
+class CompositeRandomScalarBFieldZ {
+public:
+    CompositeRandomScalarBFieldZ(double b_0, double m_b_inner, double m_b_outer, double z0);
+    double bf(const Vector3d &point) const;
+
+private:
+    double z0_;
+    RandomScalarBFieldZ inner_field_;
+    RandomScalarBFieldZ outer_field_;
+};
+
+
 class ConstCylinderBField : public BField {
 public:
     ConstCylinderBField(double b_0, double n_b) ;
