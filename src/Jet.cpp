@@ -2,22 +2,22 @@
 #include <math.h>
 
 
-//Jet::Jet(Geometry *newgeo, VField *newvfield, RandomScalarBField *newbField,
-//         NField *newnField) {
-//    geometry_ = newgeo;
-//    vfield_ = newvfield;
-//    bfield_ = newbField;
-//    nfield_ = newnField;
-//}
-
-
-Jet::Jet(Geometry *newgeo, VField *newvfield, BField *newbField,
+Jet::Jet(Geometry *newgeo, VField *newvfield, RandomScalarBFieldZ *newbField,
          NField *newnField) {
     geometry_ = newgeo;
     vfield_ = newvfield;
     bfield_ = newbField;
     nfield_ = newnField;
 }
+
+
+//Jet::Jet(Geometry *newgeo, VField *newvfield, BField *newbField,
+//         NField *newnField) {
+//    geometry_ = newgeo;
+//    vfield_ = newvfield;
+//    bfield_ = newbField;
+//    nfield_ = newnField;
+//}
 
 
 // This is k_i in lab frame that could be integrated along LOS.
