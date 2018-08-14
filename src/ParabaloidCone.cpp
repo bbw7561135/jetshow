@@ -12,9 +12,8 @@
 ParabaloidCone::ParabaloidCone(const Vector3d &origin, const Vector3d &direction, const double &r0, const double &z0,
         const double &big_scale) :
         cone_(Vector3d(0, 0, -z0*(1/(0.5*r0*pow(z0, -0.5)) - 1)), direction, atan(0.5*r0*pow(z0, -0.5)), big_scale),
-        parabaloid_(origin, direction, r0)  {
+        parabaloid_(origin, direction, r0, big_scale)  {
     z0_ = z0;
-    big_scale_ = big_scale;
 }
 
 const Vector3d& ParabaloidCone::origin() const {
@@ -27,6 +26,10 @@ const Vector3d& ParabaloidCone::direction() const {
 
 double ParabaloidCone::z0() const {
     return z0_;
+}
+
+const double ParabaloidCone::big_scale() const {
+    return cone_.big_scale();
 }
 
 bool ParabaloidCone::is_within(Vector3d& point) const {

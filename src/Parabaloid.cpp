@@ -13,6 +13,7 @@ Parabaloid::Parabaloid(const Vector3d &origin, const Vector3d &direction, const 
     direction_ = direction;
     direction_.normalize();
     r0_ = r0;
+    big_scale_ = big_scale;
 }
 
 const Vector3d& Parabaloid::origin() const {
@@ -25,6 +26,10 @@ const Vector3d& Parabaloid::direction() const {
 
 double Parabaloid::r0() const {
     return r0_;
+}
+
+const double Parabaloid::big_scale() const {
+    return big_scale_;
 }
 
 bool Parabaloid::is_within(Vector3d& point) const {

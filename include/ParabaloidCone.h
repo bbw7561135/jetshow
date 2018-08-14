@@ -29,7 +29,6 @@ public:
 
 private:
     double z0_;
-    double big_scale_;
     Cone cone_;
     Parabaloid parabaloid_;
 };
