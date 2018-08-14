@@ -11,7 +11,8 @@
 
 ParabaloidCone::ParabaloidCone(const Vector3d &origin, const Vector3d &direction, const double &r0, const double &z0,
         const double &big_scale) :
-        cone_(Vector3d(0, 0, -z0*(1/(0.5*r0*pow(z0, -0.5)) - 1)), direction, atan(0.5*r0*pow(z0, -0.5)), big_scale),
+        cone_(origin+Vector3d(0, 0, -(r0*sqrt(z0/pc)/(0.5*r0*pow(z0*pc, -0.5)) - z0)), direction, atan(0.5*r0*pow(z0*pc, -0.5)),
+                big_scale),
         parabaloid_(origin, direction, r0, big_scale)  {
     z0_ = z0;
 }
