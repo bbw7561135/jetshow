@@ -116,7 +116,7 @@ Vector3d AccParabolicVField::v(const Vector3d &point) const {
     double y = point[1];
     double z = point[2];
     double r = std::hypot(x, y);
-    double gamma = gamma0_*sqrt(z);
+    double gamma = 1 + (gamma0_-1)/sqrt(R0_)*sqrt(z);
     double v_r = c*sqrt(1. - 1./(gamma*gamma));
     double alpha = atan(2*r/sqrt(R0_));
     return Vector3d(v_r*cos(alpha)*x/r, v_r*cos(alpha)*y/r, v_r*sin(alpha));

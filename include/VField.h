@@ -92,7 +92,8 @@ private:
 };
 
 
-// gamma(z) = gamma0*sqrt(z)
+// gamma(z) = 1+a*sqrt(z)
+// gamma0 - speed at z=R0
 class AccParabolicVField: public VField {
 public:
     AccParabolicVField(double gamma0, double R0);
