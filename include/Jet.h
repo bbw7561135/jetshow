@@ -11,10 +11,10 @@
 
 class Jet {
 public:
-//    Jet(Geometry* geo, VField* vfield, BField* bField, NField* nField);
-
-		Jet(Geometry* geo, VField* vfield, RandomScalarBField* bField,
-		    NField* nField);
+    Jet(Geometry* geo, VField* vfield, BField* bField, NField* nField);
+//
+//		Jet(Geometry* geo, VField* vfield, RandomScalarBField* bField,
+//		    NField* nField);
 
     // Vector of the magnetic field in the lab frame at point ``point``.
 //    const Vector3d getB(const Vector3d& point);
@@ -60,7 +60,8 @@ public:
 private:
     Geometry* geometry_;
     VField* vfield_;
-    RandomScalarBField* bfield_;
+//    RandomScalarBField* bfield_;
+    BField* bfield_;
     NField* nfield_;
 };
 

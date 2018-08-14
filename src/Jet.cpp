@@ -2,7 +2,16 @@
 #include <math.h>
 
 
-Jet::Jet(Geometry *newgeo, VField *newvfield, RandomScalarBField *newbField,
+//Jet::Jet(Geometry *newgeo, VField *newvfield, RandomScalarBField *newbField,
+//         NField *newnField) {
+//    geometry_ = newgeo;
+//    vfield_ = newvfield;
+//    bfield_ = newbField;
+//    nfield_ = newnField;
+//}
+
+
+Jet::Jet(Geometry *newgeo, VField *newvfield, BField *newbField,
          NField *newnField) {
     geometry_ = newgeo;
     vfield_ = newvfield;

@@ -28,6 +28,7 @@ ImagePlane::ImagePlane(pair<int,int> image_size, double pixel_size,
 			coordinate = scale.array()*coordinate.array();
       auto ij = std::make_pair(i, j);
       auto ray = Ray(coordinate, direction_);
+//      std::cout << "Setting ray i, j = " << i << " " << j << "with coordinate = " << coordinate << std::endl;
       rays_.push_back(std::move(ray));
     }
   }
