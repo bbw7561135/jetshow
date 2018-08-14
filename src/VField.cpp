@@ -103,9 +103,9 @@ Vector3d ConstParabolicVField::v(const Vector3d &point) const {
     double x = point[0];
     double y = point[1];
     double r = std::hypot(x, y);
-    double v = c*sqrt(1. - 1./(gamma_*gamma_));
+    double v_r = c*sqrt(1. - 1./(gamma_*gamma_));
     double alpha = atan(2*r/sqrt(R0_));
-    return Vector3d(v*cos(alpha)*x/r, v*cos(alpha)*y/r, v*sin(alpha));
+    return Vector3d(v_r*cos(alpha)*x/r, v_r*cos(alpha)*y/r, v_r*sin(alpha));
 };
 
 
@@ -116,10 +116,10 @@ Vector3d AccParabolicVField::v(const Vector3d &point) const {
     double y = point[1];
     double z = point[2];
     double r = std::hypot(x, y);
-    double gamma = gamma0_*sqrt(z)
-    double v = c*sqrt(1. - 1./(gamma*gamma));
+    double gamma = gamma0_*sqrt(z);
+    double v_r = c*sqrt(1. - 1./(gamma*gamma));
     double alpha = atan(2*r/sqrt(R0_));
-    return Vector3d(v*cos(alpha)*x/r, v*cos(alpha)*y/r, v*sin(alpha));
+    return Vector3d(v_r*cos(alpha)*x/r, v_r*cos(alpha)*y/r, v_r*sin(alpha));
 };
 
 
@@ -134,9 +134,9 @@ Vector3d ShearedAccParabolicVField::v(const Vector3d &point) const {
     double r = std::hypot(x, y);
     double gamma0 = gamma_axis0_-(gamma_axis0_-gamma_border0_)*r/R0_border_;
     double gamma = gamma0*sqrt(z);
-    double v = c*sqrt(1. - 1./(gamma*gamma));
+    double v_r = c*sqrt(1. - 1./(gamma*gamma));
     double alpha = atan(2*r/sqrt(R0_));
-    return Vector3d(v*cos(alpha)*x/r, v*cos(alpha)*y/r, v*sin(alpha));
+    return Vector3d(v_r*cos(alpha)*x/r, v_r*cos(alpha)*y/r, v_r*sin(alpha));
 }
 //ConstParabolicConstConeVField::ConstParabolicConstConeVField(double gamma, double R0, double z0) :
 //z0_(z0), conev(gamma), parav(gamma, R0) {}
