@@ -4,12 +4,15 @@
 #include <boost/numeric/odeint.hpp>
 #include "ImagePlane.h"
 #include "Observation.h"
+#include "Geometry.h"
 #include "Image.h"
 #include "System.h"
 #include "BField.h"
 #include "VField.h"
 #include "Ray.h"
 #include "Cone.h"
+#include "Parabaloid.h"
+#include "ParabaloidCone.h"
 #include "Jet.h"
 #include "utils.h"
 #include "math.h"
@@ -382,13 +385,29 @@ namespace ph = std::placeholders;
 //}
 
 
+void test_intersection() {
+    Vector3d R0 = {0, 1, 1};
+    Vector3d Rd = {0, 1, 0};
+    Ray ray = Ray(R0, Rd);
+
+
+    std::list<double> result = intersection(R0, Rd, 1., 1., -1.);
+    std::cout << "Number of intersections = " << result.size() << std::endl;
+	for (double t : result) {
+		std::cout << ray.point(t) << '\n';
+	}
+
+}
+
+
 // THIS IS MASTER FUNCTION
 void test_stripe() {
 	// Create a root
 	pt::ptree root;
 
 	Geometry* geometry;
-	RandomScalarBField* bfield;
+//	RandomScalarBField* bfield;
+	BField* bfield;
 	VField* vfield;
 	NField* nfield;
 
@@ -434,7 +453,7 @@ void test_stripe() {
 	double b_1 = root.get<double>("jet.bfield.parameters.b_1");
 	double n_b = root.get<double>("jet.bfield.parameters.n_b");
 	std::cout << "B-field value, exponent : " << b_1 << " " << n_b << std::endl;
-	bfield = new RandomScalarBField(b_1, n_b);
+	bfield = new RadialConicalBField(b_1, n_b);
 
 //	double rnd_fraction = root.get<double>("jet.bfield.parameters.random_fraction");
 //	if (rnd_fraction > 0.01) {
@@ -482,6 +501,7 @@ void test_stripe() {
 	auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, z);
 
 	ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
+	std::cout << "Setting pixel size pc " << pixel_size/pc << std::endl;
 
 	double nu = root.get<double>("observation.frequency_ghz");
 	nu *= 1E+09;
@@ -629,6 +649,107 @@ void test_stripe() {
 }
 
 
+// Testing geometries, composite fields
+void test_collimations() {
+    Geometry* geometry;
+    BField* bfield;
+    VField* vfield;
+    NField* nfield;
+
+    double los_angle = pi/6;
+    double z = 0.00436;
+    int number_of_pixels = 512;
+    double pixel_size_mas = 0.01;
+
+    // Setting geometry
+    Vector3d origin = {0., 0., 0.};
+    Vector3d direction = {0., 0., 1.};
+//    double cone_half_angle = 0.1;
+    double big_scale = 100*pc;
+    // Radius of parabaloid at z0=1pc
+    double r0 = 0.05*pc;
+//    geometry = new Cone(origin, direction, cone_half_angle, big_scale);
+    geometry = new Parabaloid(origin, direction, r0, big_scale);
+
+    double b_1 = 0.1;
+    double n_b = 1.35;
+    bfield = new RadialConicalBField(b_1, n_b);
+
+    double gamma = 10;
+    vfield = new ConstCentralVField(gamma);
+
+    double n_1 = 100;
+    double n_n = 2.0;
+    nfield = new BKNField(n_1, n_n);
+
+    Jet bkjet(geometry, vfield, bfield, nfield);
+
+    auto image_size = std::make_pair(number_of_pixels, number_of_pixels);
+    auto pc_in_mas = mas_to_pc(z);
+    auto pixel_size = pixel_size_mas*pc_in_mas*pc;
+    auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, z);
+
+    ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
+    std::cout << "Setting pixel size pc " << pixel_size/pc << std::endl;
+
+    // Setting observed frequency
+    double nu = 15.4;
+    nu *= 1E+09;
+    nu *= (1.+z);
+
+    Observation observation(&bkjet, &imagePlane, nu);
+
+    string step_type = "adaptive";
+    double tau_max = 100.0;
+    double tau_n_min = 0.1;
+    double dt_max_pc = 0.001;
+    double dt_max = pc*dt_max_pc;
+    double tau_min_log10 = -4.0;
+    double tau_min = pow(10.,tau_min_log10);
+    int n = 100;
+    int n_tau_max = 2000;
+    std::string calculate = "I";
+
+
+    observation.run(n, tau_max, dt_max, tau_min, step_type, calculate,
+                    n_tau_max, tau_n_min, tau_max);
+    string value = "tau";
+    auto image = observation.getImage(value);
+    std::fstream fs;
+    std::string file_tau = "map_tau.txt";
+    fs.open(file_tau, std::ios::out | std::ios::app);
+
+    if (fs.is_open())
+    {
+        write_2dvector(fs, image);
+        fs.close();
+    }
+
+    value = "I";
+    image = observation.getImage(value);
+    std::string file_i = "map_i.txt";
+    fs.open(file_i, std::ios::out | std::ios::app);
+    double scale = 1E-23*(1.+z)*(1.+z)*(1.+z)/pix_solid_angle;
+
+    if (fs.is_open())
+    {
+        // Scaling to Jy
+        write_2dvector(fs, image, scale);
+        fs.close();
+    }
+
+    value = "l";
+    image = observation.getImage(value);
+    std::string file_length = "map_l.txt";
+    fs.open(file_length, std::ios::out | std::ios::app);
+
+    if (fs.is_open()) {
+        write_2dvector(fs, image, pc);
+        fs.close();
+    }
+}
+
+
 int main() {
 	auto t1 = Clock::now();
 	std::clock_t start;
@@ -636,7 +757,9 @@ int main() {
 
 //	test_observations_rnd_bfield();
 //	test_observations_full();
-	test_stripe();
+//	test_intersection();
+	test_collimations();
+//	test_stripe();
 
 	std::cout << "CPU Time: "
 						<< (std::clock() - start) / (double) (CLOCKS_PER_SEC)
