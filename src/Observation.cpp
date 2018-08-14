@@ -30,13 +30,13 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	// #pragma omp parallel for num_threads(4) schedule(dynamic) collapse(2)
   for (int j = 0; j < image_size.first; ++j) {
 	  // Don't need countr-jet side
-	  for (int k = image_size.second/2; k < image_size.second; ++k) {
+	  for (int k = image_size.second/2-50; k < image_size.second; ++k) {
       int n_pix = image_size.first*j + k + 1;
 //      std::cout << "Running on pixel # " << n_pix << " " << j << "," << k << std::endl;
       auto &ray = rays[j*image_size.first+k];
       auto &pxl = pixels[j*image_size.first+k];
 
-			auto ray_direction = ray.direction();
+      auto ray_direction = ray.direction();
       std::list<Intersection> list_intersect = jet->hit(ray);
       if (list_intersect.empty()) {
         continue;
@@ -47,6 +47,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	        tau_l_end = integrate_tau(list_intersect, ray_direction, nu, tau_max,
 	                                  n);
 	      } else if (integration_type == "adaptive") {
+//	      	  std::cout << "adaptive" << std::endl;
 		      tau_l_end = integrate_tau_adaptive(list_intersect, ray_direction, nu,
 		                                         tau_max, n, dt_max);
 	      }
@@ -229,7 +230,7 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 		double optDepth = 0.0;
 		typedef runge_kutta_dopri5< double > stepper_type;
 		// Abs./Rel. error were -3, -14
-    auto stepper = make_dense_output(1E-3, 1E-14, dt_max,
+    auto stepper = make_dense_output(1E-5, 1E-14, dt_max,
                                      stepper_type());
 		using namespace std::placeholders;
 		auto is_done = std::bind(check_opt_depth, tau_max, _1);
