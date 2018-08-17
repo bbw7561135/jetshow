@@ -166,8 +166,8 @@ Observation::integrate_tau(std::list<Intersection>& list_intersect,
 		double optDepth = 0.0;
 		typedef runge_kutta4< double > stepper_type;
 		auto stepper = stepper_type();
-		using namespace std::placeholders;
-		auto is_done = std::bind(check_opt_depth_xt, tau_max, _1);
+//		using namespace std::placeholders;
+		auto is_done = std::bind(check_opt_depth_xt, tau_max, std::placeholders::_1);
 		auto ode_range = make_const_step_time_range(stepper, tau, optDepth,
 		                                            0.0, length, dt);
 		auto found_iter = std::find_if(ode_range.first, ode_range.second,
@@ -242,8 +242,8 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 		// Abs./Rel. error were -3, -14
     auto stepper = make_dense_output(1E-5, 1E-14, dt_max,
                                      stepper_type());
-		using namespace std::placeholders;
-		auto is_done = std::bind(check_opt_depth, tau_max, _1);
+//		using namespace std::placeholders;
+		auto is_done = std::bind(check_opt_depth, tau_max, std::placeholders::_1);
 		auto ode_range = make_adaptive_range(std::ref(stepper), tau, optDepth,
 																				 0.0, length, dt);
 		auto found_iter = std::find_if(ode_range.first, ode_range.second,
