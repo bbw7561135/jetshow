@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L/home/ilya/github/cnpy -lcnpy -lCGAL -lz -std=c++14 -fopenmp -fext-numeric-literals")
-set(SOURCE_FILES src/main.cpp src/BField.cpp src/Cone.cpp include/Cone.h src/Geometry.cpp include/Geometry.h src/Ray.cpp include/Ray.h src/Intersection.cpp include/Intersection.h include/Cell.h src/Cell.cpp include/linspace.h src/Pixel.cpp include/Pixel.h src/Image.cpp include/Image.h src/ImagePlane.cpp include/ImagePlane.h src/NField.cpp include/NField.h src/VField.cpp include/VField.h src/Jet.cpp include/Jet.h include/utils.h src/Cylinder.cpp include/Cylinder.h src/utils.cpp src/System.cpp include/System.h include/Observation.h src/Observation.cpp src/Cells.cpp include/Cells.h src/Parabaloid.cpp include/Parabaloid.h include/ParabaloidCone.h src/ParabaloidCone.cpp)
+set(SOURCE_FILES src/main.cpp src/BField.cpp src/Cone.cpp include/Cone.h src/Geometry.cpp include/Geometry.h src/Ray.cpp include/Ray.h src/Intersection.cpp include/Intersection.h include/Cell.h src/Cell.cpp include/linspace.h src/Pixel.cpp include/Pixel.h src/Image.cpp include/Image.h src/ImagePlane.cpp include/ImagePlane.h src/NField.cpp include/NField.h src/VField.cpp include/VField.h src/Jet.cpp include/Jet.h include/utils.h src/Cylinder.cpp include/Cylinder.h src/utils.cpp src/System.cpp include/System.h include/Observation.h src/Observation.cpp src/Cells.cpp include/Cells.h src/Parabaloid.cpp include/Parabaloid.h include/ParabaloidCone.h src/ParabaloidCone.cpp src/SimulationInterpolater.cpp include/SimulationInterpolater.h)
 add_executable(jetshow ${SOURCE_FILES})
 
 set(TEST_DIR tests)
