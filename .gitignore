@@ -1,11 +1,13 @@
 CMakeFiles/*
 cmake-build-debug/*
+cmake-build-release/*
 .idea/*
 .kdev4/*
 .idea/
 CMakeFiles/
 build/
 cmake-build-debug/
+cmake-build-release/
 /cmake_install.cmake
 /CMakeCache.txt
 /jetshow
