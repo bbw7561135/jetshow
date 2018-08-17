@@ -33,4 +33,15 @@ private:
 };
 
 
+class CompositeBKNField: public NField {
+public:
+    CompositeBKNField(double n_0, double n_n_inner, double n_n_outer, double z0);
+    double n(const Vector3d &point) const override;
+
+private:
+    double z0_;
+    BKNField inner_field_;
+    BKNField outer_field_;
+};
+
 #endif //JETSHOW_NFIELD_H

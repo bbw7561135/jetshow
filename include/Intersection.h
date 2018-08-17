@@ -37,6 +37,7 @@ class Intersection {
     void set_borders(const Vector3d point_in, const Vector3d point_out);
     void set_point_in(const Vector3d point);
     void set_point_out(const Vector3d point);
+    const double length_pc() const;
     bool is_finite() const;
     const std::pair<Vector3d, Vector3d> get_path() const;
   private:

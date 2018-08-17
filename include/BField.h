@@ -18,6 +18,40 @@ public:
 };
 
 
+class RandomScalarBField {
+public:
+		RandomScalarBField(double b_0, double m_b);
+		double bf(const Vector3d &point) const;
+
+private:
+		double b_0_;
+		double m_b_;
+};
+
+// B-Field like ``RandomScalar`` that depends on z-coordinate only
+class RandomScalarBFieldZ {
+public:
+		RandomScalarBFieldZ(double b_0, double m_b);
+		double bf(const Vector3d &point) const;
+
+private:
+		double b_0_;
+		double m_b_;
+};
+
+
+class CompositeRandomScalarBFieldZ {
+public:
+    CompositeRandomScalarBFieldZ(double b_0, double m_b_inner, double m_b_outer, double z0);
+    double bf(const Vector3d &point) const;
+
+private:
+    double z0_;
+    RandomScalarBFieldZ inner_field_;
+    RandomScalarBFieldZ outer_field_;
+};
+
+
 class ConstCylinderBField : public BField {
 public:
     ConstCylinderBField(double b_0, double n_b) ;
@@ -25,6 +59,17 @@ public:
 private:
     double b_0_;
     double n_b_;
+
+};
+
+// B-Field like ``ConstCylinder`` that depends on z-coordinate only
+class ConstCylinderBFieldZ : public BField {
+public:
+		ConstCylinderBFieldZ (double b_0, double n_b) ;
+		Vector3d bf(const Vector3d &point) const override ;
+private:
+		double b_0_;
+		double n_b_;
 
 };
 

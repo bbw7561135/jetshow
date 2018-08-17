@@ -43,10 +43,10 @@ class Observation {
 		                          Vector3d ray_direction, const double nu,
 		                          int n, double tau, double& background_I);
 
-		void integrate_full_stokes_adaptive(std::list<Intersection>& list_intersect,
-		                                    Vector3d ray_direction, const double nu,
-		                                    int n, double tau,
-		                                    state_type& background);
+//		void integrate_full_stokes_adaptive(std::list<Intersection>& list_intersect,
+//		                                    Vector3d ray_direction, const double nu,
+//		                                    int n, double tau,
+//		                                    state_type& background);
 };
 
 #endif //JETSHOW_OBSERVATION_H

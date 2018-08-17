@@ -11,6 +11,11 @@
 
 using Eigen::Vector3d;
 
+
+std::list<double> intersection(Vector3d R0, Vector3d Rd, double A = 0, double B = 0, double C = 0,
+                                double D = 0, double E = 0, double F = 0, double G = 0,
+                                double H = 0, double I = 0, double J = 0);
+
 class Ray;
 class Intersection;
 

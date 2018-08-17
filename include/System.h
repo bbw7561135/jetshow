@@ -41,19 +41,19 @@ class I : public System {
 };
 
 
-class FullStokes {
-public:
-		FullStokes(Jet* newjet, Vector3d &newpoint_in, Vector3d &newray_direction,
-		double newnu);
-
-		void operator() (const state_type &x, state_type &dxdt, const double t);
-
-protected:
-		Jet* jet;
-		Vector3d point_in;
-		Vector3d ray_direction;
-		double nu;
-};
+//class FullStokes {
+//public:
+//		FullStokes(Jet* newjet, Vector3d &newpoint_in, Vector3d &newray_direction,
+//		double newnu);
+//
+//		void operator() (const state_type &x, state_type &dxdt, const double t);
+//
+//protected:
+//		Jet* jet;
+//		Vector3d point_in;
+//		Vector3d ray_direction;
+//		double nu;
+//};
 
 
 // This debug-print integrands and ``time`` variable

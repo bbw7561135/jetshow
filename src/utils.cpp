@@ -5,23 +5,14 @@
 #include "utils.h"
 
 
-
-//double eta_0(double n, double b) {
-//    return  pi*nu_p(n)*nu_p(n)*nu_b(b)*m_e/c;
-//}
-
-//double k_0(double nu, double n, double b) {
-//    return pi*nu_p(n)*nu_p(n)*nu_b(b)/(c*nu*nu);
-//}
-
-//double eta_i(double nu, double n, double b, double sin_theta,
-//             double s) {
-//    return eta_0(n, b)*sin_theta*pow(nu_b(b)*sin_theta/nu, (s-1.)/2.)*pow(3., s/2.)/(2.*(s+1.))*tgamma(s/4.+19./12.)*tgamma(s/4.-1./12.);
-//}
 double nu_p(double n) {return sqrt(n*q_e*q_e / (pi*m_e));}
 
 double nu_b(Vector3d &b, Vector3d &n_los) {
     return q_e*(n_los.cross(b)).norm()/(2.*pi*m_e*c);
+}
+
+double nu_b(double b) {
+	return q_e*b/(2.*pi*m_e*c);
 }
 
 double sin_theta(Vector3d &b, Vector3d &n_los) {
@@ -36,13 +27,37 @@ double k_0(Vector3d &b, Vector3d &n_los, double nu, double n) {
     return pi*nu_p(n)*nu_p(n)*nu_b(b, n_los)/(c*nu*nu);
 }
 
+// For random B-field
+double k_0(double b, Vector3d &n_los, double nu, double n) {
+	return pi*nu_p(n)*nu_p(n)*nu_b(b)/(c*nu*nu);
+}
+
 double k_0_value(Vector3d &b, double nu, double n) {
 	return pi*nu_p(n)*nu_p(n)*nu_b_value(b)/(c*nu*nu);
 }
 
 double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
     double factor = (pow(3., (s+1.)/2.)/4.)*tgamma(s/4.+11./6.)*tgamma(s/4.+1./6.);
+//  	return sin_theta(b, n_los) * k_0_value(b, nu, n) * pow(nu_b(b, n_los)/nu, s/2.) * factor;
     return k_0(b, n_los, nu, n) * pow(nu_b(b, n_los)/nu, s/2.) * factor;
+}
+
+// For random B-field
+double k_i(double b, Vector3d &n_los, double nu, double n, double s) {
+	double factor = (pow(3., (s+1.)/2.)/4.)*tgamma(s/4.+11./6.)*tgamma(s/4.+1./6.);
+	double rnd_factor = sqrt(pi/4.)*tgamma((6.+s)/4.)/tgamma((8.+s)/4.);
+	factor = factor*rnd_factor;
+	return k_0(b, n_los, nu, n) * pow(nu_b(b)/nu, s/2.) * factor;
+}
+
+// For random B-field - alternative formulation
+double k_i_(double b, Vector3d &n_los, double nu, double n, double s) {
+	double alpha = (s-1.)/2.;
+	double factor = sqrt(pi/4.)*tgamma((7.+2.*alpha)/4.)/tgamma((9.+2.*alpha)/4.);
+	factor = factor*pow(m_e*c*c, 2.*alpha)*(sqrt(3.)*pow(q_e, 3.)/(8.*pi*m_e));
+	factor = factor*pow((3.*q_e)/(2.*pi*pow(m_e, 3.)*pow(c, 5.)), alpha+0.5);
+	factor = factor*tgamma((6.*alpha+5.)/12.)*tgamma((6.*alpha+25.)/12.);
+	return factor*pow(b, alpha+1.5)*n*pow(nu, -alpha-2.5);
 }
 
 double k_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
@@ -88,9 +103,13 @@ double h_Q(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
 }
 
 
-
 double eta_0(Vector3d &b, Vector3d &n_los, double n) {
     return pi*nu_p(n)*nu_p(n)*nu_b(b, n_los)*m_e/c;
+}
+
+// For random B-field
+double eta_0(double b, Vector3d &n_los, double n) {
+	return pi*nu_p(n)*nu_p(n)*nu_b(b)*m_e/c;
 }
 
 double eta_0_value(Vector3d &b, double n) {
@@ -100,6 +119,14 @@ double eta_0_value(Vector3d &b, double n) {
 double eta_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
     double factor = pow(3., s/2.)/(2.*(s+1))*tgamma(s/4.+19./12.)*tgamma(s/4.-1./12.);
     return eta_0(b, n_los, n) * pow(nu_b(b, n_los)/nu, (s-1.)/2.) * factor;
+}
+
+// For random B-field
+double eta_i(double b, Vector3d &n_los, double nu, double n, double s) {
+	double factor = pow(3., s/2.)/(2.*(s+1))*tgamma(s/4.+19./12.)*tgamma(s/4.-1./12.);
+	double rnd_factor = sqrt(pi/4.)*tgamma((5.+s)/4.)/tgamma((7.+s)/4.);
+	factor = factor*rnd_factor;
+	return eta_0(b, n_los, n) * pow(nu_b(b)/nu, (s-1.)/2.) * factor;
 }
 
 double eta_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s) {
@@ -153,11 +180,13 @@ double comoving_transfer_distance(double z, double H0, double omega_M,
 
 double pc_to_mas(double z) {
 	double d_a = comoving_transfer_distance(z)/(1.+z);
+//	double d_a = da_old(z);
 	double angle_rads = 1./d_a;
 	return rad_to_mas*angle_rads;
 }
 
 double mas_to_pc(double z) {
+//	double d_a = da_old(z);
 	double d_a = comoving_transfer_distance(z)/(1.+z);
 	return mas_to_rad*d_a;
 }
@@ -193,6 +222,7 @@ write_vector(std::ostream &os, std::vector<double> &v, double scale) {
 
 double pixel_solid_angle(double pixel_size_mas, double z) {
 	double pixel_size_pc = pixel_size_mas * mas_to_pc(z);
+//	double d_a = da_old(z);
 	double d_a = comoving_transfer_distance(z)/(1.+z);
 	return pixel_size_pc*pixel_size_pc/(d_a*d_a);
 
@@ -317,6 +347,10 @@ int steps_schedule(double tau, int n_min, int n_max, double tau_min,
 	double n = k * pow((log(tau) + b), 2.0) + n_min;
 	return ceil(n);
 	}
+}
+
+double da_old(double z, double H0, double q0) {
+	return 3.*1E+11*pow(H0*q0*q0, -1.)*(z*q0+(q0-1.)*(sqrt(2.0*q0*z+1.)-1.0))/(1.0+z)/(1.0+z);
 }
 
 

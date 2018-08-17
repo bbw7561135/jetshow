@@ -30,23 +30,32 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	// #pragma omp parallel for num_threads(4) schedule(dynamic) collapse(2)
   for (int j = 0; j < image_size.first; ++j) {
 	  // Don't need countr-jet side
-	  for (int k = image_size.second/2; k < image_size.second; ++k) {
+	  for (int k = image_size.second/2-50; k < image_size.second; ++k) {
       int n_pix = image_size.first*j + k + 1;
-//      std::cout << "Running on pixel # " << n_pix << " " << j << "," << k << std::endl;
+//      std::cout << "Running on pixel " << j << "," << k << std::endl;
       auto &ray = rays[j*image_size.first+k];
       auto &pxl = pixels[j*image_size.first+k];
 
-			auto ray_direction = ray.direction();
+      auto ray_direction = ray.direction();
       std::list<Intersection> list_intersect = jet->hit(ray);
       if (list_intersect.empty()) {
         continue;
       } else {
+
+
+//          double length_pc = list_intersect.front().length_pc();
+//          std::cout << "Path is " << length_pc << " for pixel " << j << ", " << k << std::endl;
+//          if (length_pc > 10) {
+//              std::cout << "Path is " << length_pc << " for pixel " << j << ", " << k << std::endl;
+//          }
+
 
 	      std::pair<double,double> tau_l_end;
 	      if (integration_type == "constant") {
 	        tau_l_end = integrate_tau(list_intersect, ray_direction, nu, tau_max,
 	                                  n);
 	      } else if (integration_type == "adaptive") {
+//	      	  std::cout << "adaptive" << std::endl;
 		      tau_l_end = integrate_tau_adaptive(list_intersect, ray_direction, nu,
 		                                         tau_max, n, dt_max);
 	      }
@@ -77,17 +86,19 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 								integrate_i_adaptive(list_intersect, ray_direction, nu, n,
 								                     background_tau, background_I);
 							}
-							else if (output_type == "full") {
-								integrate_full_stokes_adaptive(list_intersect, ray_direction, nu, n,
-								                               background_tau, background_iquv);
-							}
+//							else if (output_type == "full") {
+//								integrate_full_stokes_adaptive(list_intersect, ray_direction, nu, n,
+//								                               background_tau, background_iquv);
+//							}
 						}
 				} else {
-//					std::cout << "Too small optical depth..." << std::endl;
+//					std::cout << "Too small optical depth = " << background_tau << std::endl;
 				}
         // Write values to pixel
 				std::string value ("tau");
         pxl.setValue(value, background_tau);
+      std::cout << "Finish on pixel " << j << "," << k << std::endl;
+
 	      if (output_type == "I") {
 		      value = "I";
 		      pxl.setValue(value, background_I);
@@ -108,6 +119,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	      }
       }
     }
+
   }
 }
 
@@ -228,7 +240,7 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 		double optDepth = 0.0;
 		typedef runge_kutta_dopri5< double > stepper_type;
 		// Abs./Rel. error were -3, -14
-    auto stepper = make_dense_output(1E-3, 1E-14, dt_max,
+    auto stepper = make_dense_output(1E-5, 1E-14, dt_max,
                                      stepper_type());
 		using namespace std::placeholders;
 		auto is_done = std::bind(check_opt_depth, tau_max, _1);
@@ -244,9 +256,9 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 			// the dense out stepper now covers the interval where the condition changes
 	    // improve the solution by bisection
 	    double t0 = stepper.previous_time();
-			std::cout << "Original t_0 = " << t0 << std::endl;
+//			std::cout << "Original t_0 = " << t0 << std::endl;
 	    double t1 = stepper.current_time();
-			std::cout << "Original t_1 = " << t1 << std::endl;
+//			std::cout << "Original t_1 = " << t1 << std::endl;
 	    double t_m;
 	    double x_m = found_tau;
 	    // use odeint's resizing functionality to allocate memory for x_m
@@ -254,7 +266,7 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 	    while(std::abs(x_m - tau_max) > tau_precision) {
 	        t_m = 0.5 * (t0 + t1);  // get the mid point time
 	        stepper.calc_state(t_m, x_m); // obtain the corresponding state
-		      std::cout << "Current x_m = " << x_m << std::endl;
+//		      std::cout << "Current x_m = " << x_m << std::endl;
 	        if (x_m > tau_max)
 	            t1 = t_m;  // condition changer lies before midpoint
 	        else
@@ -356,72 +368,74 @@ void Observation::integrate_i_adaptive(std::list<Intersection> &list_intersect,
 }
 
 
-void
-Observation::integrate_full_stokes_adaptive(std::list<Intersection> &list_intersect,
-                                            Vector3d ray_direction, const double nu,
-                                            int n, double background_tau,
-                                            state_type& background) {
-
-	for (auto it = list_intersect.rbegin();
-	     it != list_intersect.rend(); ++it) {
-		auto borders = (*it).get_path();
-		Vector3d point_in = borders.first;
-		Vector3d point_out = borders.second;
-
-		double length = (point_out - point_in).norm();
-		double auto_n = n;
-		if (background_tau > 0.1) {
-			auto_n = steps_schedule(background_tau, n, 10*n);
-		}
-		double dt = length / auto_n;
-
-		Vector3d inv_direction = -1. * ray_direction;
-		FullStokes full_stokes(jet, point_out, inv_direction, nu);
-		typedef runge_kutta_dopri5<state_type> stepper_type;
-		auto stepper = stepper_type();
-
-		state_type iquv = background;
-		// TODO: Add ``dt_max`` constrains (using ``make_dense_output``)
-		// One can add observer function at the end of the argument list.
-		integrate_adaptive(make_controlled(1E-9, 1E-9, stepper_type()),
-		                   full_stokes, iquv, 0.0, length, dt);
-		background = iquv;
-	}
-}
+//void
+//Observation::integrate_full_stokes_adaptive(std::list<Intersection> &list_intersect,
+//                                            Vector3d ray_direction, const double nu,
+//                                            int n, double background_tau,
+//                                            state_type& background) {
+//
+//	for (auto it = list_intersect.rbegin();
+//	     it != list_intersect.rend(); ++it) {
+//		auto borders = (*it).get_path();
+//		Vector3d point_in = borders.first;
+//		Vector3d point_out = borders.second;
+//
+//		double length = (point_out - point_in).norm();
+//		double auto_n = n;
+//		if (background_tau > 0.1) {
+//			auto_n = steps_schedule(background_tau, n, 10*n);
+//		}
+//		double dt = length / auto_n;
+//
+//		Vector3d inv_direction = -1. * ray_direction;
+//		FullStokes full_stokes(jet, point_out, inv_direction, nu);
+//		typedef runge_kutta_dopri5<state_type> stepper_type;
+//		auto stepper = stepper_type();
+//
+//		state_type iquv = background;
+//		// TODO: Add ``dt_max`` constrains (using ``make_dense_output``)
+//		// One can add observer function at the end of the argument list.
+//		integrate_adaptive(make_controlled(1E-9, 1E-9, stepper_type()),
+//		                   full_stokes, iquv, 0.0, length, dt);
+//		background = iquv;
+//	}
+//}
 
 void Observation::run_stripe(int n, double tau_max, double tau_min) {
 	auto image_size = getImageSize();
 	vector<Pixel>& pixels = imagePlane->getPixels();
 	vector<Ray>& rays = imagePlane->getRays();
+
+	// Don't need countr-jet side
+	int j = image_size.first/2;
+
 	// Comment out for easy debug printing
+	// TODO: Use ``schedule(runtime)`` for controlling with OMP_SCHEDULE env.variable
 #pragma omp parallel for schedule(dynamic)
-	for (int j = 0; j < image_size.first; ++j) {
-		// Don't need countr-jet side
-		for (int k = image_size.second / 2; k < image_size.second; ++k) {
-			if (j == image_size.first / 2) {
-				int n_pix = image_size.first * j + k + 1;
+//#pragma omp parallel for schedule(static) num_threads(4)
+	for (int k = image_size.second / 2; k < image_size.second; ++k) {
+		int n_pix = image_size.first * j + k + 1;
 //				std::cout << "Running on pixel # " << n_pix << std::endl;
-				auto &ray = rays[j * image_size.first + k];
-				auto &pxl = pixels[j * image_size.first + k];
+		auto &ray = rays[j * image_size.first + k];
+		auto &pxl = pixels[j * image_size.first + k];
 
-				auto ray_direction = ray.direction();
-				std::list <Intersection> list_intersect = jet->hit(ray);
-				if (list_intersect.empty()) {
-					continue;
-				} else {
+		auto ray_direction = ray.direction();
+		std::list <Intersection> list_intersect = jet->hit(ray);
+		// TODO: Actually i can remove this if because we always pierce jet here
+		if (list_intersect.empty()) {
+			continue;
+		} else {
 
-					std::pair<double, double> tau_l_end;
-					tau_l_end = integrate_tau(list_intersect, ray_direction, nu, tau_max,
-					                          n);
-					double background_tau = tau_l_end.first;
-					double thickness = tau_l_end.second;
-					std::cout << "Tau = " << background_tau << std::endl;
+			std::pair<double, double> tau_l_end;
+			tau_l_end = integrate_tau(list_intersect, ray_direction, nu, tau_max,
+			                          n);
+			double background_tau = tau_l_end.first;
+			double thickness = tau_l_end.second;
+//			std::cout << "Tau = " << background_tau << std::endl;
 
-					// Write values to pixel
-					std::string value("tau");
-					pxl.setValue(value, background_tau);
-				}
-			}
+			// Write values to pixel
+			std::string value("tau");
+			pxl.setValue(value, background_tau);
 		}
 	}
 }

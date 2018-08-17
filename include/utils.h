@@ -17,7 +17,7 @@ using Eigen::Vector3d;
 const double mas_to_rad = 4.8481368*1E-9;
 const double rad_to_mas = 1./mas_to_rad;
 // Parsec [cm]
-const double pc = 3.0857*1E18;
+const double pc = 3.0857*1E+18;
 // Mass of electron [g]
 const double m_e = 9.109382*1E-28;
 // Mass of proton [g]
@@ -44,43 +44,92 @@ double sin_theta(Vector3d &b, Vector3d &n_los);
 
 double k_0(Vector3d &b, Vector3d &n_los, double nu, double n);
 
+// For random B-field
+double k_0(double b, Vector3d &n_los, double nu, double n);
+
 // Absorption coefficient for given vector of magnetic field ``b``, unit LOS
 // vector ``n_los`` and others measured in emission frame
 double k_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
+// For random B-field
+double k_i(double b, Vector3d &n_los, double nu, double n, double s=2.5);
+
+// For random B-field - alternative formulation
+double k_i_(double b, Vector3d &n_los, double nu, double n, double s=2.5);
+
 double k_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
+
+// For random B-field
+double k_q(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 double k_u(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
+// For random B-field
+double k_u(double b, Vector3d &n_los, double nu, double n, double s=2.5);
+
 double k_v(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
+
+// For random B-field
+double k_v(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 double k_F_c(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
+// For random B-field
+double k_F_c(double b, Vector3d &n_los, double nu, double n, double s=2.5);
+
 double k_C_c(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
+
+// For random B-field
+double k_C_c(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 // TODO: For e+ ``k_F_r`` will have different sign, but ``k_C_r`` - the same
 // sign
 double k_F_r(Vector3d &b, Vector3d &n_los, double nu, double n,
              double gamma_min=100., double s=2.5);
 
+// For random B-field
+double k_F_r(double b, Vector3d &n_los, double nu, double n,
+             double gamma_min=100., double s=2.5);
+
 double k_C_r(Vector3d &b, Vector3d &n_los, double nu, double n,
+             double gamma_min=100., double s=2.5);
+
+// For random B-field
+double k_C_r(double b, Vector3d &n_los, double nu, double n,
              double gamma_min=100., double s=2.5);
 
 double h_Q(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
+// For random B-field
+double h_Q(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 
 double eta_0(Vector3d &b, Vector3d &n_los, double nu, double n);
+
+// For random B-field
+double eta_0(double b, Vector3d &n_los, double nu, double n);
 
 // Emission coefficient for given vector of magnetic field ``b``, unit LOS
 // vector ``n_los`` and others measured in emission frame
 double eta_i(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
+// For random B-field
+double eta_i(double b, Vector3d &n_los, double nu, double n, double s=2.5);
+
 double eta_q(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
+
+// For random B-field
+double eta_q(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 double eta_u(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
 
+// For random B-field
+double eta_u(double b, Vector3d &n_los, double nu, double n, double s=2.5);
+
 double eta_v(Vector3d &b, Vector3d &n_los, double nu, double n, double s=2.5);
+
+// For random B-field
+double eta_v(double b, Vector3d &n_los, double nu, double n, double s=2.5);
 
 
 // Lorentz factor for the velocity ``v``
@@ -114,6 +163,9 @@ public:
 // factor (1 + z) lower and luminosity distance is the same factor higher.
 double comoving_transfer_distance(double z, double H0=73., double omega_M=0.3,
 																  double omega_V=0.7);
+
+
+double da_old(double z, double H0=50., double q0=0.05);
 
 
 // Return scale factor that converts from parsecs to milliarcseconds
@@ -155,5 +207,12 @@ std::vector<Vector3d> generate_random_points_general(int n, double r_max,
 int steps_schedule(double tau, int n_min, int n_max, double tau_min=0.1,
                    double tau_max=100.0);
 
+//// return an evenly spaced 1-d grid of doubles.
+//std::vector<double> linspace(double first, double last, int len) {
+//	std::vector<double> result(len);
+//	double step = (last-first) / (len - 1);
+//	for (int i=0; i<len; i++) { result[i] = first + i*step; }
+//	return result;
+//}
 
 #endif //JETSHOW_UTILS_H
