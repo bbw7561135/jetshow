@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <boost/numeric/odeint.hpp>
+#include <cnpy.h>
 #include "ImagePlane.h"
 #include "Observation.h"
 #include "Geometry.h"
@@ -385,19 +386,19 @@ namespace ph = std::placeholders;
 //}
 
 
-void test_intersection() {
-    Vector3d R0 = {0, 1, 1};
-    Vector3d Rd = {0, 1, 0};
-    Ray ray = Ray(R0, Rd);
-
-
-    std::list<double> result = intersection(R0, Rd, 1., 1., -1.);
-    std::cout << "Number of intersections = " << result.size() << std::endl;
-	for (double t : result) {
-		std::cout << ray.point(t) << '\n';
-	}
-
-}
+//void test_intersection() {
+//    Vector3d R0 = {0, 1, 1};
+//    Vector3d Rd = {0, 1, 0};
+//    Ray ray = Ray(R0, Rd);
+//
+//
+//    std::list<double> result = intersection(R0, Rd, 1., 1., -1.);
+//    std::cout << "Number of intersections = " << result.size() << std::endl;
+//	for (double t : result) {
+//		std::cout << ray.point(t) << '\n';
+//	}
+//
+//}
 
 
 // THIS IS MASTER FUNCTION
@@ -649,6 +650,23 @@ void test_intersection() {
 //}
 //
 
+
+void test_velocity() {
+    VField* vfield;
+    // Radius of parabaloid at z0=1pc
+    double r0 = 0.1*pc;
+    double gamma_axis0 = 30;
+    double gamma_border0 = 1;
+    // Z at which the speed on the axis is gamma0_axis
+    double z_at_gamma0 = 1*pc;
+    // Radius of parabaloid at z = 1pc
+    double Rz0 = r0;
+    vfield = new ShearedAccParabolicVField(gamma_axis0, gamma_border0, z_at_gamma0, Rz0);
+    Vector3d point = {0, 0.025*pc, 1*pc};
+    std::cout << vfield->v(point) << std::endl;
+
+}
+
 // Testing geometries, composite fields
 void test_collimations() {
     Geometry* geometry;
@@ -659,8 +677,8 @@ void test_collimations() {
 
     double los_angle = pi/2;
     double z = 0.00436;
-    int number_of_pixels = 512;
-    double pixel_size_mas = 0.01;
+    int number_of_pixels = 1024;
+    double pixel_size_mas = 0.005;
 
     // Setting geometry
     Vector3d origin = {0., 0., 0.};
@@ -669,22 +687,45 @@ void test_collimations() {
     double big_scale = 100*pc;
     // Radius of parabaloid at z0=1pc
     double r0 = 0.05*pc;
-    // Distance where collimation stops (50 pix for 0.01mas pixel)
+    // Distance where collimation stops (100 pix for 0.005mas pixel)
     double z0 = 0.05*pc;
 //    geometry = new Cone(origin, direction, cone_half_angle, big_scale);
     geometry = new Parabaloid(origin, direction, r0, big_scale);
 //    geometry = new ParabaloidCone(origin, direction, r0, z0, big_scale);
 
-    double b_1 = 1.0;
+    double b_1 = 0.01;
     double n_b = 1.35;
 //    bfield = new RadialConicalBField(b_1, n_b);
     bfield = new RandomScalarBFieldZ(b_1, n_b);
 
-    double gamma = 10;
-    vfield = new ConstCentralVField(gamma);
-    vfield = new
+//    double gamma = 10;
+//    double z_at_gamma = 1*pc;
+//    vfield = new ConstCentralVField(gamma);
+//    vfield = new AccParabolicVField(gamma, z_at_gamma);
 
-    double n_1 = 100;
+//    double gamma_axis0 = 10;
+//    double gamma_border0 = 1;
+//    // Z at which the speed on the axis is gamma_0_axis
+//    double z_at_gamma0 = 0.1*pc;
+//    // Radius of parabaloid at z = 1pc
+//    double Rz0 = r0;
+//
+//    vfield = new ShearedAccParabolicVField(gamma_axis0, gamma_border0, z_at_gamma0, Rz0);
+
+//    double gamma0 = 10;
+//    vfield = new AccParabolicConstConeVField(gamma0, r0, z0);
+
+
+    double gamma_axis0 = 10;
+    double gamma_border0 = 1;
+    // Z at which the speed on the axis is gamma_0_axis
+    double z_at_gamma0 = 0.05*pc;
+    // Radius of parabaloid at z = 1pc
+    double Rz0 = r0;
+
+    vfield = new ShearedAccParabolicConstConeVField(gamma_axis0, gamma_border0, Rz0, z_at_gamma0);
+
+    double n_1 = 10;
     double n_n = 2.0;
     nfield = new BKNField(n_1, n_n);
 
@@ -710,7 +751,7 @@ void test_collimations() {
     double tau_n_min = 0.1;
     double dt_max_pc = 0.001;
     double dt_max = pc*dt_max_pc;
-    double tau_min_log10 = -4.0;
+    double tau_min_log10 = -8.0;
     double tau_min = pow(10.,tau_min_log10);
     int n = 100;
     int n_tau_max = 2000;
@@ -756,6 +797,49 @@ void test_collimations() {
 }
 
 
+void test_reading_npy() {
+    cnpy::NpyArray arr = cnpy::npy_load("gamma.npy");
+    double* loaded_data = arr.data<double>();
+    size_t nrows = arr.shape[0];
+    size_t ncols = arr.shape[1];
+    std::cout << "nrows=" << nrows << ", ncols=" << ncols << std::endl;
+}
+
+
+void test_interpolation() {
+    cnpy::NpyArray arr = cnpy::npy_load("gamma.npy");
+    double* loaded_data = arr.data<double>();
+    size_t nrows = arr.shape[0];
+    size_t ncols = arr.shape[1];
+    int n_points = nrows*ncols;
+    std::cout << "nrows=" << nrows << ", ncols=" << ncols << std::endl;
+
+    vector<double> r;
+    vector<double> r_p;
+    vector<double> gamma;
+
+    for (int i=0; i<nrows; i++) {
+        r.push_back(loaded_data[i*nrows]);
+        r_p.push_back(loaded_data[i*nrows + 1]);
+        gamma.push_back(loaded_data[i*nrows + 2]);
+    }
+
+
+//    double val = interp(10E20, 10E18);
+//    std::cout << val << std::endl;
+//
+//
+//    // Grid of r and r_p where to interpolate
+//    std::vector<double> r_grid = linspace(0., 4*pow(10, 21), 2*n_points);
+//    std::vector<double> r_p_grid = linspace(0., pow(10, 19), 2*n_points);
+//
+//    std::vector<double> interpolated_vals;
+//
+//    // Save values to file
+//    cnpy::npy_save("interpolated.npy", &interpolated_vals[0], {r_grid.size(), r_p_grid.size()}, "w");
+}
+
+
 int main() {
 	auto t1 = Clock::now();
 	std::clock_t start;
@@ -765,6 +849,9 @@ int main() {
 //	test_observations_full();
 //	test_intersection();
 	test_collimations();
+//  test_reading_npy();
+//    test_interpolation();
+//	test_velocity();
 //	test_stripe();
 
 	std::cout << "CPU Time: "

@@ -32,7 +32,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	  // Don't need countr-jet side
 	  for (int k = image_size.second/2-50; k < image_size.second; ++k) {
       int n_pix = image_size.first*j + k + 1;
-//      std::cout << "Running on pixel # " << n_pix << " " << j << "," << k << std::endl;
+//      std::cout << "Running on pixel " << j << "," << k << std::endl;
       auto &ray = rays[j*image_size.first+k];
       auto &pxl = pixels[j*image_size.first+k];
 
@@ -41,6 +41,14 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
       if (list_intersect.empty()) {
         continue;
       } else {
+
+
+//          double length_pc = list_intersect.front().length_pc();
+//          std::cout << "Path is " << length_pc << " for pixel " << j << ", " << k << std::endl;
+//          if (length_pc > 10) {
+//              std::cout << "Path is " << length_pc << " for pixel " << j << ", " << k << std::endl;
+//          }
+
 
 	      std::pair<double,double> tau_l_end;
 	      if (integration_type == "constant") {
@@ -84,11 +92,13 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 //							}
 						}
 				} else {
-//					std::cout << "Too small optical depth..." << std::endl;
+//					std::cout << "Too small optical depth = " << background_tau << std::endl;
 				}
         // Write values to pixel
 				std::string value ("tau");
         pxl.setValue(value, background_tau);
+      std::cout << "Finish on pixel " << j << "," << k << std::endl;
+
 	      if (output_type == "I") {
 		      value = "I";
 		      pxl.setValue(value, background_I);
@@ -265,8 +275,8 @@ Observation::integrate_tau_adaptive(std::list<Intersection> &list_intersect,
 	    // we found the interval of size eps, take it's midpoint as final guess
 	    t_m = 0.5 * (t0 + t1);
 	    stepper.calc_state(t_m, x_m);
-//			std::cout << "Found precise cross value tau = " << x_m << std::endl;
-//			std::cout << "Originally it was tau = " << found_iter.get_state() << std::endl;
+			std::cout << "Found precise cross value tau = " << x_m << std::endl;
+			std::cout << "Originally it was tau = " << found_iter.get_state() << std::endl;
 			double t_tau_max = t_m;
 //			double t_tau_max = stepper.current_time();
 

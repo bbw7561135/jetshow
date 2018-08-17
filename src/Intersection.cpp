@@ -1,5 +1,8 @@
 #include <iostream>
+#include <Intersection.h>
+
 #include "Intersection.h"
+#include "utils.h"
 
 
 const Vector3d Intersection::direction() const {
@@ -9,7 +12,6 @@ const Vector3d Intersection::direction() const {
 void Intersection::set_direction(const Vector3d direction) {
   direction_ = direction;
 }
-
 
 void Intersection::set_borders(const Vector3d point_in,
 															 const Vector3d point_out) {
@@ -79,4 +81,8 @@ void Intersection::set_point_in(const Vector3d point) {
 
 void Intersection::set_point_out(const Vector3d point) {
   borders_.second = point;
+}
+
+const double Intersection::length_pc() const {
+    return (borders_.first - borders_.second).norm()/pc;
 }

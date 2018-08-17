@@ -207,5 +207,12 @@ std::vector<Vector3d> generate_random_points_general(int n, double r_max,
 int steps_schedule(double tau, int n_min, int n_max, double tau_min=0.1,
                    double tau_max=100.0);
 
+//// return an evenly spaced 1-d grid of doubles.
+//std::vector<double> linspace(double first, double last, int len) {
+//	std::vector<double> result(len);
+//	double step = (last-first) / (len - 1);
+//	for (int i=0; i<len; i++) { result[i] = first + i*step; }
+//	return result;
+//}
 
 #endif //JETSHOW_UTILS_H
