@@ -840,6 +840,50 @@ void test_interpolation() {
 }
 
 
+void test_simulation_geometry() {
+
+    std::cout << "Loading data from file" << std::endl;
+    cnpy::NpyArray arr = cnpy::npy_load("gamma_10.npy");
+    double* loaded_data = arr.data<double>();
+    size_t nrows = arr.shape[0];
+
+
+    std::vector<Point> points;
+    for (int i=0; i<nrows; i++) {
+        double z = loaded_data[i*3]/pc;
+        double r_p = loaded_data[i*3 + 1]/pc;
+        for (int j=0; j<48; j++) {
+            double x = r_p*sin(j*2*pi/48);
+            double y = r_p*cos(j*2*pi/48);
+            points.emplace_back(Point(x, y, z));
+        }
+    }
+
+    Polyhedron P;
+    CGAL::convex_hull_3(points.begin(), points.end(), P);
+    Tree tree(faces(P).first, faces(P).second, P);
+    SimulationGeometry geo(&tree);
+
+
+    Vector3d origin = Vector3d(0, 3, 600);
+    Vector3d direction = Vector3d(0, -1, 0);
+    Ray ray(origin, direction);
+    std::list<Intersection> list_intersect = geo.hit(ray);
+    if (list_intersect.empty()) {
+        std::cout << "No intersection" << std::endl;
+    } else {
+        std::cout << "There's intersection" << std::endl;
+        auto borders = list_intersect.front().get_path();
+
+        Vector3d point_in = borders.first;
+        Vector3d point_out = borders.second;
+        std::cout << "Point in = " << point_in << std::endl;
+        std::cout << "Point out = " << point_out << std::endl;
+
+    }
+}
+
+
 int main() {
 	auto t1 = Clock::now();
 	std::clock_t start;
@@ -848,7 +892,8 @@ int main() {
 //	test_observations_rnd_bfield();
 //	test_observations_full();
 //	test_intersection();
-	test_collimations();
+//	test_collimations();
+	test_simulation_geometry();
 //  test_reading_npy();
 //    test_interpolation();
 //	test_velocity();

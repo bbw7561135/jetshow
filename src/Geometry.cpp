@@ -1,8 +1,29 @@
 #include "Geometry.h"
+#include "utils.h"
 #include <math.h>
-
+#include <iostream>
+#include <cnpy.h>
+#include <list>
+#include "Intersection.h"
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/AABB_tree.h>
+#include <CGAL/AABB_traits.h>
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/convex_hull_3.h>
+#include <CGAL/AABB_face_graph_triangle_primitive.h>
 
 using Eigen::Vector3d;
+
+typedef CGAL::Simple_cartesian<double> K;
+typedef K::Point_3 Point_3;
+typedef K::Ray_3 Ray_3;
+typedef K::Vector_3 Vector_3;
+typedef CGAL::Polyhedron_3<K> Polyhedron;
+typedef CGAL::AABB_face_graph_triangle_primitive<Polyhedron> Primitive;
+typedef CGAL::AABB_traits<K, Primitive> Traits;
+typedef CGAL::AABB_tree<Traits> Tree;
+typedef Tree::Primitive_id Primitive_id;
+typedef boost::optional<Tree::Intersection_and_primitive_id<Ray_3>::Type> Ray_intersection;
 
 
 std::list<double>
@@ -66,4 +87,77 @@ std::pair<Vector3d, Vector3d> Geometry::half_infinite_path(Ray &ray,
   } else {
     return std::pair<Vector3d,Vector3d>{point, point+big_scale()*ray.direction()};
   }
+}
+
+
+SimulationGeometry::SimulationGeometry(Tree *tree)  {
+    tree_ = tree;
+}
+
+//void SimulationGeometry::create_tree(double *loaded_data, int nrows) {
+//
+//    std::vector<Point> points;
+//    for (int i=0; i<nrows; i++) {
+//        double z = loaded_data[i*3]/pc;
+//        double r_p = loaded_data[i*3 + 1]/pc;
+//        for (int j=0; j<48; j++) {
+//            double x = r_p*sin(j*2*pi/48);
+//            double y = r_p*cos(j*2*pi/48);
+//            points.emplace_back(Point(x, y, z));
+//        }
+//    }
+//    Polyhedron P;
+//    CGAL::convex_hull_3(points.begin(), points.end(), P);
+//    tree_ = new Tree(faces(P).first, faces(P).second, P);
+//}
+
+//void SimulationGeometry::add_simulation_data(std::string fn) {
+//    std::cout << "Loading data from file" << std::endl;
+//    cnpy::NpyArray arr = cnpy::npy_load(fn);
+//    double* loaded_data = arr.data<double>();
+//    size_t nrows = arr.shape[0];
+//    create_tree(loaded_data, nrows);
+//    std::cout << "Created tree" << std::endl;
+//
+//
+//    Vector3d origin = Vector3d(0, 3, 600);
+//    Vector3d direction = Vector3d(0, -1, 0);
+//    Vector_3 v(direction[0], direction[1], direction[2]);
+//    Point_3 p(origin[0], origin[1], origin[2]);
+//    Ray_3 ray_query(p, v);
+//
+//
+//    bool do_inter = tree_->do_intersect(ray_query);
+//    std::cout << "Bool intersection inside create_tree= " << do_inter << std::endl;
+//}
+
+std::list<Intersection> SimulationGeometry::hit(Ray &ray) const {
+    Vector3d origin = ray.origin();
+    Vector3d direction = ray.direction();
+//    std::cout << "Ray origin = " << origin << std::endl;
+//    std::cout << "Ray direction = " << direction << std::endl;
+    Vector_3 v(direction[0], direction[1], direction[2]);
+    Point_3 p(origin[0], origin[1], origin[2]);
+    Ray_3 ray_query(p, v);
+//    std::cout << "Ray query = " << ray_query << std::endl;
+
+    // tests intersections with ray query
+    if(tree_->do_intersect(ray_query)) {
+        // computes all intersections with ray query (as pairs object - primitive_id)
+        std::list<Ray_intersection> intersections;
+        std::vector<Vector3d> points;
+        tree_->all_intersections(ray_query, std::back_inserter(intersections));
+        for (auto const& intersection : intersections)
+        {
+            const Point_3* pt = boost::get<Point_3>(&(intersection->first));
+            double x = CGAL::to_double(pt->x());
+            double y = CGAL::to_double(pt->y());
+            double z = CGAL::to_double(pt->z());
+            points.emplace_back(Vector3d(x, y, z));
+        }
+        return std::list<Intersection>{Intersection(ray, points[1], points[0])};
+    }
+    else
+        return std::list<Intersection>{};
+
 }
