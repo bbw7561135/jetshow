@@ -8,6 +8,26 @@
 #include <boost/random/variate_generator.hpp>
 
 
+#include <CGAL/Cartesian.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Triangulation_vertex_base_with_info_2.h>
+#include <CGAL/Interpolation_traits_2.h>
+#include <CGAL/natural_neighbor_coordinates_2.h>
+#include <CGAL/interpolation_functions.h>
+#include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
+
+typedef CGAL::Cartesian<double>                                   K_;
+typedef K_::Point_2                                                Point_;
+typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
+typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
+typedef CGAL::Delaunay_triangulation_2<K_, Tds>                    Delaunay_triangulation;
+typedef K_::FT                                               Coord_type;
+typedef std::vector<Coord_type >                            Scalar_vector;
+typedef CGAL::Barycentric_coordinates::Triangle_coordinates_2<K_> Triangle_coordinates;
+
+
+
 using Eigen::Vector3d;
 typedef boost::variate_generator<gen_type&, boost::uniform_on_sphere<double>> gg;
 
@@ -174,3 +194,65 @@ Vector3d RandomPointBField::direction(const Vector3d &point) const {
 	return std::move(Vector3d(std::move(res.data())));
 }
 
+
+SimulationBField::SimulationBField(Delaunay_triangulation *tr_p, Delaunay_triangulation *tr_fi) {
+    tr_p_ = tr_p;
+    tr_fi_ = tr_fi;
+}
+
+Vector3d SimulationBField::bf(const Vector3d &point) const {
+    // Conver 3D point to (r, r_p) coordinates
+    double x = point[0];
+    double y = point[1];
+    double z = point[2];
+    double fi = atan(y/x);
+    double r_p = hypot(x, y);
+    Point_ pt(z, r_p);
+
+    Delaunay_triangulation::Face_handle fh_p = tr_p_->locate(pt);
+    Delaunay_triangulation::Face_handle fh_fi = tr_fi_->locate(pt);
+
+    std::vector<Point_ > vertexes_p;
+    std::vector<Point_ > vertexes_fi;
+    std::vector<double> info_p;
+    std::vector<double> info_fi;
+
+
+    for (int i=0; i<3; i++) {
+        vertexes_p.push_back(fh_p->vertex(i)->point());
+        info_p.push_back(fh_p->vertex(i)->info());
+
+        std::cout << "Triangle:\t" << tr_p_->triangle(fh_p) << std::endl;
+        std::cout << "Vertex 0:\t" << tr_p_->triangle(fh_p)[i] << std::endl;
+        std::cout << "B_p data:\t" << fh_p->vertex(i)->info() << std::endl;
+
+        vertexes_fi.push_back(fh_p->vertex(i)->point());
+        info_fi.push_back(fh_fi->vertex(i)->info());
+        std::cout << "Triangle:\t" << tr_fi_->triangle(fh_fi) << std::endl;
+        std::cout << "Vertex 0:\t" << tr_fi_->triangle(fh_fi)[i] << std::endl;
+        std::cout << "B_fi data:\t" << fh_fi->vertex(i)->info() << std::endl;
+    }
+
+    // Create an std::vector to store coordinates.
+    Scalar_vector coordinates_p;
+    Scalar_vector coordinates_fi;
+    // Instantiate the class Triangle_coordinates_2 for the triangle defined above.
+    Triangle_coordinates triangle_coordinates_p(vertexes_p[0], vertexes_p[1], vertexes_p[2]);
+    Triangle_coordinates triangle_coordinates_fi(vertexes_fi[0], vertexes_fi[1], vertexes_fi[2]);
+
+
+    triangle_coordinates_p(pt, std::inserter(coordinates_p, coordinates_p.end()));
+    triangle_coordinates_fi(pt, std::inserter(coordinates_fi, coordinates_fi.end()));
+
+    double interpolated_value_p = 0;
+    double interpolated_value_fi = 0;
+    for(int j = 0; j < 3; ++j) {
+        std::cout << "coordinate for B_p" << j + 1 << " = " << coordinates_p[j] << "; ";
+        std::cout << "coordinate for B_phi" << j + 1 << " = " << coordinates_fi[j] << "; ";
+        interpolated_value_p += coordinates_p[j]*info_p[j];
+        interpolated_value_fi += coordinates_fi[j]*info_fi[j];
+    }
+    std::cout << "Interpolated B_p = " << interpolated_value_p << std::endl;
+    std::cout << "Interpolated B_fi = " << interpolated_value_fi << std::endl;
+    return Vector3d{-sin(fi)*interpolated_value_fi, cos(fi)*interpolated_value_fi, interpolated_value_p};
+}

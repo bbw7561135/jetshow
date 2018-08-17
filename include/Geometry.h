@@ -21,7 +21,7 @@
 using Eigen::Vector3d;
 
 typedef CGAL::Simple_cartesian<double> K;
-typedef K::Point_3 Point;
+typedef K::Point_3 Point_3;
 typedef K::Ray_3 Ray_3;
 typedef CGAL::Polyhedron_3<K> Polyhedron;
 typedef CGAL::AABB_face_graph_triangle_primitive<Polyhedron> Primitive;

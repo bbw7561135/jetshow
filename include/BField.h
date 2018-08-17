@@ -7,6 +7,24 @@
 #include <boost/random/uniform_on_sphere.hpp>
 #include <boost/random/variate_generator.hpp>
 
+#include <CGAL/Cartesian.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Triangulation_vertex_base_with_info_2.h>
+#include <CGAL/Interpolation_traits_2.h>
+#include <CGAL/natural_neighbor_coordinates_2.h>
+#include <CGAL/interpolation_functions.h>
+#include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
+
+typedef CGAL::Cartesian<double>                                   K_;
+typedef K_::Point_2                                                Point_;
+typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
+typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
+typedef CGAL::Delaunay_triangulation_2<K_, Tds>                    Delaunay_triangulation;
+typedef K_::FT                                               Coord_type;
+typedef std::vector<Coord_type >                            Scalar_vector;
+typedef CGAL::Barycentric_coordinates::Triangle_coordinates_2<K_> Triangle_coordinates;
+
 
 using Eigen::Vector3d;
 typedef boost::random::mt19937 gen_type;
@@ -155,4 +173,14 @@ private:
 		mutable std::vector<boost::variate_generator<gen_type, boost::uniform_on_sphere<double>>> randoms_on_sphere;
 };
 
+
+class SimulationBField : public BField {
+public:
+    SimulationBField(Delaunay_triangulation *tr_p, Delaunay_triangulation *tr_fi);
+    Vector3d bf(const Vector3d &point) const override ;
+
+private:
+    Delaunay_triangulation* tr_p_;
+    Delaunay_triangulation* tr_fi_;
+};
 #endif //JETSHOW_BFIELDS_H

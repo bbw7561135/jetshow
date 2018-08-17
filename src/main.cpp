@@ -32,6 +32,27 @@
 #include <Cells.h>
 
 
+#include <CGAL/Cartesian.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Triangulation_vertex_base_with_info_2.h>
+#include <CGAL/Interpolation_traits_2.h>
+#include <CGAL/natural_neighbor_coordinates_2.h>
+#include <CGAL/interpolation_functions.h>
+#include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
+
+typedef CGAL::Cartesian<double>                                   K_;
+typedef K_::Point_2                                                Point_;
+typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
+typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
+typedef CGAL::Delaunay_triangulation_2<K_, Tds>                    Delaunay_triangulation;
+typedef K_::FT                                               Coord_type;
+typedef std::vector<Coord_type >                            Scalar_vector;
+typedef CGAL::Barycentric_coordinates::Triangle_coordinates_2<K_> Triangle_coordinates;
+
+
+
+
 using Eigen::Vector3d;
 using Eigen::Matrix3Xd;
 using std::vector;
@@ -796,14 +817,14 @@ void test_collimations() {
     }
 }
 
-
-void test_reading_npy() {
-    cnpy::NpyArray arr = cnpy::npy_load("gamma.npy");
-    double* loaded_data = arr.data<double>();
-    size_t nrows = arr.shape[0];
-    size_t ncols = arr.shape[1];
-    std::cout << "nrows=" << nrows << ", ncols=" << ncols << std::endl;
-}
+//
+//void test_reading_npy() {
+//    cnpy::NpyArray arr = cnpy::npy_load("gamma.npy");
+//    double* loaded_data = arr.data<double>();
+//    size_t nrows = arr.shape[0];
+//    size_t ncols = arr.shape[1];
+//    std::cout << "nrows=" << nrows << ", ncols=" << ncols << std::endl;
+//}
 
 
 void test_interpolation() {
@@ -841,21 +862,20 @@ void test_interpolation() {
 
 
 void test_simulation_geometry() {
-
     std::cout << "Loading data from file" << std::endl;
     cnpy::NpyArray arr = cnpy::npy_load("gamma_10.npy");
     double* loaded_data = arr.data<double>();
     size_t nrows = arr.shape[0];
 
 
-    std::vector<Point> points;
+    std::vector<Point_3> points;
     for (int i=0; i<nrows; i++) {
         double z = loaded_data[i*3]/pc;
         double r_p = loaded_data[i*3 + 1]/pc;
         for (int j=0; j<48; j++) {
             double x = r_p*sin(j*2*pi/48);
             double y = r_p*cos(j*2*pi/48);
-            points.emplace_back(Point(x, y, z));
+            points.emplace_back(Point_3(x, y, z));
         }
     }
 
@@ -884,6 +904,38 @@ void test_simulation_geometry() {
 }
 
 
+void test_interpolating_bfield() {
+
+    cnpy::NpyArray arr_p = cnpy::npy_load("bfield_p_10.npy");
+    cnpy::NpyArray arr_fi = cnpy::npy_load("bfield_fi_10.npy");
+    double* loaded_data_p = arr_p.data<double>();
+    double* loaded_data_fi = arr_fi.data<double>();
+    size_t nrows = arr_p.shape[0];
+
+
+    Delaunay_triangulation tr_p;
+    Delaunay_triangulation tr_fi;
+    std::vector< std::pair<Point_,double> > points_p;
+    std::vector< std::pair<Point_,double> > points_fi;
+
+    for (int i=0; i<nrows; i++) {
+        Point_ pt(loaded_data_p[i*3]/pc, loaded_data_p[i*3 + 1]/pc);
+        std::cout << "Point = " << pt << std::endl;
+        points_p.emplace_back( std::make_pair( pt,  loaded_data_p[i*3 + 2]) );
+        points_fi.emplace_back( std::make_pair( pt,  loaded_data_fi[i*3 + 2]) );
+    }
+    tr_p.insert(points_p.begin(), points_p.end());
+    tr_fi.insert(points_fi.begin(), points_fi.end());
+
+    SimulationBField bfield(&tr_p, &tr_fi);
+
+    Vector3d p_interp(0.3, 0.3, 200);
+    auto bvector = bfield.bf(p_interp);
+    std::cout << "Interpolated B-field = " << bvector << std::endl;
+
+}
+
+
 int main() {
 	auto t1 = Clock::now();
 	std::clock_t start;
@@ -893,9 +945,9 @@ int main() {
 //	test_observations_full();
 //	test_intersection();
 //	test_collimations();
-	test_simulation_geometry();
+//	test_simulation_geometry();
 //  test_reading_npy();
-//    test_interpolation();
+    test_interpolating_bfield();
 //	test_velocity();
 //	test_stripe();
 
