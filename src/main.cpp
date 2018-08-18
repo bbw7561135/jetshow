@@ -936,7 +936,6 @@ void test_interpolating_bfield() {
 }
 
 
-
 void test_interpolating_vfield() {
 
     cnpy::NpyArray arr = cnpy::npy_load("gamma_10.npy");
@@ -963,6 +962,31 @@ void test_interpolating_vfield() {
 }
 
 
+void test_interpolating_nfield() {
+
+    cnpy::NpyArray arr = cnpy::npy_load("n_10.npy");
+    double* loaded_data = arr.data<double>();
+    size_t nrows = arr.shape[0];
+
+
+    Delaunay_triangulation tr;
+    std::vector< std::pair<Point_,double> > points_p;
+
+    for (int i=0; i<nrows; i++) {
+        Point_ pt(loaded_data[i*3]/pc, loaded_data[i*3 + 1]/pc);
+        std::cout << "Point = " << pt << std::endl;
+        points_p.emplace_back( std::make_pair( pt,  loaded_data[i*3 + 2]) );
+    }
+    tr.insert(points_p.begin(), points_p.end());
+
+    SimulationNField nfield(&tr);
+
+    Vector3d r_interp(0.3, 0.3, 200);
+    auto n = nfield.n(r_interp);
+    std::cout << "Interpolated N-field = " << n << std::endl;
+
+}
+
 int main() {
 	auto t1 = Clock::now();
 	std::clock_t start;
@@ -974,7 +998,8 @@ int main() {
 //	test_collimations();
 //	test_simulation_geometry();
 //  test_reading_npy();
-    test_interpolating_bfield();
+//    test_interpolating_bfield();
+    test_interpolating_nfield();
 //    test_interpolating_vfield();
 //	test_velocity();
 //	test_stripe();

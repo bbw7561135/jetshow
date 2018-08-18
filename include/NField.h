@@ -2,6 +2,8 @@
 #define JETSHOW_NFIELD_H
 
 #include <Eigen/Eigen>
+#include "SimulationInterpolater.h"
+
 
 using Eigen::Vector3d;
 
@@ -42,6 +44,16 @@ private:
     double z0_;
     BKNField inner_field_;
     BKNField outer_field_;
+};
+
+
+class SimulationNField: public NField {
+public:
+    explicit SimulationNField(Delaunay_triangulation *tr);
+    double n(const Vector3d& point) const override;
+
+private:
+    SimulationInterpolater interp_;
 };
 
 #endif //JETSHOW_NFIELD_H
