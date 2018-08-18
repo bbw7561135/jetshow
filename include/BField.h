@@ -3,6 +3,7 @@
 
 #include <Eigen/Eigen>
 #include "Cells.h"
+#include "SimulationInterpolater.h"
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_on_sphere.hpp>
 #include <boost/random/variate_generator.hpp>
@@ -180,7 +181,7 @@ public:
     Vector3d bf(const Vector3d &point) const override ;
 
 private:
-    Delaunay_triangulation* tr_p_;
-    Delaunay_triangulation* tr_fi_;
+    SimulationInterpolater interp_p_;
+    SimulationInterpolater interp_fi_;
 };
 #endif //JETSHOW_BFIELDS_H

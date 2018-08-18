@@ -195,64 +195,15 @@ Vector3d RandomPointBField::direction(const Vector3d &point) const {
 }
 
 
-SimulationBField::SimulationBField(Delaunay_triangulation *tr_p, Delaunay_triangulation *tr_fi) {
-    tr_p_ = tr_p;
-    tr_fi_ = tr_fi;
-}
+SimulationBField::SimulationBField(Delaunay_triangulation *tr_p,
+        Delaunay_triangulation *tr_fi) : interp_p_(tr_p), interp_fi_(tr_fi) {}
 
 Vector3d SimulationBField::bf(const Vector3d &point) const {
-    // Conver 3D point to (r, r_p) coordinates
     double x = point[0];
     double y = point[1];
-    double z = point[2];
     double fi = atan(y/x);
-    double r_p = hypot(x, y);
-    Point_ pt(z, r_p);
 
-    Delaunay_triangulation::Face_handle fh_p = tr_p_->locate(pt);
-    Delaunay_triangulation::Face_handle fh_fi = tr_fi_->locate(pt);
-
-    std::vector<Point_ > vertexes_p;
-    std::vector<Point_ > vertexes_fi;
-    std::vector<double> info_p;
-    std::vector<double> info_fi;
-
-
-    for (int i=0; i<3; i++) {
-        vertexes_p.push_back(fh_p->vertex(i)->point());
-        info_p.push_back(fh_p->vertex(i)->info());
-
-        std::cout << "Triangle:\t" << tr_p_->triangle(fh_p) << std::endl;
-        std::cout << "Vertex 0:\t" << tr_p_->triangle(fh_p)[i] << std::endl;
-        std::cout << "B_p data:\t" << fh_p->vertex(i)->info() << std::endl;
-
-        vertexes_fi.push_back(fh_p->vertex(i)->point());
-        info_fi.push_back(fh_fi->vertex(i)->info());
-        std::cout << "Triangle:\t" << tr_fi_->triangle(fh_fi) << std::endl;
-        std::cout << "Vertex 0:\t" << tr_fi_->triangle(fh_fi)[i] << std::endl;
-        std::cout << "B_fi data:\t" << fh_fi->vertex(i)->info() << std::endl;
-    }
-
-    // Create an std::vector to store coordinates.
-    Scalar_vector coordinates_p;
-    Scalar_vector coordinates_fi;
-    // Instantiate the class Triangle_coordinates_2 for the triangle defined above.
-    Triangle_coordinates triangle_coordinates_p(vertexes_p[0], vertexes_p[1], vertexes_p[2]);
-    Triangle_coordinates triangle_coordinates_fi(vertexes_fi[0], vertexes_fi[1], vertexes_fi[2]);
-
-
-    triangle_coordinates_p(pt, std::inserter(coordinates_p, coordinates_p.end()));
-    triangle_coordinates_fi(pt, std::inserter(coordinates_fi, coordinates_fi.end()));
-
-    double interpolated_value_p = 0;
-    double interpolated_value_fi = 0;
-    for(int j = 0; j < 3; ++j) {
-        std::cout << "coordinate for B_p" << j + 1 << " = " << coordinates_p[j] << "; ";
-        std::cout << "coordinate for B_phi" << j + 1 << " = " << coordinates_fi[j] << "; ";
-        interpolated_value_p += coordinates_p[j]*info_p[j];
-        interpolated_value_fi += coordinates_fi[j]*info_fi[j];
-    }
-    std::cout << "Interpolated B_p = " << interpolated_value_p << std::endl;
-    std::cout << "Interpolated B_fi = " << interpolated_value_fi << std::endl;
+    double interpolated_value_p = interp_p_.interpolated_value(point);
+    double interpolated_value_fi = interp_fi_.interpolated_value(point);
     return Vector3d{-sin(fi)*interpolated_value_fi, cos(fi)*interpolated_value_fi, interpolated_value_p};
 }

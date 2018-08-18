@@ -974,8 +974,8 @@ int main() {
 //	test_collimations();
 //	test_simulation_geometry();
 //  test_reading_npy();
-//    test_interpolating_bfield();
-    test_interpolating_vfield();
+    test_interpolating_bfield();
+//    test_interpolating_vfield();
 //	test_velocity();
 //	test_stripe();
 
