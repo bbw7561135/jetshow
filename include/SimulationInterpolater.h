@@ -32,7 +32,7 @@ using Eigen::Vector3d;
 class SimulationInterpolater {
 public:
     explicit SimulationInterpolater(Delaunay_triangulation *tr);
-    double interpolated_value(Vector3d point);
+    double interpolated_value(const Vector3d point) const;
 
 private:
     Delaunay_triangulation* tr_;

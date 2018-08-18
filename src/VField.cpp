@@ -3,6 +3,22 @@
 #include <utils.h>
 #include "VField.h"
 
+
+#include <CGAL/Cartesian.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Triangulation_vertex_base_with_info_2.h>
+#include <CGAL/Interpolation_traits_2.h>
+#include <CGAL/natural_neighbor_coordinates_2.h>
+#include <CGAL/interpolation_functions.h>
+#include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
+
+typedef CGAL::Cartesian<double>                                   K_;
+typedef K_::Point_2                                                Point_;
+typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
+typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
+typedef CGAL::Delaunay_triangulation_2<K_, Tds>                    Delaunay_triangulation;
+
 using Eigen::Vector3d;
 
 
@@ -255,4 +271,12 @@ Vector3d ShearedAccParabolicConstConeVField::v(const Vector3d &point) const {
     else {
         return parav.v(point);
     }
+};
+
+
+SimulationVField::SimulationVField(Delaunay_triangulation *tr) : interp_(tr) {}
+
+Vector3d SimulationVField::v(const Vector3d &point) const {
+    double gamma = interp_.interpolated_value(point);
+    return Vector3d{0, 0, c * sqrt(1. - 1. / (gamma * gamma))};
 };

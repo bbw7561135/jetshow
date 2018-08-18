@@ -2,6 +2,8 @@
 #define JETSHOW_VFIELD_H
 
 #include <Eigen/Eigen>
+#include "SimulationInterpolater.h"
+
 
 using Eigen::Vector3d;
 
@@ -170,6 +172,16 @@ private:
     double z0_;
     ShearedCentralVField conev;
     ShearedAccParabolicVField parav;
+};
+
+
+class SimulationVField: public VField {
+public:
+    explicit SimulationVField(Delaunay_triangulation *tr);
+    Vector3d v(const Vector3d& point) const override;
+
+private:
+    SimulationInterpolater interp_;
 };
 
 
