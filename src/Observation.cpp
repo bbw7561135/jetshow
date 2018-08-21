@@ -21,22 +21,24 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
                       string integration_type, string output_type, int n_max,
                       double tau_n_min, double tau_n_max) {
 	dt_max *= pc;
-  auto image_size = getImageSize();
+    auto image_size = getImageSize();
 	vector<Pixel>& pixels = imagePlane->getPixels();
 	vector<Ray>& rays = imagePlane->getRays();
 	// Comment out for easy debug printing
 	#pragma omp parallel for schedule(dynamic) collapse(2)
 	// Actually, the best user-time:
 	// #pragma omp parallel for num_threads(4) schedule(dynamic) collapse(2)
-  for (int j = 0; j < image_size.first; ++j) {
+  for (unsigned long int j = 0; j < image_size.first; ++j) {
 	  // Don't need countr-jet side
-	  for (int k = image_size.second/2-50; k < image_size.second; ++k) {
-      int n_pix = image_size.first*j + k + 1;
+//      for (unsigned long int k = image_size.second/2-50; k < image_size.second; ++k) {
+	  for (unsigned long int k = 0; k < image_size.second; ++k) {
+//      unsigned long int n_pix = image_size.first*j + k + 1;
 //      std::cout << "Running on pixel " << j << "," << k << std::endl;
-      auto &ray = rays[j*image_size.first+k];
-      auto &pxl = pixels[j*image_size.first+k];
+      auto &ray = rays[j*image_size.second+k];
+      auto &pxl = pixels[j*image_size.second+k];
 
       auto ray_direction = ray.direction();
+//      std::cout << "In Observation.run hit with ray.origin = " << ray.origin()/pc;
       std::list<Intersection> list_intersect = jet->hit(ray);
       if (list_intersect.empty()) {
         continue;
@@ -97,7 +99,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
         // Write values to pixel
 				std::string value ("tau");
         pxl.setValue(value, background_tau);
-      std::cout << "Finish on pixel " << j << "," << k << std::endl;
+//      std::cout << "Finish on pixel " << j << "," << k << std::endl;
 
 	      if (output_type == "I") {
 		      value = "I";
@@ -118,7 +120,8 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 					pxl.setValue(value, thickness);
 	      }
       }
-    }
+          std::cout << "Finish on pixel " << j << "," << k << std::endl;
+      }
 
   }
 }
@@ -129,7 +132,7 @@ vector<vector<double>> Observation::getImage(string value) {
 }
 
 
-pair<int, int> Observation::getImageSize() {
+pair<unsigned long int, unsigned long int> Observation::getImageSize() {
   return imagePlane->image_size;
 }
 
@@ -407,17 +410,17 @@ void Observation::run_stripe(int n, double tau_max, double tau_min) {
 	vector<Ray>& rays = imagePlane->getRays();
 
 	// Don't need countr-jet side
-	int j = image_size.first/2;
+	unsigned long int j = image_size.first/2;
 
 	// Comment out for easy debug printing
 	// TODO: Use ``schedule(runtime)`` for controlling with OMP_SCHEDULE env.variable
 #pragma omp parallel for schedule(dynamic)
 //#pragma omp parallel for schedule(static) num_threads(4)
-	for (int k = image_size.second / 2; k < image_size.second; ++k) {
-		int n_pix = image_size.first * j + k + 1;
+	for (unsigned long int k = image_size.second / 2; k < image_size.second; ++k) {
+		unsigned long int n_pix = image_size.first * j + k + 1;
 //				std::cout << "Running on pixel # " << n_pix << std::endl;
-		auto &ray = rays[j * image_size.first + k];
-		auto &pxl = pixels[j * image_size.first + k];
+		auto &ray = rays[j * image_size.second + k];
+		auto &pxl = pixels[j * image_size.second + k];
 
 		auto ray_direction = ray.direction();
 		std::list <Intersection> list_intersect = jet->hit(ray);

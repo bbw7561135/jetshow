@@ -18,7 +18,7 @@ class Observation {
 		void run_stripe(int n, double tau_max, double tau_min);
     vector<vector<double>> getImage(string value);
 		vector<double> getStripe(string value);
-    pair<int,int> getImageSize();
+    pair<unsigned long int,unsigned long int> getImageSize();
     const double nu;
   private:
     Jet* jet;

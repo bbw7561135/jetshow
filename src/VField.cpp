@@ -4,7 +4,7 @@
 #include "VField.h"
 
 
-#include <CGAL/Cartesian.h>
+#include <CGAL/Simple_cartesian.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
@@ -13,7 +13,7 @@
 #include <CGAL/interpolation_functions.h>
 #include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
 
-typedef CGAL::Cartesian<double>                                   K_;
+typedef CGAL::Simple_cartesian<double>                                   K_;
 typedef K_::Point_2                                                Point_;
 typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
 typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
@@ -274,7 +274,7 @@ Vector3d ShearedAccParabolicConstConeVField::v(const Vector3d &point) const {
 };
 
 
-SimulationVField::SimulationVField(Delaunay_triangulation *tr) : interp_(tr) {}
+SimulationVField::SimulationVField(Delaunay_triangulation *tr) : interp_(tr, 1.0) {}
 
 Vector3d SimulationVField::v(const Vector3d &point) const {
     double gamma = interp_.interpolated_value(point);

@@ -25,17 +25,17 @@ public:
 //    ~Image() = default;
 //    explicit Image(pair<int, int> image_size, double pixel_size,
 //                   double pixel_scale);
-		Image(pair<int, int> image_size, double pixel_size, double pixel_scale);
-    const int num_of_pixels_;
-    const pair<int,int> image_size;
+		Image(pair<unsigned long int, unsigned long int> image_size, double pixel_size, double pixel_scale);
+    const unsigned long int num_of_pixels_;
+    const pair<unsigned long int,unsigned long int> image_size;
     vector<vector<double>> getImage(string value);
 		vector<double> getStripe(string value);
-    Vector3d getCoordinate(int i, int j);
-    Vector3d getScaledCoordinate(int i, int j);
+    Vector3d getCoordinate(unsigned long int i, unsigned long int j);
+    Vector3d getScaledCoordinate(unsigned long int i, unsigned long int j);
     vector<Pixel>& getPixels();
 
 private:
-    pair<int,int> image_size_;
+    pair<unsigned long int,unsigned long int> image_size_;
     double pixel_size_;
     double pixel_scale_;
     vector<Pixel> pixels_;

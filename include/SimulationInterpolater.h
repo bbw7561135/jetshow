@@ -8,7 +8,7 @@
 
 #include <Eigen/Eigen>
 
-#include <CGAL/Cartesian.h>
+#include <CGAL/Simple_cartesian.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
@@ -17,7 +17,7 @@
 #include <CGAL/interpolation_functions.h>
 #include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
 
-typedef CGAL::Cartesian<double>                                   K_;
+typedef CGAL::Simple_cartesian<double>                                   K_;
 typedef K_::Point_2                                                Point_;
 typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
 typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
@@ -29,13 +29,18 @@ typedef CGAL::Barycentric_coordinates::Triangle_coordinates_2<K_> Triangle_coord
 using Eigen::Vector3d;
 
 
+void create_triangulation(std::string fn, Delaunay_triangulation* tr);
+
+
 class SimulationInterpolater {
 public:
-    explicit SimulationInterpolater(Delaunay_triangulation *tr);
-    double interpolated_value(const Vector3d point) const;
+    explicit SimulationInterpolater(Delaunay_triangulation *tr, double nan_value=0);
+    double interpolated_value(Vector3d point) const;
 
 private:
+    double nan_value_;
     Delaunay_triangulation* tr_;
+//    mutable Delaunay_triangulation::Face_handle* previous_hit_fh_;
 };
 
 

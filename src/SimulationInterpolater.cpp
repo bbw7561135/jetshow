@@ -3,7 +3,7 @@
 //
 
 #include "SimulationInterpolater.h"
-#include <CGAL/Cartesian.h>
+#include <CGAL/Simple_cartesian.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
@@ -11,8 +11,14 @@
 #include <CGAL/natural_neighbor_coordinates_2.h>
 #include <CGAL/interpolation_functions.h>
 #include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
+#include <SimulationInterpolater.h>
+#include <cnpy.h>
+#include "utils.h"
 
-typedef CGAL::Cartesian<double>                                   K_;
+
+#define CGAL_HAS_THREADS
+
+typedef CGAL::Simple_cartesian<double>                                   K_;
 typedef K_::Point_2                                                Point_;
 typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
 typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
@@ -22,19 +28,48 @@ typedef std::vector<Coord_type >                            Scalar_vector;
 typedef CGAL::Barycentric_coordinates::Triangle_coordinates_2<K_> Triangle_coordinates;
 
 
-SimulationInterpolater::SimulationInterpolater(Delaunay_triangulation *tr) {
+SimulationInterpolater::SimulationInterpolater(Delaunay_triangulation *tr, double nan_value) {
     tr_ = tr;
+    std::cout << "Initializing interpolater with nan_value = " << nan_value << std::endl;
+    nan_value_ = nan_value;
+//    previous_hit_fh_ = nullptr;
+
+//    for (Delaunay_triangulation::Finite_faces_iterator fit = tr->finite_faces_begin(); fit != tr->finite_faces_end(); ++fit) {
+//        Delaunay_triangulation::Face_handle fh = fit;
+//        previous_hit_fh_ = std::make_shared<Delaunay_triangulation::Face_handle>(fh);
+//        break;
+//    }
 }
 
 double SimulationInterpolater::interpolated_value(Vector3d point) const {
     // Conver 3D point (Vector3d) to (r, r_p) coordinates (Point_)
-    double x = point[0];
-    double y = point[1];
-    double z = point[2];
+    double x = point[0]/pc;
+    double y = point[1]/pc;
+    double z = point[2]/pc;
     double r_p = hypot(x, y);
     Point_ pt(z, r_p);
 
-    Delaunay_triangulation::Face_handle fh = tr_->locate(pt);
+    Delaunay_triangulation::Face_handle fh;
+    // TODO: Try T.inexact_locate for speed
+//    if (previous_hit_fh_ != nullptr) {
+////        std::cout << "Hit with hint" << std::endl;
+//        fh = tr_->locate(pt, *previous_hit_fh_);
+////        std::cout << "Done Hit with hint" << std::endl;
+//    } else {
+////        std::cout << "First time hit" << std::endl;
+//        fh = tr_->locate(pt);
+//    }
+
+
+    fh = tr_->locate(pt);
+
+
+    if (tr_->is_infinite(fh)) {
+//        previous_hit_fh_ = nullptr;
+        return nan_value_;
+    } else {
+//        previous_hit_fh_ = fh;
+    }
 
     std::vector<Point_ > vertexes;
     std::vector<double> info;
@@ -43,9 +78,9 @@ double SimulationInterpolater::interpolated_value(Vector3d point) const {
         vertexes.push_back(fh->vertex(i)->point());
         info.push_back(fh->vertex(i)->info());
 
-        std::cout << "Triangle:\t" << tr_->triangle(fh) << std::endl;
-        std::cout << "Vertex 0:\t" << tr_->triangle(fh)[i] << std::endl;
-        std::cout << "Value:\t" << fh->vertex(i)->info() << std::endl;
+//        std::cout << "Triangle:\t" << tr_->triangle(fh) << std::endl;
+//        std::cout << "Vertex 0:\t" << tr_->triangle(fh)[i] << std::endl;
+//        std::cout << "Value:\t" << fh->vertex(i)->info() << std::endl;
     }
 
     // Create an std::vector to store coordinates.
@@ -57,9 +92,29 @@ double SimulationInterpolater::interpolated_value(Vector3d point) const {
 
     double interpolated_value = 0;
     for(int j = 0; j < 3; ++j) {
-        std::cout << "coordinate " << j + 1 << " = " << coordinates[j] << "; ";
+//        std::cout << "coordinate " << j + 1 << " = " << coordinates[j] << "; ";
         interpolated_value += coordinates[j]*info[j];
     }
-    std::cout << "Interpolated value = " << interpolated_value << std::endl;
+//    std::cout << "Interpolated value = " << interpolated_value << std::endl;
+
+    if (std::isnan(interpolated_value)) {
+        interpolated_value = nan_value_;
+    }
+
     return interpolated_value;
+}
+
+
+void create_triangulation(std::string fn, Delaunay_triangulation *tr) {
+    cnpy::NpyArray arr = cnpy::npy_load(fn);
+    double* loaded_data = arr.data<double>();
+    size_t nrows = arr.shape[0];
+
+    std::vector< std::pair<Point_,double> > points;
+    for (int i=0; i<nrows; i++) {
+        Point_ pt(loaded_data[i*3]/pc, loaded_data[i*3 + 1]/pc);
+//        std::cout << "Point = " << pt << std::endl;
+        points.emplace_back( std::make_pair( pt,  loaded_data[i*3 + 2]) );
+    }
+    tr->insert(points.begin(), points.end());
 }

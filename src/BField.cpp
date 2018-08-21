@@ -8,7 +8,7 @@
 #include <boost/random/variate_generator.hpp>
 
 
-#include <CGAL/Cartesian.h>
+#include <CGAL/Simple_cartesian.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
@@ -17,7 +17,7 @@
 #include <CGAL/interpolation_functions.h>
 #include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
 
-typedef CGAL::Cartesian<double>                                   K_;
+typedef CGAL::Simple_cartesian<double>                                   K_;
 typedef K_::Point_2                                                Point_;
 typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
 typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
@@ -191,7 +191,7 @@ RandomPointBField::RandomPointBField(BField* bfield, double rnd_fraction,
 
 Vector3d RandomPointBField::direction(const Vector3d &point) const {
 	std::vector<double> res = randoms_on_sphere[omp_get_thread_num()]();
-	return std::move(Vector3d(std::move(res.data())));
+	return std::move(Vector3d(res.data()));
 }
 
 

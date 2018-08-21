@@ -2,14 +2,21 @@
 #include <math.h>
 
 
-Jet::Jet(Geometry *newgeo, VField *newvfield, RandomScalarBFieldZ *newbField,
-         NField *newnField) {
+//Jet::Jet(Geometry *newgeo, VField *newvfield, RandomScalarBFieldZ *newbField,
+//         NField *newnField) {
+//    geometry_ = newgeo;
+//    vfield_ = newvfield;
+//    bfield_ = newbField;
+//    nfield_ = newnField;
+//}
+
+Jet::Jet(SimulationGeometry *newgeo, SimulationVField *newvfield, SimulationBField *newbField,
+         SimulationNField *newnField) {
     geometry_ = newgeo;
     vfield_ = newvfield;
     bfield_ = newbField;
     nfield_ = newnField;
 }
-
 
 //Jet::Jet(Geometry *newgeo, VField *newvfield, BField *newbField,
 //         NField *newnField) {
@@ -35,7 +42,6 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
 //	  Vector3d b = getB(point);
     Vector3d v = getV(point);
     auto D = getD(n_los, v);
-//	  std::cout << "in K_I D = " << D << std::endl;
     auto gamma = getG(v);
     double n = getN(point);
 //    auto b_prime = getBprime(b, v);
@@ -48,6 +54,17 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     auto n_prime = n;
 //    auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
 		auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
+//    std::cout << "Calculated k_i_prime in Jet.getKI = " << k_i_prime << std::endl;
+    if (std::isnan(k_i_prime)) {
+        std::cout << "Nan k_i_prime!" << std::endl;
+        std::cout << "b_prime = " << b_prime << std::endl;
+        std::cout << "n_prime = " << n_prime << std::endl;
+        std::cout << "nu_prime = " << nu_prime << std::endl;
+        std::cout << "n_los_prime = " << n_los_prime << std::endl;
+        std::cout << "D = " << D << std::endl;
+        std::cout << "v = " << v << std::endl;
+        std::cout << "gamma = " << gamma << std::endl;
+    }
     return k_i_prime/D;
 }
 
@@ -180,6 +197,7 @@ double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
 	  // This means that we are now using n in config in plasma frame
 	  auto n_prime = n;
     auto eta_i_prime = eta_i(b_prime, n_los_prime, nu_prime, n_prime);
+//    std::cout << "Calculated eta_i_prime in Jet.getEtaI = " << eta_i_prime << std::endl;
     return eta_i_prime*D*D;
 }
 

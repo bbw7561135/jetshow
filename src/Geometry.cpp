@@ -132,21 +132,24 @@ SimulationGeometry::SimulationGeometry(Tree *tree)  {
 //}
 
 std::list<Intersection> SimulationGeometry::hit(Ray &ray) const {
-    Vector3d origin = ray.origin();
+//    std::cout << "Hit ray with origin = " << ray.origin() << std::endl;
+    Vector3d origin = ray.origin()/pc;
     Vector3d direction = ray.direction();
-//    std::cout << "Ray origin = " << origin << std::endl;
+//    std::cout << "Ray origin/pc = " << origin << std::endl;
 //    std::cout << "Ray direction = " << direction << std::endl;
     Vector_3 v(direction[0], direction[1], direction[2]);
     Point_3 p(origin[0], origin[1], origin[2]);
-    Ray_3 ray_query(p, v);
+//    Ray_3 ray_query(p, v);
+    Line_3 line_query(p, v);
 //    std::cout << "Ray query = " << ray_query << std::endl;
 
     // tests intersections with ray query
-    if(tree_->do_intersect(ray_query)) {
+    if(tree_->do_intersect(line_query)) {
+//        std::cout << "Got intersection!===============================" << std::endl;
         // computes all intersections with ray query (as pairs object - primitive_id)
         std::list<Ray_intersection> intersections;
         std::vector<Vector3d> points;
-        tree_->all_intersections(ray_query, std::back_inserter(intersections));
+        tree_->all_intersections(line_query, std::back_inserter(intersections));
         for (auto const& intersection : intersections)
         {
             const Point_3* pt = boost::get<Point_3>(&(intersection->first));
@@ -155,9 +158,10 @@ std::list<Intersection> SimulationGeometry::hit(Ray &ray) const {
             double z = CGAL::to_double(pt->z());
             points.emplace_back(Vector3d(x, y, z));
         }
-        return std::list<Intersection>{Intersection(ray, points[1], points[0])};
+        return std::list<Intersection>{Intersection(ray, points[1]*pc, points[0]*pc)};
     }
     else
+//        std::cout << "No intersections" << std::endl;
         return std::list<Intersection>{};
 
 }

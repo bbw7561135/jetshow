@@ -15,7 +15,7 @@ using Eigen::Vector3d;
 
 class Pixel {
 public:
-    Pixel(double size_, Vector3d &coordinate_, pair<int,int> &ij_);
+    Pixel(double size_, Vector3d &coordinate_, pair<unsigned long int,unsigned long int> &ij_);
     Vector3d getCoordinate();
     double getValue(string value);
     void setValue(string value, double newvalue);
@@ -24,7 +24,7 @@ public:
 private:
     double size_;
     Vector3d coordinate_;
-    pair<int,int> ij_;
+    pair<unsigned long int,unsigned  long int> ij_;
     map<string,double> values_;
 
 
