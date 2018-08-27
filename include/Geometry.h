@@ -55,8 +55,6 @@ class SimulationGeometry {
 public:
     SimulationGeometry(Tree *tree);
     std::list<Intersection> hit(Ray &ray) const;
-//    void create_tree(double *loaded_data, int nrows);
-//    void add_simulation_data(std::string fn);
 
 private:
     Tree* tree_;
