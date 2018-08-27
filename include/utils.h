@@ -215,5 +215,10 @@ int steps_schedule(double tau, int n_min, int n_max, double tau_min=0.1,
 //	return result;
 //}
 
+void read_from_txt(std::string fn, std::vector< std::vector<double> >& properties);
+
+
+// Linear interpolation following MATLAB linspace
+std::vector<double> MyLinearSpacedArray(double a, double b, std::size_t N);
 
 #endif //JETSHOW_UTILS_H
