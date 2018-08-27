@@ -92,10 +92,8 @@ double SimulationInterpolater::interpolated_value(Vector3d point) const {
 
     double interpolated_value = 0;
     for(int j = 0; j < 3; ++j) {
-//        std::cout << "coordinate " << j + 1 << " = " << coordinates[j] << "; ";
         interpolated_value += coordinates[j]*info[j];
     }
-//    std::cout << "Interpolated value = " << interpolated_value << std::endl;
 
     if (std::isnan(interpolated_value)) {
         interpolated_value = nan_value_;
@@ -106,15 +104,15 @@ double SimulationInterpolater::interpolated_value(Vector3d point) const {
 
 
 void create_triangulation(std::string fn, Delaunay_triangulation *tr) {
-    cnpy::NpyArray arr = cnpy::npy_load(fn);
-    double* loaded_data = arr.data<double>();
-    size_t nrows = arr.shape[0];
+    std::vector< std::vector<double> > all_points;
+    read_from_txt(fn, all_points);
+    size_t nrows = all_points.size();
+
 
     std::vector< std::pair<Point_,double> > points;
     for (int i=0; i<nrows; i++) {
-        Point_ pt(loaded_data[i*3]/pc, loaded_data[i*3 + 1]/pc);
-//        std::cout << "Point = " << pt << std::endl;
-        points.emplace_back( std::make_pair( pt,  loaded_data[i*3 + 2]) );
+        Point_ pt(all_points[i][0]/pc, all_points[i][1]/pc);
+        points.emplace_back( std::make_pair( pt,  all_points[i][2]) );
     }
     tr->insert(points.begin(), points.end());
 }
