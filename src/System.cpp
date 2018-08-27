@@ -13,7 +13,7 @@ System::System(Jet *newjet,
 
 
 void Tau::operator()(const double &x, double &dxdt, const double t) {
-  Vector3d point = point_in + t * ray_direction;
+  Vector3d point = point_in - t * ray_direction;
   dxdt = jet->getKI(point, ray_direction, nu);
 }
 
