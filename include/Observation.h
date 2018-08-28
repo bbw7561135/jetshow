@@ -15,7 +15,9 @@ class Observation {
     void run(int n, double tau_max, double dt_max, double tau_min,
              string integration_type, string output_type,
              int n_max, double tau_n_min, double tau_n_max);
-		void run_stripe(int n, double tau_max, double tau_min);
+    void observe_single_pixel(Ray& ray, Pixel& pixel, double tau_min, double tau_max, int n, double dt_max,
+            string output_type);
+    void run_stripe(int n, double tau_max, double tau_min);
     vector<vector<double>> getImage(string value);
 		vector<double> getStripe(string value);
     pair<unsigned long int,unsigned long int> getImageSize();

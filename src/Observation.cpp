@@ -28,92 +28,15 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	#pragma omp parallel for schedule(dynamic) collapse(2)
 	// Actually, the best user-time:
 //	 #pragma omp parallel for num_threads(4) schedule(dynamic) collapse(2)
-  for (unsigned long int j = 0; j < image_size.first; ++j) {
+    for (unsigned long int j = 0; j < image_size.first; ++j) {
 	  // Don't need countr-jet side
 //      for (unsigned long int k = image_size.second/2-50; k < image_size.second; ++k) {
-	  for (unsigned long int k = 0; k < image_size.second; ++k) {
-      auto &ray = rays[j*image_size.second+k];
-      auto &pxl = pixels[j*image_size.second+k];
-
-      auto ray_direction = ray.direction();
-      std::list<Intersection> list_intersect = jet->hit(ray);
-      if (list_intersect.empty()) {
-        continue;
-      } else {
-
-
-	      std::pair<double,double> tau_l_end;
-	      if (integration_type == "constant") {
-	        tau_l_end = integrate_tau(list_intersect, ray_direction, nu, tau_max,
-	                                  n);
-	      } else if (integration_type == "adaptive") {
-		      tau_l_end = integrate_tau_adaptive(list_intersect, ray_direction, nu,
-		                                         tau_max, n, dt_max);
-	      }
-	      double background_tau = tau_l_end.first;
-	      double thickness = tau_l_end.second;
-
-
-	      // Write final values here inside integrate_i
-				state_type background_iquv{0., 0., 0., 0};
-	      double background_I = 0.;
-				// Calculate I only if optical depth is high enough
-				if (background_tau > tau_min) {
-					string local_type;
-					// In high optical depth pixels use adaptive steps
-					if (background_tau > 0.01*tau_max) {
-						local_type = "adaptive";
-					} else {
-						local_type = "constant";
-					}
-					// If adaptive everywhere => then adaptive here too
-					if (integration_type == "adaptive") {
-						local_type = "adaptive";
-					}
-					if (local_type == "constant") {
-						integrate_i(list_intersect, ray_direction, nu, n, background_tau,
-						            tau_n_min, tau_n_max, background_I);
-					} else if (local_type == "adaptive") {
-							if (output_type == "I") {
-								integrate_i_adaptive(list_intersect, ray_direction, nu, n,
-								                     background_tau, background_I);
-							}
-//							else if (output_type == "full") {
-//								integrate_full_stokes_adaptive(list_intersect, ray_direction, nu, n,
-//								                               background_tau, background_iquv);
-//							}
-						}
-				} else {
-//					std::cout << "Too small optical depth = " << background_tau << std::endl;
-				}
-        // Write values to pixel
-				std::string value ("tau");
-        pxl.setValue(value, background_tau);
-//      std::cout << "Finish on pixel " << j << "," << k << std::endl;
-
-	      if (output_type == "I") {
-		      value = "I";
-		      pxl.setValue(value, background_I);
-		      value = "l";
-		      pxl.setValue(value, thickness);
-	      }
-	      else if (output_type == "full") {
-					value = "I";
-					pxl.setValue(value, background_iquv[0]);
-	        value = "Q";
-	        pxl.setValue(value, background_iquv[1]);
-	        value = "U";
-	        pxl.setValue(value, background_iquv[2]);
-	        value = "V";
-	        pxl.setValue(value, background_iquv[3]);
-					value = "l";
-					pxl.setValue(value, thickness);
-	      }
-      }
-//          std::cout << "Finish on pixel " << j << "," << k << std::endl;
-      }
-
-  }
+        for (unsigned long int k = 0; k < image_size.second; ++k) {
+        auto &ray = rays[j*image_size.second+k];
+        auto &pxl = pixels[j*image_size.second+k];
+        observe_single_pixel(ray, pxl, tau_min, tau_max, n, dt_max, output_type);
+        }
+    }
 }
 
 
@@ -420,4 +343,52 @@ void Observation::run_stripe(int n, double tau_max, double tau_min) {
 			pxl.setValue(value, background_tau);
 		}
 	}
+}
+
+void Observation::observe_single_pixel(Ray &ray, Pixel &pxl,  double tau_min, double tau_max, int n, double dt_max,
+        string output_type) {
+    auto ray_direction = ray.direction();
+    std::list<Intersection> list_intersect = jet->hit(ray);
+    if (!list_intersect.empty()) {
+        std::pair<double, double> tau_l_end;
+        tau_l_end = integrate_tau_adaptive(list_intersect, ray_direction, nu, tau_max, n, dt_max);
+        double background_tau = tau_l_end.first;
+        double thickness = tau_l_end.second;
+
+        // Write final values here inside integrate_i
+        state_type background_iquv{0., 0., 0., 0};
+        double background_I = 0.;
+        // Calculate I only if optical depth is high enough
+        if (background_tau > tau_min) {
+            if (output_type == "I") {
+                integrate_i_adaptive(list_intersect, ray_direction, nu, n, background_tau, background_I);
+            }
+//                else if (output_type == "full") {
+//                    integrate_full_stokes_adaptive(list_intersect, ray_direction, nu, n, background_tau, background_iquv);
+//                }
+        }
+
+        // Write values to pixel
+        std::string value("tau");
+        pxl.setValue(value, background_tau);
+        std::cout << "Finish on pixel " << std::endl;
+
+        if (output_type == "I") {
+            value = "I";
+            pxl.setValue(value, background_I);
+            value = "l";
+            pxl.setValue(value, thickness);
+        } else if (output_type == "full") {
+            value = "I";
+            pxl.setValue(value, background_iquv[0]);
+            value = "Q";
+            pxl.setValue(value, background_iquv[1]);
+            value = "U";
+            pxl.setValue(value, background_iquv[2]);
+            value = "V";
+            pxl.setValue(value, background_iquv[3]);
+            value = "l";
+            pxl.setValue(value, thickness);
+        }
+    }
 }
