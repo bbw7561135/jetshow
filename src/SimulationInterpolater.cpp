@@ -32,7 +32,7 @@ SimulationInterpolater::SimulationInterpolater(Delaunay_triangulation *tr, doubl
     tr_ = tr;
     std::cout << "Initializing interpolater with nan_value = " << nan_value << std::endl;
     nan_value_ = nan_value;
-//    previous_hit_fh_ = nullptr;
+    previous_hit_fh_ = nullptr;
 
 //    for (Delaunay_triangulation::Finite_faces_iterator fit = tr->finite_faces_begin(); fit != tr->finite_faces_end(); ++fit) {
 //        Delaunay_triangulation::Face_handle fh = fit;
@@ -51,24 +51,24 @@ double SimulationInterpolater::interpolated_value(Vector3d point) const {
 
     Delaunay_triangulation::Face_handle fh;
     // TODO: Try T.inexact_locate for speed
-//    if (previous_hit_fh_ != nullptr) {
-////        std::cout << "Hit with hint" << std::endl;
-//        fh = tr_->locate(pt, *previous_hit_fh_);
-////        std::cout << "Done Hit with hint" << std::endl;
-//    } else {
-////        std::cout << "First time hit" << std::endl;
-//        fh = tr_->locate(pt);
-//    }
+    if (previous_hit_fh_ != nullptr) {
+//        std::cout << "Hit with hint" << std::endl;
+        fh = tr_->locate(pt, previous_hit_fh_);
+//        std::cout << "Done Hit with hint" << std::endl;
+    } else {
+//        std::cout << "First time hit" << std::endl;
+        fh = tr_->locate(pt);
+    }
 
-
-    fh = tr_->locate(pt);
+    // This previous w/o hints
+//    fh = tr_->locate(pt);
 
 
     if (tr_->is_infinite(fh)) {
-//        previous_hit_fh_ = nullptr;
+        previous_hit_fh_ = nullptr;
         return nan_value_;
     } else {
-//        previous_hit_fh_ = fh;
+        previous_hit_fh_ = fh;
     }
 
     std::vector<Point_ > vertexes;

@@ -40,7 +40,7 @@ public:
 private:
     double nan_value_;
     Delaunay_triangulation* tr_;
-//    mutable Delaunay_triangulation::Face_handle* previous_hit_fh_;
+    mutable Delaunay_triangulation::Face_handle previous_hit_fh_;
 };
 
 
