@@ -38,23 +38,23 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     // nu_prime = f(nu, n_los, v) = nu/getD
     // n_prime = f(n, v) = n/Gamma
 
-	  // This conflicts with scalar valued random B-field
-//	  Vector3d b = getB(point);
+    // This conflicts with scalar valued random B-field
+    Vector3d b = getB(point);
     Vector3d v = getV(point);
     auto D = getD(n_los, v);
     auto gamma = getG(v);
     double n = getN(point);
-//    auto b_prime = getBprime(b, v);
-		// This means that we are using B-fields specification in the plasma frame
-		auto b_prime = bfield_->bf(point);
+    // This means that we are using B-field specification in lab frame
+    auto b_prime = getBprime(b, v);
+    // This means that we are using B-field specification in the plasma frame
+//    auto b_prime = bfield_->bf(point);
     auto n_los_prime = get_n_los_prime(n_los, v);
     auto nu_prime = nu/D;
 //  	auto n_prime = n/gamma;
-	  // This means that we are now using n in config in plasma frame
+      // This means that we are now using n specification in plasma frame
     auto n_prime = n;
-//    auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
-		auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
-//    std::cout << "Calculated k_i_prime in Jet.getKI = " << k_i_prime << std::endl;
+    auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
+
     if (std::isnan(k_i_prime)) {
         std::cout << "Nan k_i_prime!" << std::endl;
         std::cout << "b_prime = " << b_prime << std::endl;
@@ -182,22 +182,22 @@ double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
     // nu_prime = f(nu, n_los, v) = nu/getD
     // n_prime = f(n, v) = n/Gamma
 
-	// This conflicts with scalar valued random B-field
-//    Vector3d b = getB(point);
+    // This conflicts with scalar valued random B-field
+    Vector3d b = getB(point);
     Vector3d v = getV(point);
     auto D = getD(n_los, v);
     auto gamma = getG(v);
     double n = getN(point);
-//    auto b_prime = getBprime(b, v);
-		// This means that we are using B-fields specification in the plasma frame
-		auto b_prime = bfield_->bf(point);
+    // This means that we are using B-field specification in lab frame
+    auto b_prime = getBprime(b, v);
+    // This means that we are using B-field specification in the plasma frame
+//    auto b_prime = bfield_->bf(point);
     auto n_los_prime = get_n_los_prime(n_los, v);
     auto nu_prime = nu/D;
 //    auto n_prime = n/gamma;
-	  // This means that we are now using n in config in plasma frame
-	  auto n_prime = n;
+    // This means that we are now using n specification in plasma frame
+    auto n_prime = n;
     auto eta_i_prime = eta_i(b_prime, n_los_prime, nu_prime, n_prime);
-//    std::cout << "Calculated eta_i_prime in Jet.getEtaI = " << eta_i_prime << std::endl;
     return eta_i_prime*D*D;
 }
 
@@ -253,9 +253,9 @@ double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
 //}
 
 
-//const Vector3d Jet::getB(const Vector3d &point) {
-//    return bfield_->bf(point);
-//}
+const Vector3d Jet::getB(const Vector3d &point) {
+    return bfield_->bf(point);
+}
 
 const Vector3d Jet::getV(const Vector3d &point) {
     return vfield_->v(point);

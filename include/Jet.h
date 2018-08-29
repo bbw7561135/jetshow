@@ -19,7 +19,7 @@ public:
 
 
     // Vector of the magnetic field in the lab frame at point ``point``.
-//    const Vector3d getB(const Vector3d& point);
+    const Vector3d getB(const Vector3d& point);
 
     // Vector of the bulk motion speed in the lab frame at point ``point``.
     const Vector3d getV(const Vector3d& point);
