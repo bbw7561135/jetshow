@@ -31,3 +31,10 @@ ConstNField::ConstNField(double n) : n_(n) {};
 double ConstNField::n(const Vector3d &point) const {
 	return n_;
 }
+
+
+SimulationNField::SimulationNField(Delaunay_triangulation *tr) : interp_(tr) {}
+
+double SimulationNField::n(const Vector3d &point) const {
+    return interp_.interpolated_value(point);
+};

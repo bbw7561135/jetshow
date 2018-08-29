@@ -32,6 +32,7 @@ class Tau : public System {
 };
 
 
+// point_in is actually furthest point (i.e. ``point_out`` in intersection).
 class I : public System {
  public:
   I(Jet* newjet, Vector3d &newpoint_in, Vector3d &newray_direction,

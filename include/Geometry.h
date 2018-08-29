@@ -8,9 +8,26 @@
 #include <Eigen/Eigen>
 #include "Ray.h"
 #include "Intersection.h"
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/convex_hull_3.h>
+#include <list>
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/AABB_tree.h>
+#include <CGAL/AABB_traits.h>
+#include <CGAL/AABB_face_graph_triangle_primitive.h>
+
 
 using Eigen::Vector3d;
 
+typedef CGAL::Simple_cartesian<double> K;
+typedef K::Point_3 Point_3;
+typedef K::Ray_3 Ray_3;
+typedef K::Line_3 Line_3;
+typedef CGAL::Polyhedron_3<K> Polyhedron;
+typedef CGAL::AABB_face_graph_triangle_primitive<Polyhedron> Primitive;
+typedef CGAL::AABB_traits<K, Primitive> Traits;
+typedef CGAL::AABB_tree<Traits> Tree;
+typedef Tree::Primitive_id Primitive_id;
 
 std::list<double> intersection(Vector3d R0, Vector3d Rd, double A = 0, double B = 0, double C = 0,
                                 double D = 0, double E = 0, double F = 0, double G = 0,
@@ -30,6 +47,16 @@ class Geometry {
         std::pair<Vector3d, Vector3d> half_infinite_path(Ray &ray,
                                                          const Vector3d &point) const;
 
+};
+
+
+class SimulationGeometry {
+public:
+    SimulationGeometry(Tree *tree);
+    std::list<Intersection> hit(Ray &ray) const;
+
+private:
+    Tree* tree_;
 };
 
 

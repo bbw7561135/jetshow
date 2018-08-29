@@ -1,8 +1,28 @@
 #include "Geometry.h"
+#include "utils.h"
 #include <math.h>
-
+#include <iostream>
+#include <list>
+#include "Intersection.h"
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/AABB_tree.h>
+#include <CGAL/AABB_traits.h>
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/convex_hull_3.h>
+#include <CGAL/AABB_face_graph_triangle_primitive.h>
 
 using Eigen::Vector3d;
+
+typedef CGAL::Simple_cartesian<double> K;
+typedef K::Point_3 Point_3;
+typedef K::Ray_3 Ray_3;
+typedef K::Vector_3 Vector_3;
+typedef CGAL::Polyhedron_3<K> Polyhedron;
+typedef CGAL::AABB_face_graph_triangle_primitive<Polyhedron> Primitive;
+typedef CGAL::AABB_traits<K, Primitive> Traits;
+typedef CGAL::AABB_tree<Traits> Tree;
+typedef Tree::Primitive_id Primitive_id;
+typedef boost::optional<Tree::Intersection_and_primitive_id<Ray_3>::Type> Ray_intersection;
 
 
 std::list<double>
@@ -66,4 +86,47 @@ std::pair<Vector3d, Vector3d> Geometry::half_infinite_path(Ray &ray,
   } else {
     return std::pair<Vector3d,Vector3d>{point, point+big_scale()*ray.direction()};
   }
+}
+
+
+SimulationGeometry::SimulationGeometry(Tree *tree)  {
+    tree_ = tree;
+}
+
+
+std::list<Intersection> SimulationGeometry::hit(Ray &ray) const {
+    Vector3d origin = ray.origin()/pc;
+    Vector3d direction = ray.direction();
+    Vector_3 v(direction[0], direction[1], direction[2]);
+    Point_3 p(origin[0], origin[1], origin[2]);
+    Line_3 line_query(p, v);
+
+    // Tests intersections with ray query
+    if(tree_->do_intersect(line_query)) {
+        // Computes all intersections with ray query (as pairs object - primitive_id)
+        std::list<Ray_intersection> intersections;
+        std::vector<Vector3d> points;
+        tree_->all_intersections(line_query, std::back_inserter(intersections));
+        for (auto const& intersection : intersections)
+        {
+            const Point_3* pt = boost::get<Point_3>(&(intersection->first));
+            double x = CGAL::to_double(pt->x());
+            double y = CGAL::to_double(pt->y());
+            double z = CGAL::to_double(pt->z());
+            points.emplace_back(Vector3d(x, y, z));
+        }
+        Vector3d point_in;
+        Vector3d point_out;
+        if (points[0][0] > 0) {
+            point_in = points[0];
+            point_out = points[1];
+        } else {
+            point_in = points[1];
+            point_out = points[0];
+        }
+        return std::list<Intersection>{Intersection(ray, point_in*pc, point_out*pc)};
+    }
+    else
+        return std::list<Intersection>{};
+
 }

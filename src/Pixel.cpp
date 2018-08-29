@@ -4,7 +4,7 @@
 using std::pair;
 
 
-Pixel::Pixel(double size, Vector3d &coordinate, pair<int,int> &ij): size_(size),
+Pixel::Pixel(double size, Vector3d &coordinate, pair<unsigned long int,unsigned  long int> &ij): size_(size),
                                                  coordinate_(coordinate),
                                                  ij_(ij) {};
 

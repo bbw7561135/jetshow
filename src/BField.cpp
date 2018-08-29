@@ -8,6 +8,26 @@
 #include <boost/random/variate_generator.hpp>
 
 
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Triangulation_vertex_base_with_info_2.h>
+#include <CGAL/Interpolation_traits_2.h>
+#include <CGAL/natural_neighbor_coordinates_2.h>
+#include <CGAL/interpolation_functions.h>
+#include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
+
+typedef CGAL::Simple_cartesian<double>                                   K_;
+typedef K_::Point_2                                                Point_;
+typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
+typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
+typedef CGAL::Delaunay_triangulation_2<K_, Tds>                    Delaunay_triangulation;
+typedef K_::FT                                               Coord_type;
+typedef std::vector<Coord_type >                            Scalar_vector;
+typedef CGAL::Barycentric_coordinates::Triangle_coordinates_2<K_> Triangle_coordinates;
+
+
+
 using Eigen::Vector3d;
 typedef boost::variate_generator<gen_type&, boost::uniform_on_sphere<double>> gg;
 
@@ -171,6 +191,19 @@ RandomPointBField::RandomPointBField(BField* bfield, double rnd_fraction,
 
 Vector3d RandomPointBField::direction(const Vector3d &point) const {
 	std::vector<double> res = randoms_on_sphere[omp_get_thread_num()]();
-	return std::move(Vector3d(std::move(res.data())));
+	return std::move(Vector3d(res.data()));
 }
 
+
+SimulationBField::SimulationBField(Delaunay_triangulation *tr_p,
+        Delaunay_triangulation *tr_fi) : interp_p_(tr_p), interp_fi_(tr_fi) {}
+
+Vector3d SimulationBField::bf(const Vector3d &point) const {
+    double x = point[0];
+    double y = point[1];
+    double fi = atan(y/x);
+
+    double interpolated_value_p = interp_p_.interpolated_value(point);
+    double interpolated_value_fi = interp_fi_.interpolated_value(point);
+    return Vector3d{-sin(fi)*interpolated_value_fi, cos(fi)*interpolated_value_fi, interpolated_value_p};
+}

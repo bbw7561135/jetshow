@@ -1,7 +1,6 @@
 #ifndef JETSHOW_JET_H
 #define JETSHOW_JET_H
 
-
 #include "Geometry.h"
 #include "VField.h"
 #include "BField.h"
@@ -13,11 +12,14 @@ class Jet {
 public:
 //    Jet(Geometry* geo, VField* vfield, BField* bField, NField* nField);
 
-    Jet(Geometry* geo, VField* vfield, RandomScalarBFieldZ* bField,
-        NField* nField);
+//    Jet(Geometry* geo, VField* vfield, BField* bField, NField* nField);
+
+    Jet(SimulationGeometry* geo, SimulationVField* vfield, SimulationBField* bField,
+        SimulationNField* nField);
+
 
     // Vector of the magnetic field in the lab frame at point ``point``.
-//    const Vector3d getB(const Vector3d& point);
+    const Vector3d getB(const Vector3d& point);
 
     // Vector of the bulk motion speed in the lab frame at point ``point``.
     const Vector3d getV(const Vector3d& point);
@@ -58,11 +60,16 @@ public:
 
 
 private:
-    Geometry* geometry_;
-    VField* vfield_;
-    RandomScalarBFieldZ* bfield_;
+//    Geometry* geometry_;
+    SimulationGeometry* geometry_;
+//    VField* vfield_;
+    SimulationVField* vfield_;
+
+//    RandomScalarBFieldZ* bfield_;
 //    BField* bfield_;
-    NField* nfield_;
+    SimulationBField* bfield_;
+//    NField* nfield_;
+    SimulationNField* nfield_;
 };
 
 

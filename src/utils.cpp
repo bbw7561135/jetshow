@@ -361,3 +361,27 @@ Ctd::Ctd(double z, double H0, double omega_M, double omega_V) : z(z), H0(H0),
 void Ctd::operator()(const double &x, double &dxdt, const double t) {
 	dxdt = pow(omega_M*(1.+t*t*t)+omega_V, -0.5);
 };
+
+
+void read_from_txt(std::string fntxt, std::vector< std::vector<double> >& properties) {
+    std::ifstream infile(fntxt);
+    std::vector<double> row(3);
+    while (infile >> row[0] >> row[1] >> row[2])
+    {
+        properties.push_back(row);
+    }
+}
+
+
+// Linear interpolation following MATLAB linspace
+std::vector<double> MyLinearSpacedArray(double a, double b, std::size_t N)
+{
+    double h = (b - a) / static_cast<double>(N-1);
+    std::vector<double> xs(N);
+    std::vector<double>::iterator x;
+    double val;
+    for (x = xs.begin(), val = a; x != xs.end(); ++x, val += h) {
+        *x = val;
+    }
+    return xs;
+}
