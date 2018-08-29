@@ -2,7 +2,6 @@
 #include "utils.h"
 #include <math.h>
 #include <iostream>
-#include <cnpy.h>
 #include <list>
 #include "Intersection.h"
 #include <CGAL/Simple_cartesian.h>

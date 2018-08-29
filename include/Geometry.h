@@ -10,7 +10,6 @@
 #include "Intersection.h"
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/convex_hull_3.h>
-#include <cnpy.h>
 #include <list>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/AABB_tree.h>
