@@ -64,7 +64,7 @@ Image::Image(pair<unsigned long int, unsigned long int> image_size, double pixel
 // Addition to ``j``-part equals ``dr_min_pc/pix_size_pc*sin(theta_LOS)``, where
 // ``dr_min`` - minimal distance in simulation output
 Vector3d Image::getCoordinate(unsigned long int i, unsigned long int j) {
-    return Vector3d{0, i-image_size_.first/2.+0.5, j+0.5+100};
+    return Vector3d{0, i-image_size_.first/2.+0.5, j+0.5+90};
 }
 
 Vector3d Image::getScaledCoordinate(unsigned long int i, unsigned long int j) {

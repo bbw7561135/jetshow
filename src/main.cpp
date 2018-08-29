@@ -1014,8 +1014,8 @@ void test_full_interpolation() {
     double redshift = 0.00436;
 //    unsigned long int number_of_pixels_along = 500;
 //    unsigned long int number_of_pixels_across = 150;
-    unsigned long int number_of_pixels_along = 800;
-    unsigned long int number_of_pixels_across = 60;
+    unsigned long int number_of_pixels_along = 1500;
+    unsigned long int number_of_pixels_across = 300;
     double pixel_size_mas = 0.1;
 
     // Setting geometry
