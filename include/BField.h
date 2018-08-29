@@ -31,27 +31,36 @@ using Eigen::Vector3d;
 typedef boost::random::mt19937 gen_type;
 
 
-class BField {
+// B-field with vector values, e.g. ordered.
+class VectorBField {
 public:
     virtual Vector3d bf(const Vector3d &point) const = 0 ;
 };
 
 
-class RandomScalarBField {
+// B-field that has no preferred direction, e.g. random.
+class ScalarBField {
+public:
+    virtual double bf(const Vector3d &point) const = 0 ;
+};
+
+
+class RandomScalarBField : public ScalarBField {
 public:
 		RandomScalarBField(double b_0, double m_b);
-		double bf(const Vector3d &point) const;
+		double bf(const Vector3d &point) const override;
 
 private:
 		double b_0_;
 		double m_b_;
 };
+
 
 // B-Field like ``RandomScalar`` that depends on z-coordinate only
-class RandomScalarBFieldZ {
+class RandomScalarBFieldZ : public ScalarBField {
 public:
 		RandomScalarBFieldZ(double b_0, double m_b);
-		double bf(const Vector3d &point) const;
+		double bf(const Vector3d &point) const override;
 
 private:
 		double b_0_;
@@ -59,10 +68,11 @@ private:
 };
 
 
-class CompositeRandomScalarBFieldZ {
+// Random B-field with exponent changing at some distance (e.g. due to jet collimation)
+class CompositeRandomScalarBFieldZ : public ScalarBField {
 public:
     CompositeRandomScalarBFieldZ(double b_0, double m_b_inner, double m_b_outer, double z0);
-    double bf(const Vector3d &point) const;
+    double bf(const Vector3d &point) const override;
 
 private:
     double z0_;
@@ -71,7 +81,7 @@ private:
 };
 
 
-class ConstCylinderBField : public BField {
+class ConstCylinderBField : public VectorBField {
 public:
     ConstCylinderBField(double b_0, double n_b) ;
     Vector3d bf(const Vector3d &point) const override ;
@@ -81,8 +91,9 @@ private:
 
 };
 
+
 // B-Field like ``ConstCylinder`` that depends on z-coordinate only
-class ConstCylinderBFieldZ : public BField {
+class ConstCylinderBFieldZ : public VectorBField {
 public:
 		ConstCylinderBFieldZ (double b_0, double n_b) ;
 		Vector3d bf(const Vector3d &point) const override ;
@@ -93,7 +104,7 @@ private:
 };
 
 
-class RadialConicalBField : public BField {
+class RadialConicalBField : public VectorBField {
 public:
     RadialConicalBField(double b_0, double n_b) ;
     Vector3d bf(const Vector3d &point) const override ;
@@ -103,7 +114,7 @@ private:
 };
 
 
-class ToroidalBField : public BField {
+class ToroidalBField : public VectorBField {
 public:
 		ToroidalBField(double b_0, double n_b) ;
 		Vector3d bf(const Vector3d &point) const override ;
@@ -113,7 +124,7 @@ private:
 };
 
 
-class HelicalCylinderBField : public BField {
+class HelicalCylinderBField : public VectorBField {
 public:
     HelicalCylinderBField(double b_0, double pitch_angle) ;
     Vector3d bf(const Vector3d &point) const override ;
@@ -123,7 +134,7 @@ private:
 };
 
 
-class SpiralConicalBField : public BField {
+class SpiralConicalBField : public VectorBField {
 public:
     SpiralConicalBField(double b_0, double pitch_angle) ;
     Vector3d bf(const Vector3d &point) const override ;
@@ -133,7 +144,7 @@ private:
 };
 
 
-class ForceFreeCylindricalBField : public BField {
+class ForceFreeCylindricalBField : public VectorBField {
 public:
     ForceFreeCylindricalBField(double b_0, double mu) ;
     Vector3d bf(const Vector3d &point) const override ;
@@ -143,21 +154,22 @@ private:
 };
 
 
-class RandomBField : public BField {
+// B-field not completely random, e.g. made of finite cells.
+class RandomVectorBField : public VectorBField {
 public:
-		RandomBField(BField* bfield, double rnd_fraction);
+		RandomVectorBField(VectorBField* bfield, double rnd_fraction);
 		virtual Vector3d direction(const Vector3d &point) const = 0 ;
 		Vector3d bf(const Vector3d &point) const override ;
 
 protected:
-		BField* bfield_;
+		VectorBField* bfield_;
 		double rnd_fraction_;
 };
 
 
-class RandomCellsBField : public RandomBField {
+class CellsRandomVectorBField : public RandomVectorBField {
 public:
-		RandomCellsBField(Cells* cells, BField* bfield, double rnd_fraction);
+		CellsRandomVectorBField(Cells* cells, VectorBField* bfield, double rnd_fraction);
 		Vector3d direction(const Vector3d &point) const override ;
 
 private:
@@ -165,9 +177,9 @@ private:
 };
 
 
-class RandomPointBField : public RandomBField {
+class PointsRandomVectorBField : public RandomVectorBField {
 public:
-		RandomPointBField(BField* bfield, double rnd_fraction, unsigned int seed);
+		PointsRandomVectorBField(VectorBField* bfield, double rnd_fraction, unsigned int seed);
 		Vector3d direction(const Vector3d &point) const override ;
 
 private:
@@ -175,7 +187,8 @@ private:
 };
 
 
-class SimulationBField : public BField {
+// Special class for Elena's calculations of axisymmetric flows.
+class SimulationBField : public VectorBField {
 public:
     SimulationBField(Delaunay_triangulation *tr_p, Delaunay_triangulation *tr_fi);
     Vector3d bf(const Vector3d &point) const override ;

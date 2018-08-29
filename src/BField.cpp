@@ -147,13 +147,13 @@ Vector3d ForceFreeCylindricalBField::bf(const Vector3d &point) const {
 }
 
 
-RandomBField::RandomBField(BField *bfield, double rnd_fraction) :
+RandomVectorBField::RandomVectorBField(VectorBField *bfield, double rnd_fraction) :
 		rnd_fraction_(rnd_fraction)
 {
 	bfield_ = bfield;
 };
 
-Vector3d RandomBField::bf(const Vector3d &point) const {
+Vector3d RandomVectorBField::bf(const Vector3d &point) const {
 	Vector3d b = bfield_->bf(point);
 	double bv = b.norm();
 	Vector3d n = direction(point);
@@ -163,20 +163,20 @@ Vector3d RandomBField::bf(const Vector3d &point) const {
 }
 
 
-RandomCellsBField::RandomCellsBField(Cells* cells, BField* bfield,
+CellsRandomVectorBField::CellsRandomVectorBField(Cells* cells, VectorBField* bfield,
                                      double rnd_fraction) :
-		RandomBField(bfield, rnd_fraction) {
+		RandomVectorBField(bfield, rnd_fraction) {
 	cells_ = cells;
 }
 
-Vector3d RandomCellsBField::direction(const Vector3d &point) const {
+Vector3d CellsRandomVectorBField::direction(const Vector3d &point) const {
 	return cells_->getID(point);
 }
 
 
-RandomPointBField::RandomPointBField(BField* bfield, double rnd_fraction,
+PointsRandomVectorBField::PointsRandomVectorBField(VectorBField* bfield, double rnd_fraction,
                                      unsigned int seed) :
-		RandomBField(bfield, rnd_fraction),
+		RandomVectorBField(bfield, rnd_fraction),
 		randoms_on_sphere() {
 	for (int j = 0; j < omp_get_max_threads(); ++j) {
 		gen_type rand_gen;
@@ -189,7 +189,7 @@ RandomPointBField::RandomPointBField(BField* bfield, double rnd_fraction,
 };
 
 
-Vector3d RandomPointBField::direction(const Vector3d &point) const {
+Vector3d PointsRandomVectorBField::direction(const Vector3d &point) const {
 	std::vector<double> res = randoms_on_sphere[omp_get_thread_num()]();
 	return std::move(Vector3d(res.data()));
 }

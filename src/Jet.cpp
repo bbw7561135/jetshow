@@ -2,7 +2,7 @@
 #include <math.h>
 
 
-//Jet::Jet(Geometry *newgeo, VField *newvfield, RandomScalarBFieldZ *newbField,
+//AnalyticalScalarBFieldJet::AnalyticalScalarBFieldJet(Geometry *newgeo, VField *newvfield, RandomScalarBField *newbField,
 //         NField *newnField) {
 //    geometry_ = newgeo;
 //    vfield_ = newvfield;
@@ -10,15 +10,15 @@
 //    nfield_ = newnField;
 //}
 
-Jet::Jet(SimulationGeometry *newgeo, SimulationVField *newvfield, SimulationBField *newbField,
-         SimulationNField *newnField) {
+Jet::Jet(BaseGeometry *newgeo, VField *newvfield, VectorBField *newbField,
+         NField *newnField) {
     geometry_ = newgeo;
     vfield_ = newvfield;
     bfield_ = newbField;
     nfield_ = newnField;
 }
 
-//Jet::Jet(Geometry *newgeo, VField *newvfield, BField *newbField,
+//Jet::Jet(Geometry *newgeo, VField *newvfield, VectorBField *newbField,
 //         NField *newnField) {
 //    geometry_ = newgeo;
 //    vfield_ = newvfield;
@@ -67,6 +67,72 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     }
     return k_i_prime/D;
 }
+
+
+//// This is k_i in lab frame that could be integrated along LOS.
+//double AnalyticalScalarBFieldJet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
+//    // First, comoving frame ``k_i_prime`` (in the rest frame of the emission
+//    // element) is connected to this ``k_i`` as ``k_i = k_i_prime / D``.
+//    // Second, in ``k_i_prime`` we need all quantities in comoving frame
+//    // (primed) in terms of lab frame:
+//    // b_prime = f(b, v)
+//    // n_los_prime = f(n_los, v)
+//    // nu_prime = f(nu, n_los, v) = nu/getD
+//    // n_prime = f(n, v) = n/Gamma
+//
+//    Vector3d v = getV(point);
+//    auto D = getD(n_los, v);
+//    auto gamma = getG(v);
+//    double n = getN(point);
+//    // This means that we are using B-field specification in the plasma frame
+//    auto b_prime = bfield_->bf(point);
+//    auto n_los_prime = get_n_los_prime(n_los, v);
+//    auto nu_prime = nu/D;
+////  	auto n_prime = n/gamma;
+//    // This means that we are now using n specification in plasma frame
+//    auto n_prime = n;
+//    auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
+//
+//    if (std::isnan(k_i_prime)) {
+//        std::cout << "Nan k_i_prime!" << std::endl;
+//        std::cout << "b_prime = " << b_prime << std::endl;
+//        std::cout << "n_prime = " << n_prime << std::endl;
+//        std::cout << "nu_prime = " << nu_prime << std::endl;
+//        std::cout << "n_los_prime = " << n_los_prime << std::endl;
+//        std::cout << "D = " << D << std::endl;
+//        std::cout << "v = " << v << std::endl;
+//        std::cout << "gamma = " << gamma << std::endl;
+//    }
+//    return k_i_prime/D;
+//}
+//
+//
+//// This is eta_i in lab frame that could be integrated along LOS.
+//double AnalyticalScalarBFieldJet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
+//    // First, comoving frame ``eta_i_prime`` (in the rest frame of the emission
+//    // element) is connected to this ``eta_i`` as ``eta_i = D^2 * eta_i_prime``.
+//    // Second, in ``eta_i_prime`` we need all quantities in comoving frame
+//    // (primed) in terms of lab frame:
+//    // b_prime = f(b, v)
+//    // n_los_prime = f(n_los, v)
+//    // nu_prime = f(nu, n_los, v) = nu/getD
+//    // n_prime = f(n, v) = n/Gamma
+//
+//    Vector3d v = getV(point);
+//    auto D = getD(n_los, v);
+//    auto gamma = getG(v);
+//    double n = getN(point);
+//    // This means that we are using B-field specification in the plasma frame
+//    auto b_prime = bfield_->bf(point);
+//    auto n_los_prime = get_n_los_prime(n_los, v);
+//    auto nu_prime = nu/D;
+////    auto n_prime = n/gamma;
+//    // This means that we are now using n specification in plasma frame
+//    auto n_prime = n;
+//    auto eta_i_prime = eta_i(b_prime, n_los_prime, nu_prime, n_prime);
+//    return eta_i_prime*D*D;
+//}
+
 
 //double Jet::getKQ(Vector3d &point, Vector3d &n_los, double nu) {
 //	// This conflicts with scalar valued random B-field
@@ -186,7 +252,6 @@ double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
     Vector3d b = getB(point);
     Vector3d v = getV(point);
     auto D = getD(n_los, v);
-    auto gamma = getG(v);
     double n = getN(point);
     // This means that we are using B-field specification in lab frame
     auto b_prime = getBprime(b, v);

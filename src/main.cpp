@@ -66,7 +66,7 @@ namespace ph = std::placeholders;
 //	pt::ptree root;
 //
 //	Geometry* geometry;
-//	BField* bfield;
+//	VectorBField* bfield;
 //	VField* vfield;
 //	NField* nfield;
 //
@@ -111,12 +111,12 @@ namespace ph = std::placeholders;
 ////	double scale_pc = root.get<double>("jet.geometry.parameters.scale_pc");
 ////	cells.setGeometry(scale_pc*pc, cone_angle);
 ////	cells.create();
-//	// Create ``RandomBField`` instance
+//	// Create ``RandomVectorBField`` instance
 //	double rnd_fraction = root.get<double>("jet.bfield.parameters.random_fraction");
 ////	RandomCellsBField rnd_bfield(&cells, bfield, rnd_fraction);
 //	unsigned int seed = 123;
 //	if (rnd_fraction > 0) {
-//		bfield = new RandomPointBField(bfield, rnd_fraction, seed);
+//		bfield = new PointsRandomVectorBField(bfield, rnd_fraction, seed);
 //	}
 //
 //	std::string vtype = root.get<std::string>("jet.vfield.type");
@@ -215,7 +215,7 @@ namespace ph = std::placeholders;
 //	pt::ptree root;
 //
 //	Geometry* geometry;
-//	BField* bfield;
+//	VectorBField* bfield;
 //	VField* vfield;
 //	NField* nfield;
 //
@@ -264,12 +264,12 @@ namespace ph = std::placeholders;
 ////	double scale_pc = root.get<double>("jet.geometry.parameters.scale_pc");
 ////	cells.setGeometry(scale_pc*pc, cone_angle);
 ////	cells.create();
-//	// Create ``RandomBField`` instance
+//	// Create ``RandomVectorBField`` instance
 //	double rnd_fraction = root.get<double>("jet.bfield.parameters.random_fraction");
 ////	RandomCellsBField rnd_bfield(&cells, bfield, rnd_fraction);
 //	unsigned int seed = 123;
 //	if (rnd_fraction > 0) {
-//		bfield = new RandomPointBField(bfield, rnd_fraction, seed);
+//		bfield = new PointsRandomVectorBField(bfield, rnd_fraction, seed);
 //	}
 //
 //	std::string vtype = root.get<std::string>("jet.vfield.type");
@@ -427,7 +427,7 @@ namespace ph = std::placeholders;
 //
 //	Geometry* geometry;
 ////	RandomScalarBField* bfield;
-//	BField* bfield;
+//	VectorBField* bfield;
 //	VField* vfield;
 //	NField* nfield;
 //
@@ -1014,8 +1014,8 @@ void test_full_interpolation() {
     double redshift = 0.00436;
 //    unsigned long int number_of_pixels_along = 500;
 //    unsigned long int number_of_pixels_across = 150;
-    unsigned long int number_of_pixels_along = 1500;
-    unsigned long int number_of_pixels_across = 300;
+    unsigned long int number_of_pixels_along = 500;
+    unsigned long int number_of_pixels_across = 100;
     double pixel_size_mas = 0.1;
 
     // Setting geometry
@@ -1043,48 +1043,23 @@ void test_full_interpolation() {
     Tree tree(faces(P).first, faces(P).second, P);
     SimulationGeometry geometry(&tree);
 
-
-//    Vector3d origin = Vector3d(0, 0.1*pc, 20*pc);
-//    Vector3d direction = Vector3d(-1, 0, 0);
-//    Ray ray(origin, direction);
-//    std::list<Intersection> list_intersect = geometry.hit(ray);
-//    if (list_intersect.empty()) {
-//        std::cout << "No intersection" << std::endl;
-//    } else {
-//        std::cout << "There's intersection" << std::endl;
-//        auto borders = list_intersect.front().get_path();
-//
-//        Vector3d point_in = borders.first;
-//        Vector3d point_out = borders.second;
-//        std::cout << "Point in = " << point_in << std::endl;
-//        std::cout << "Point out = " << point_out << std::endl;
-//
-//    }
-
-
-    // Setting BField
-    Delaunay_triangulation tr_p;
-    Delaunay_triangulation tr_fi;
-    create_triangulation("bfield_p_10.txt", &tr_p);
-    create_triangulation("bfield_fi_10.txt", &tr_fi);
-//    create_triangulation("mock_b_p.npy", &tr_p);
-//    create_triangulation("mock_b_fi.npy", &tr_fi);
-    SimulationBField bfield(&tr_p, &tr_fi);
+    // Setting VectorBField
+//    Delaunay_triangulation tr_p;
+//    Delaunay_triangulation tr_fi;
+//    create_triangulation("bfield_p_10.txt", &tr_p);
+//    create_triangulation("bfield_fi_10.txt", &tr_fi);
+//    SimulationBField bfield(&tr_p, &tr_fi);
+    RadialConicalBField bfield(0.1, 1);
 
     // Setting N_field
     Delaunay_triangulation tr_n;
     create_triangulation("nfield_10.txt", &tr_n);
-//    create_triangulation("mock_n.npy", &tr_n);
     SimulationNField nfield(&tr_n);
 
     // Setting V-field
     Delaunay_triangulation tr_v;
     create_triangulation("vfield_10.txt", &tr_v);
-//    create_triangulation("mock_gamma.npy", &tr_v);
     SimulationVField vfield(&tr_v);
-//    Vector3d p(-3*pc, 3*pc, 1*pc);
-//    Vector3d v = vfield.v(p);
-//    std::cout << "V = " << v << std::endl;
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
 
