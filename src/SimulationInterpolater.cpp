@@ -12,7 +12,6 @@
 #include <CGAL/interpolation_functions.h>
 #include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
 #include <SimulationInterpolater.h>
-#include <cnpy.h>
 #include "utils.h"
 
 
