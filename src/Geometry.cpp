@@ -130,3 +130,4 @@ std::list<Intersection> SimulationGeometry::hit(Ray &ray) const {
         return std::list<Intersection>{};
 
 }
+

@@ -37,11 +37,16 @@ class Ray;
 class Intersection;
 
 
-class Geometry {
+class BaseGeometry {
+public:
+    virtual std::list<Intersection> hit(Ray &ray) const = 0;
+};
+
+
+class Geometry : public BaseGeometry {
     public:
-        virtual const Vector3d& origin() const = 0;
         virtual const double big_scale() const = 0;
-        virtual std::list<Intersection> hit(Ray &ray) const = 0;
+        virtual const Vector3d& origin() const = 0;
         virtual bool is_within(Vector3d& point) const = 0;
         std::pair<Vector3d, Vector3d> full_infinite_path(Ray &ray) const;
         std::pair<Vector3d, Vector3d> half_infinite_path(Ray &ray,
@@ -50,10 +55,10 @@ class Geometry {
 };
 
 
-class SimulationGeometry {
+class SimulationGeometry : public BaseGeometry {
 public:
-    SimulationGeometry(Tree *tree);
-    std::list<Intersection> hit(Ray &ray) const;
+    explicit SimulationGeometry(Tree *tree);
+    std::list<Intersection> hit(Ray &ray) const override;
 
 private:
     Tree* tree_;
