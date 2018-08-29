@@ -371,7 +371,7 @@ void Observation::observe_single_pixel(Ray &ray, Pixel &pxl,  double tau_min, do
         // Write values to pixel
         std::string value("tau");
         pxl.setValue(value, background_tau);
-        std::cout << "Finish on pixel " << std::endl;
+//        std::cout << "Finish on pixel " << std::endl;
 
         if (output_type == "I") {
             value = "I";
