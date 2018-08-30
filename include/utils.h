@@ -146,6 +146,11 @@ Vector3d get_n_los_prime(Vector3d &n_los, Vector3d &v);
 // magnetic field ``b`` and velocity ``v`` in the observer frame.
 Vector3d getBprime(Vector3d &b, Vector3d &v);
 
+// This dummy function is needed to keep code of transport coefficients the same
+// for both Vector and Scalar B-fields. It just returns ``b`` so it assumes that
+// B-field is specified in plasma frame
+double getBprime(double &b, Vector3d &v);
+
 
 class Ctd {
 public:

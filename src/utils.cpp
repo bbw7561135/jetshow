@@ -168,6 +168,11 @@ Vector3d getBprime(Vector3d &b, Vector3d &v) {
 }
 
 
+double getBprime(double &b, Vector3d &v) {
+    return b;
+}
+
+
 double comoving_transfer_distance(double z, double H0, double omega_M,
 																	double omega_V) {
 	Ctd ctd(z);

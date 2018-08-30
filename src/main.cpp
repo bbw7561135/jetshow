@@ -1041,7 +1041,10 @@ void test_full_interpolation() {
     Polyhedron P;
     CGAL::convex_hull_3(points.begin(), points.end(), P);
     Tree tree(faces(P).first, faces(P).second, P);
-    SimulationGeometry geometry(&tree);
+//    SimulationGeometry geometry(&tree);
+    Vector3d origin = {0., 0., 0.};
+	Vector3d direction = {0., 0., 1.};
+    Cone geometry(origin, direction, 0.01, 100);
 
     // Setting VectorBField
 //    Delaunay_triangulation tr_p;
@@ -1052,14 +1055,16 @@ void test_full_interpolation() {
     RadialConicalBField bfield(0.1, 1);
 
     // Setting N_field
-    Delaunay_triangulation tr_n;
-    create_triangulation("nfield_10.txt", &tr_n);
-    SimulationNField nfield(&tr_n);
+//    Delaunay_triangulation tr_n;
+//    create_triangulation("nfield_10.txt", &tr_n);
+//    SimulationNField nfield(&tr_n);
+    BKNField nfield(10, 2);
 
     // Setting V-field
-    Delaunay_triangulation tr_v;
-    create_triangulation("vfield_10.txt", &tr_v);
-    SimulationVField vfield(&tr_v);
+//    Delaunay_triangulation tr_v;
+//    create_triangulation("vfield_10.txt", &tr_v);
+//    SimulationVField vfield(&tr_v);
+    ConstCentralVField vfield(10);
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
 

@@ -44,7 +44,8 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     auto D = getD(n_los, v);
     auto gamma = getG(v);
     double n = getN(point);
-    // This means that we are using B-field specification in lab frame
+    // This means that we are using B-field specification in lab frame (for VectorBField),
+    // but in plasma frame for ScalarBField and RandomVectorBField.
     auto b_prime = getBprime(b, v);
     // This means that we are using B-field specification in the plasma frame
 //    auto b_prime = bfield_->bf(point);
@@ -321,6 +322,8 @@ double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
 const Vector3d Jet::getB(const Vector3d &point) {
     return bfield_->bf(point);
 }
+
+
 
 const Vector3d Jet::getV(const Vector3d &point) {
     return vfield_->v(point);

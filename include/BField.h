@@ -31,14 +31,16 @@ using Eigen::Vector3d;
 typedef boost::random::mt19937 gen_type;
 
 
-// B-field with vector values, e.g. ordered.
+// B-field with vector values, e.g. ordered. Can be specified in any frame (plasma
+// or lab).
 class VectorBField {
 public:
     virtual Vector3d bf(const Vector3d &point) const = 0 ;
 };
 
 
-// B-field that has no preferred direction, e.g. random.
+// B-field that has no preferred direction, e.g. random. Specified in plasma frame
+// as it can't be transferred to the plasma frame if specified in a lab frame.
 class ScalarBField {
 public:
     virtual double bf(const Vector3d &point) const = 0 ;
@@ -154,7 +156,8 @@ private:
 };
 
 
-// B-field not completely random, e.g. made of finite cells.
+// B-field not completely random, e.g. made of finite cells. Should be specified in
+// plasma frame (physically motivated?)
 class RandomVectorBField : public VectorBField {
 public:
 		RandomVectorBField(VectorBField* bfield, double rnd_fraction);

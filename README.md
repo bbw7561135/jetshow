@@ -131,4 +131,4 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
 
  
 * Using of ``adaptive`` integration type slows down the running time in case of
-``RandomPointBField``.
+``PointsRandomVectorBField``.
