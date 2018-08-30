@@ -36,6 +36,11 @@ typedef boost::random::mt19937 gen_type;
 class VectorBField {
 public:
     virtual Vector3d bf(const Vector3d &point) const = 0 ;
+    Vector3d bf_plasma_frame(const Vector3d &point, Vector3d &v) const;
+
+protected:
+    explicit VectorBField(bool in_plasma_frame);
+    bool in_plasma_frame_;
 };
 
 
@@ -44,6 +49,7 @@ public:
 class ScalarBField {
 public:
     virtual double bf(const Vector3d &point) const = 0 ;
+    double bf_plasma_frame(const Vector3d &point, Vector3d &v) const;
 };
 
 
@@ -85,7 +91,7 @@ private:
 
 class ConstCylinderBField : public VectorBField {
 public:
-    ConstCylinderBField(double b_0, double n_b) ;
+    ConstCylinderBField(double b_0, double n_b, bool in_plasma_frame) ;
     Vector3d bf(const Vector3d &point) const override ;
 private:
     double b_0_;
@@ -97,7 +103,7 @@ private:
 // B-Field like ``ConstCylinder`` that depends on z-coordinate only
 class ConstCylinderBFieldZ : public VectorBField {
 public:
-		ConstCylinderBFieldZ (double b_0, double n_b) ;
+		ConstCylinderBFieldZ (double b_0, double n_b, bool in_plasma_frame) ;
 		Vector3d bf(const Vector3d &point) const override ;
 private:
 		double b_0_;
@@ -108,7 +114,7 @@ private:
 
 class RadialConicalBField : public VectorBField {
 public:
-    RadialConicalBField(double b_0, double n_b) ;
+    RadialConicalBField(double b_0, double n_b, bool in_plasma_frame) ;
     Vector3d bf(const Vector3d &point) const override ;
 private:
     double b_0_;
@@ -118,7 +124,7 @@ private:
 
 class ToroidalBField : public VectorBField {
 public:
-		ToroidalBField(double b_0, double n_b) ;
+		ToroidalBField(double b_0, double n_b, bool in_plasma_frame) ;
 		Vector3d bf(const Vector3d &point) const override ;
 private:
 		double b_0_;
@@ -128,7 +134,7 @@ private:
 
 class HelicalCylinderBField : public VectorBField {
 public:
-    HelicalCylinderBField(double b_0, double pitch_angle) ;
+    HelicalCylinderBField(double b_0, double pitch_angle, bool in_plasma_frame) ;
     Vector3d bf(const Vector3d &point) const override ;
 private:
     double b_0_;
@@ -138,7 +144,7 @@ private:
 
 class SpiralConicalBField : public VectorBField {
 public:
-    SpiralConicalBField(double b_0, double pitch_angle) ;
+    SpiralConicalBField(double b_0, double pitch_angle, bool in_plasma_frame) ;
     Vector3d bf(const Vector3d &point) const override ;
 private:
     double b_0_;
@@ -148,7 +154,7 @@ private:
 
 class ForceFreeCylindricalBField : public VectorBField {
 public:
-    ForceFreeCylindricalBField(double b_0, double mu) ;
+    ForceFreeCylindricalBField(double b_0, double mu, bool in_plasma_frame) ;
     Vector3d bf(const Vector3d &point) const override ;
 private:
     double b_0_;
@@ -193,7 +199,7 @@ private:
 // Special class for Elena's calculations of axisymmetric flows.
 class SimulationBField : public VectorBField {
 public:
-    SimulationBField(Delaunay_triangulation *tr_p, Delaunay_triangulation *tr_fi);
+    SimulationBField(Delaunay_triangulation *tr_p, Delaunay_triangulation *tr_fi, bool in_plasma_frame);
     Vector3d bf(const Vector3d &point) const override ;
 
 private:

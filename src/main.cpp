@@ -1033,7 +1033,6 @@ void test_full_interpolation() {
             double x = r_p*sin(j*2*pi/n_circle);
             double y = r_p*cos(j*2*pi/n_circle);
             double length_ = sqrt(x*x + y*y + z*z);
-//            std::cout << "Inserting point " << Point_3(x, y, z) << " with norm = " << length_ << std::endl;
             points.emplace_back(Point_3(x, y, z));
         }
     }
@@ -1047,18 +1046,18 @@ void test_full_interpolation() {
     Cone geometry(origin, direction, 0.01, 100);
 
     // Setting VectorBField
-//    Delaunay_triangulation tr_p;
-//    Delaunay_triangulation tr_fi;
-//    create_triangulation("bfield_p_10.txt", &tr_p);
-//    create_triangulation("bfield_fi_10.txt", &tr_fi);
-//    SimulationBField bfield(&tr_p, &tr_fi);
-    RadialConicalBField bfield(0.1, 1);
+    Delaunay_triangulation tr_p;
+    Delaunay_triangulation tr_fi;
+    create_triangulation("bfield_p_10.txt", &tr_p);
+    create_triangulation("bfield_fi_10.txt", &tr_fi);
+    SimulationBField bfield(&tr_p, &tr_fi, false);
+//    RadialConicalBField bfield(0.1, 1, true);
 
     // Setting N_field
 //    Delaunay_triangulation tr_n;
 //    create_triangulation("nfield_10.txt", &tr_n);
-//    SimulationNField nfield(&tr_n);
-    BKNField nfield(10, 2);
+//    SimulationNField nfield(&tr_n, true);
+    BKNField nfield(10, 2, true);
 
     // Setting V-field
 //    Delaunay_triangulation tr_v;

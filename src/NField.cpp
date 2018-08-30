@@ -2,39 +2,50 @@
 #include "NField.h"
 
 
-BKNField::BKNField (double n_0, double n_n) : n_0_(n_0), n_n_(n_n) {};
+NField::NField (bool in_plasma_frame) : in_plasma_frame_(in_plasma_frame) {};
+
+double NField::nf_plasma_frame(const Vector3d &point, double &gamma) const {
+    double n = nf(point);
+    if (in_plasma_frame_) {
+        return n;
+    } else {
+        return n/gamma;
+    }
+}
 
 
-double BKNField::n(const Vector3d &point) const {
-		double r = point.norm();
+ConstNField::ConstNField(double n, bool in_plasma_frame) : NField(in_plasma_frame), n_(n) {};
+
+double ConstNField::nf(const Vector3d &point) const {
+    return n_;
+}
+
+
+BKNField::BKNField (double n_0, double n_n, bool in_plasma_frame) :
+    NField(in_plasma_frame), n_0_(n_0), n_n_(n_n) {};
+
+double BKNField::nf(const Vector3d &point) const {
+    double r = point.norm();
     return n_0_*pow(r/pc, -n_n_);
 }
 
 
-CompositeBKNField::CompositeBKNField(double n_0, double n_n_inner, double n_n_outer, double z0) :
-    inner_field_(n_0, n_n_inner), outer_field_(n_0, n_n_outer), z0_(z0) {};
+CompositeBKNField::CompositeBKNField(double n_0, double n_n_inner, double n_n_outer, double z0, bool in_plasma_frame) :
+    NField(in_plasma_frame), inner_field_(n_0, n_n_inner, in_plasma_frame), outer_field_(n_0, n_n_outer, in_plasma_frame), z0_(z0) {};
 
-
-double CompositeBKNField::n(const Vector3d &point) const {
+double CompositeBKNField::nf(const Vector3d &point) const {
     double z = abs(point[2]);
     if (z > z0_) {
-        return outer_field_.n(point);
+        return outer_field_.nf(point);
     }
     else {
-        return inner_field_.n(point);
+        return inner_field_.nf(point);
     }
 }
 
 
-ConstNField::ConstNField(double n) : n_(n) {};
+SimulationNField::SimulationNField(Delaunay_triangulation *tr, bool in_plasma_frame) : NField(in_plasma_frame), interp_(tr) {}
 
-double ConstNField::n(const Vector3d &point) const {
-	return n_;
-}
-
-
-SimulationNField::SimulationNField(Delaunay_triangulation *tr) : interp_(tr) {}
-
-double SimulationNField::n(const Vector3d &point) const {
+double SimulationNField::nf(const Vector3d &point) const {
     return interp_.interpolated_value(point);
 };

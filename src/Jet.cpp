@@ -38,22 +38,13 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     // nu_prime = f(nu, n_los, v) = nu/getD
     // n_prime = f(n, v) = n/Gamma
 
-    // This conflicts with scalar valued random B-field
-    Vector3d b = getB(point);
     Vector3d v = getV(point);
-    auto D = getD(n_los, v);
     auto gamma = getG(v);
-    double n = getN(point);
-    // This means that we are using B-field specification in lab frame (for VectorBField),
-    // but in plasma frame for ScalarBField and RandomVectorBField.
-    auto b_prime = getBprime(b, v);
-    // This means that we are using B-field specification in the plasma frame
-//    auto b_prime = bfield_->bf(point);
+    auto b_prime = bfield_->bf_plasma_frame(point, v);
+    auto D = getD(n_los, v);
+    double n_prime = nfield_->nf_plasma_frame(point, gamma);
     auto n_los_prime = get_n_los_prime(n_los, v);
     auto nu_prime = nu/D;
-//  	auto n_prime = n/gamma;
-      // This means that we are now using n specification in plasma frame
-    auto n_prime = n;
     auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
 
     if (std::isnan(k_i_prime)) {
@@ -248,21 +239,14 @@ double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
     // n_los_prime = f(n_los, v)
     // nu_prime = f(nu, n_los, v) = nu/getD
     // n_prime = f(n, v) = n/Gamma
-
-    // This conflicts with scalar valued random B-field
-    Vector3d b = getB(point);
     Vector3d v = getV(point);
+    auto gamma = getG(v);
+    auto b_prime = bfield_->bf_plasma_frame(point, v);
     auto D = getD(n_los, v);
-    double n = getN(point);
-    // This means that we are using B-field specification in lab frame
-    auto b_prime = getBprime(b, v);
-    // This means that we are using B-field specification in the plasma frame
-//    auto b_prime = bfield_->bf(point);
+    double n_prime = nfield_->nf_plasma_frame(point, gamma);
     auto n_los_prime = get_n_los_prime(n_los, v);
     auto nu_prime = nu/D;
-//    auto n_prime = n/gamma;
-    // This means that we are now using n specification in plasma frame
-    auto n_prime = n;
+
     auto eta_i_prime = eta_i(b_prime, n_los_prime, nu_prime, n_prime);
     return eta_i_prime*D*D;
 }
@@ -330,7 +314,7 @@ const Vector3d Jet::getV(const Vector3d &point) {
 }
 
 const double Jet::getN(const Vector3d &point) {
-    return nfield_->n(point);
+    return nfield_->nf(point);
 }
 
 

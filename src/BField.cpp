@@ -64,8 +64,8 @@ double CompositeRandomScalarBFieldZ::bf(const Vector3d &point) const {
 };
 
 
-ConstCylinderBField::ConstCylinderBField(double b_0, double n_b) : b_0_(b_0),
-                                                                   n_b_(n_b) {};
+ConstCylinderBField::ConstCylinderBField(double b_0, double n_b, bool in_plasma_frame) :
+    VectorBField(in_plasma_frame), b_0_(b_0), n_b_(n_b) {};
 
 Vector3d ConstCylinderBField::bf(const Vector3d &point) const {
 	double r = point.norm();
@@ -73,8 +73,8 @@ Vector3d ConstCylinderBField::bf(const Vector3d &point) const {
 }
 
 
-ConstCylinderBFieldZ::ConstCylinderBFieldZ(double b_0, double n_b) : b_0_(b_0),
-                                                                   n_b_(n_b) {};
+ConstCylinderBFieldZ::ConstCylinderBFieldZ(double b_0, double n_b, bool in_plasma_frame) :
+    VectorBField(in_plasma_frame), b_0_(b_0), n_b_(n_b) {};
 
 Vector3d ConstCylinderBFieldZ::bf(const Vector3d &point) const {
 	double r = abs(point[2]);
@@ -82,8 +82,8 @@ Vector3d ConstCylinderBFieldZ::bf(const Vector3d &point) const {
 }
 
 
-RadialConicalBField::RadialConicalBField(double b_0, double n_b) : b_0_(b_0),
-                                                                   n_b_(n_b) {};
+RadialConicalBField::RadialConicalBField(double b_0, double n_b, bool in_plasma_frame) :
+    VectorBField(in_plasma_frame), b_0_(b_0), n_b_(n_b) {};
 
 Vector3d RadialConicalBField::bf(const Vector3d &point) const {
     double r = point.norm();
@@ -93,9 +93,8 @@ Vector3d RadialConicalBField::bf(const Vector3d &point) const {
 }
 
 
-
-ToroidalBField::ToroidalBField(double b_0, double n_b) : b_0_(b_0),
-                                                         n_b_(n_b){};
+ToroidalBField::ToroidalBField(double b_0, double n_b, bool in_plasma_frame) :
+    VectorBField(in_plasma_frame), b_0_(b_0), n_b_(n_b){};
 
 Vector3d ToroidalBField::bf(const Vector3d &point) const {
 	double x = point[0];
@@ -107,8 +106,8 @@ Vector3d ToroidalBField::bf(const Vector3d &point) const {
 }
 
 
-HelicalCylinderBField::HelicalCylinderBField(double b_0, double pitch_angle) :
-        b_0_(b_0), pitch_angle_(pitch_angle) {};
+HelicalCylinderBField::HelicalCylinderBField(double b_0, double pitch_angle, bool in_plasma_frame) :
+    VectorBField(in_plasma_frame), b_0_(b_0), pitch_angle_(pitch_angle) {};
 
 Vector3d HelicalCylinderBField::bf(const Vector3d &point) const {
     double r = sqrt(point[0]*point[0]+ point[1]*point[1]);
@@ -118,8 +117,8 @@ Vector3d HelicalCylinderBField::bf(const Vector3d &point) const {
 }
 
 
-SpiralConicalBField::SpiralConicalBField(double b_0, double pitch_angle) :
-        b_0_(b_0), pitch_angle_(pitch_angle) {};
+SpiralConicalBField::SpiralConicalBField(double b_0, double pitch_angle, bool in_plasma_frame) :
+    VectorBField(in_plasma_frame), b_0_(b_0), pitch_angle_(pitch_angle) {};
 
 Vector3d SpiralConicalBField::bf(const Vector3d &point) const {
     double z = point[2];
@@ -132,8 +131,8 @@ Vector3d SpiralConicalBField::bf(const Vector3d &point) const {
 }
 
 
-ForceFreeCylindricalBField::ForceFreeCylindricalBField(double b_0, double mu) :
-        b_0_(b_0), mu_(mu) {};
+ForceFreeCylindricalBField::ForceFreeCylindricalBField(double b_0, double mu, bool in_plasma_frame) :
+    VectorBField(in_plasma_frame), b_0_(b_0), mu_(mu) {};
 
 Vector3d ForceFreeCylindricalBField::bf(const Vector3d &point) const {
     double x = point[0];
@@ -148,7 +147,7 @@ Vector3d ForceFreeCylindricalBField::bf(const Vector3d &point) const {
 
 
 RandomVectorBField::RandomVectorBField(VectorBField *bfield, double rnd_fraction) :
-		rnd_fraction_(rnd_fraction)
+    VectorBField(true), rnd_fraction_(rnd_fraction)
 {
 	bfield_ = bfield;
 };
@@ -174,8 +173,7 @@ Vector3d CellsRandomVectorBField::direction(const Vector3d &point) const {
 }
 
 
-PointsRandomVectorBField::PointsRandomVectorBField(VectorBField* bfield, double rnd_fraction,
-                                     unsigned int seed) :
+PointsRandomVectorBField::PointsRandomVectorBField(VectorBField* bfield, double rnd_fraction, unsigned int seed) :
 		RandomVectorBField(bfield, rnd_fraction),
 		randoms_on_sphere() {
 	for (int j = 0; j < omp_get_max_threads(); ++j) {
@@ -195,8 +193,8 @@ Vector3d PointsRandomVectorBField::direction(const Vector3d &point) const {
 }
 
 
-SimulationBField::SimulationBField(Delaunay_triangulation *tr_p,
-        Delaunay_triangulation *tr_fi) : interp_p_(tr_p), interp_fi_(tr_fi) {}
+SimulationBField::SimulationBField(Delaunay_triangulation *tr_p, Delaunay_triangulation *tr_fi, bool in_plasma_frame) :
+    VectorBField(in_plasma_frame), interp_p_(tr_p), interp_fi_(tr_fi) {}
 
 Vector3d SimulationBField::bf(const Vector3d &point) const {
     double x = point[0];
@@ -206,4 +204,21 @@ Vector3d SimulationBField::bf(const Vector3d &point) const {
     double interpolated_value_p = interp_p_.interpolated_value(point);
     double interpolated_value_fi = interp_fi_.interpolated_value(point);
     return Vector3d{-sin(fi)*interpolated_value_fi, cos(fi)*interpolated_value_fi, interpolated_value_p};
+}
+
+
+Vector3d VectorBField::bf_plasma_frame(const Vector3d &point, Vector3d &v) const {
+	Vector3d b = bf(point);
+	if (in_plasma_frame_) {
+	    return b;
+	} else {
+	    return getBprime(b, v);
+	}
+}
+
+VectorBField::VectorBField(bool in_plasma_frame) : in_plasma_frame_(in_plasma_frame) {}
+
+
+double ScalarBField::bf_plasma_frame(const Vector3d &point, Vector3d &v) const {
+    return bf(point);
 }
