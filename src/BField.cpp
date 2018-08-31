@@ -207,16 +207,16 @@ Vector3d SimulationBField::bf(const Vector3d &point) const {
 }
 
 
-Vector3d VectorBField::bf_plasma_frame(const Vector3d &point, Vector3d &v) const {
-	Vector3d b = bf(point);
-	if (in_plasma_frame_) {
-	    return b;
-	} else {
-	    return getBprime(b, v);
-	}
-}
-
 VectorBField::VectorBField(bool in_plasma_frame) : in_plasma_frame_(in_plasma_frame) {}
+
+Vector3d VectorBField::bf_plasma_frame(const Vector3d &point, Vector3d &v) const {
+    Vector3d b = bf(point);
+    if (in_plasma_frame_) {
+        return b;
+    } else {
+        return getBprime(b, v);
+    }
+}
 
 
 double ScalarBField::bf_plasma_frame(const Vector3d &point, Vector3d &v) const {

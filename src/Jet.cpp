@@ -2,29 +2,13 @@
 #include <math.h>
 
 
-//AnalyticalScalarBFieldJet::AnalyticalScalarBFieldJet(Geometry *newgeo, VField *newvfield, RandomScalarBField *newbField,
-//         NField *newnField) {
-//    geometry_ = newgeo;
-//    vfield_ = newvfield;
-//    bfield_ = newbField;
-//    nfield_ = newnField;
-//}
-
-Jet::Jet(BaseGeometry *newgeo, VField *newvfield, VectorBField *newbField,
+Jet::Jet(BaseGeometry *newgeo, VField *newvfield, ScalarBField *newbField,
          NField *newnField) {
     geometry_ = newgeo;
     vfield_ = newvfield;
     bfield_ = newbField;
     nfield_ = newnField;
 }
-
-//Jet::Jet(Geometry *newgeo, VField *newvfield, VectorBField *newbField,
-//         NField *newnField) {
-//    geometry_ = newgeo;
-//    vfield_ = newvfield;
-//    bfield_ = newbField;
-//    nfield_ = newnField;
-//}
 
 
 // This is k_i in lab frame that could be integrated along LOS.
@@ -302,25 +286,10 @@ double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
 //	return eta_v_prime*D*D;
 //}
 
-
-const Vector3d Jet::getB(const Vector3d &point) {
-    return bfield_->bf(point);
-}
-
-
-
-const Vector3d Jet::getV(const Vector3d &point) {
-    return vfield_->v(point);
-}
-
-const double Jet::getN(const Vector3d &point) {
-    return nfield_->nf(point);
-}
-
-
 std::list<Intersection> Jet::hit(Ray &ray) {
   return geometry_->hit(ray);
 }
 
-
-
+const Vector3d Jet::getV(const Vector3d &point) {
+    return vfield_->vf(point);
+}

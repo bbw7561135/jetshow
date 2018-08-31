@@ -10,14 +10,14 @@ using Eigen::Vector3d;
 
 class VField {
 public:
-    virtual Vector3d v(const Vector3d& point) const = 0;
+    virtual Vector3d vf(const Vector3d &point) const = 0;
 };
 
 
 class ConstFlatVField: public VField {
 public:
-		explicit ConstFlatVField(double gamma);
-    Vector3d v(const Vector3d& point) const override;
+	explicit ConstFlatVField(double gamma);
+    Vector3d vf(const Vector3d& point) const override;
 
 private:
     double gamma_;
@@ -26,32 +26,32 @@ private:
 
 class ShearedFlatVField: public VField {
 public:
-		ShearedFlatVField(double gamma_axis, double gamma_border, double r);
-		Vector3d v(const Vector3d& point) const override ;
+	ShearedFlatVField(double gamma_axis, double gamma_border, double r);
+	Vector3d vf(const Vector3d& point) const override ;
 
 private:
-		double gamma_axis_;
-		double gamma_border_;
-		double r_;
+	double gamma_axis_;
+	double gamma_border_;
+	double r_;
 };
 
 
 class SheathFlatVField: public VField {
 public:
-		SheathFlatVField(double gamma_spine, double gamma_sheath, double r_sheath);
-		Vector3d v(const Vector3d& point) const override ;
+	SheathFlatVField(double gamma_spine, double gamma_sheath, double r_sheath);
+	Vector3d vf(const Vector3d& point) const override ;
 
 private:
-		double gamma_spine_;
-		double gamma_sheath_;
-		double r_sheath_;
+	double gamma_spine_;
+	double gamma_sheath_;
+	double r_sheath_;
 };
 
 
 class ConstCentralVField: public VField {
 public:
-		explicit ConstCentralVField(double gamma, Vector3d origin={0, 0, 0});
-    Vector3d v(const Vector3d& point) const override;
+	explicit ConstCentralVField(double gamma, Vector3d origin={0, 0, 0});
+    Vector3d vf(const Vector3d& point) const override;
 
 private:
     double gamma_;
@@ -61,37 +61,36 @@ private:
 
 class ShearedCentralVField: public VField {
 public:
-		ShearedCentralVField(double gamma_axis, double gamma_border, double theta,
-                             Vector3d origin={0, 0, 0});
-		Vector3d v(const Vector3d& point) const override ;
+	ShearedCentralVField(double gamma_axis, double gamma_border, double theta, Vector3d origin={0, 0, 0});
+	Vector3d vf(const Vector3d& point) const override ;
 
 private:
-		double gamma_axis_;
-		double gamma_border_;
-		double theta_;
-        Vector3d origin_;
+	double gamma_axis_;
+	double gamma_border_;
+	double theta_;
+	Vector3d origin_;
 
 };
 
 
 class SheathCentralVField: public VField {
 public:
-		SheathCentralVField(double gamma_spine, double gamma_sheath,
-		                    double theta_sheath, Vector3d origin={0, 0, 0});
-		Vector3d v(const Vector3d& point) const override ;
+	SheathCentralVField(double gamma_spine, double gamma_sheath, double theta_sheath, Vector3d origin={0, 0, 0});
+	Vector3d vf(const Vector3d& point) const override ;
 
 private:
-		double gamma_spine_;
-		double gamma_sheath_;
-		double theta_sheath_;
-		Vector3d origin_;
+	double gamma_spine_;
+	double gamma_sheath_;
+	double theta_sheath_;
+	Vector3d origin_;
 };
+
 
 // Rz0 - radius of parabaloid at z=1pc
 class ConstParabolicVField: public VField {
 public:
     ConstParabolicVField(double gamma, double Rz0);
-    Vector3d v(const Vector3d& point) const override;
+    Vector3d vf(const Vector3d& point) const override;
 
 private:
     double gamma_;
@@ -105,13 +104,14 @@ private:
 class AccParabolicVField: public VField {
 public:
     AccParabolicVField(double gamma0, double R0, double Rz0);
-    Vector3d v(const Vector3d& point) const override;
+    Vector3d vf(const Vector3d& point) const override;
 
 private:
     double gamma0_;
     double R0_;
     double Rz0_;
 };
+
 
 // gamma(z) = 1+a*sqrt(z)
 // gamma_axis0 - speed at z=R0 at radius=0
@@ -120,7 +120,7 @@ private:
 class ShearedAccParabolicVField: public VField {
 public:
     ShearedAccParabolicVField(double gamma_axis0, double gamma_border0, double R0, double Rz0);
-    Vector3d v(const Vector3d& point) const override ;
+    Vector3d vf(const Vector3d& point) const override ;
 
 private:
     double gamma_axis0_;
@@ -149,7 +149,7 @@ private:
 class AccParabolicConstConeVField: public VField {
 public:
     AccParabolicConstConeVField(double gamma0, double Rz0, double z0);
-    Vector3d v(const Vector3d& point) const override;
+    Vector3d vf(const Vector3d& point) const override;
 
 private:
     double z0_;
@@ -166,7 +166,7 @@ private:
 class ShearedAccParabolicConstConeVField: public VField {
 public:
     ShearedAccParabolicConstConeVField(double gamma_axis0, double gamma_border0, double Rz0, double z0);
-    Vector3d v(const Vector3d& point) const override;
+    Vector3d vf(const Vector3d& point) const override;
 
 private:
     double z0_;
@@ -178,7 +178,7 @@ private:
 class SimulationVField: public VField {
 public:
     explicit SimulationVField(Delaunay_triangulation *tr);
-    Vector3d v(const Vector3d& point) const override;
+    Vector3d vf(const Vector3d& point) const override;
 
 private:
     SimulationInterpolater interp_;

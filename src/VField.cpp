@@ -24,17 +24,15 @@ using Eigen::Vector3d;
 
 ConstFlatVField::ConstFlatVField(double gamma) : gamma_(gamma) {};
 
-Vector3d ConstFlatVField::v(const Vector3d &point) const {
+Vector3d ConstFlatVField::vf(const Vector3d &point) const {
     return Vector3d(0, 0, c*sqrt(1. - 1./(gamma_*gamma_)));
 }
 
 
-ShearedFlatVField::ShearedFlatVField(double gamma_axis, double gamma_border,
-                                     double r) : gamma_axis_(gamma_axis),
-                                                 gamma_border_(gamma_border),
-                                                 r_(r) {}
+ShearedFlatVField::ShearedFlatVField(double gamma_axis, double gamma_border, double r) :
+    gamma_axis_(gamma_axis), gamma_border_(gamma_border), r_(r) {}
 
-Vector3d ShearedFlatVField::v(const Vector3d &point) const {
+Vector3d ShearedFlatVField::vf(const Vector3d &point) const {
 	double x = point[0];
 	double y = point[1];
 	double r = sqrt(x*x + y*y);
@@ -43,12 +41,10 @@ Vector3d ShearedFlatVField::v(const Vector3d &point) const {
 }
 
 
-SheathFlatVField::SheathFlatVField(double gamma_spine, double gamma_sheath,
-                                   double r_sheath) :
-		gamma_spine_(gamma_spine), gamma_sheath_(gamma_sheath),
-		r_sheath_(r_sheath) {}
+SheathFlatVField::SheathFlatVField(double gamma_spine, double gamma_sheath, double r_sheath) :
+    gamma_spine_(gamma_spine), gamma_sheath_(gamma_sheath), r_sheath_(r_sheath) {}
 
-Vector3d SheathFlatVField::v(const Vector3d &point) const {
+Vector3d SheathFlatVField::vf(const Vector3d &point) const {
 	double x = point[0];
 	double y = point[1];
 	double r = sqrt(x*x + y*y);
@@ -63,9 +59,9 @@ Vector3d SheathFlatVField::v(const Vector3d &point) const {
 
 
 ConstCentralVField::ConstCentralVField(double gamma, Vector3d origin) :
-gamma_(gamma), origin_(origin) {}
+    gamma_(gamma), origin_(origin) {}
 
-Vector3d ConstCentralVField::v(const Vector3d &point) const {
+Vector3d ConstCentralVField::vf(const Vector3d &point) const {
     double x = point[0];
     double y = point[1];
     double z = point[2];
@@ -76,13 +72,10 @@ Vector3d ConstCentralVField::v(const Vector3d &point) const {
 };
 
 
-ShearedCentralVField::ShearedCentralVField(double gamma_axis,
-                                           double gamma_border, double theta,
-                                           Vector3d origin) :
-		gamma_axis_(gamma_axis), gamma_border_(gamma_border), theta_(theta),
-		origin_(origin) {}
+ShearedCentralVField::ShearedCentralVField(double gamma_axis, double gamma_border, double theta, Vector3d origin) :
+    gamma_axis_(gamma_axis), gamma_border_(gamma_border), theta_(theta), origin_(origin) {}
 
-Vector3d ShearedCentralVField::v(const Vector3d &point) const {
+Vector3d ShearedCentralVField::vf(const Vector3d &point) const {
     double x = point[0];
     double y = point[1];
     double z = point[2];
@@ -94,14 +87,10 @@ Vector3d ShearedCentralVField::v(const Vector3d &point) const {
 }
 
 
-SheathCentralVField::SheathCentralVField(double gamma_spine,
-                                         double gamma_sheath,
-                                         double theta_sheath,
-                                         Vector3d origin) :
-		gamma_spine_(gamma_spine), gamma_sheath_(gamma_sheath),
-		theta_sheath_(theta_sheath), origin_(origin) {}
+SheathCentralVField::SheathCentralVField(double gamma_spine, double gamma_sheath, double theta_sheath, Vector3d origin) :
+    gamma_spine_(gamma_spine), gamma_sheath_(gamma_sheath), theta_sheath_(theta_sheath), origin_(origin) {}
 
-Vector3d SheathCentralVField::v(const Vector3d &point) const {
+Vector3d SheathCentralVField::vf(const Vector3d &point) const {
     double x = point[0];
     double y = point[1];
     double z = point[2];
@@ -118,10 +107,11 @@ Vector3d SheathCentralVField::v(const Vector3d &point) const {
 
 }
 
+
 // R0 - radius at z=1pc
 ConstParabolicVField::ConstParabolicVField(double gamma, double Rz0) : gamma_(gamma), Rz0_(Rz0) {}
 
-Vector3d ConstParabolicVField::v(const Vector3d &point) const {
+Vector3d ConstParabolicVField::vf(const Vector3d &point) const {
     double x = point[0];
     double y = point[1];
     double z = point[2];
@@ -145,7 +135,7 @@ Vector3d ConstParabolicVField::v(const Vector3d &point) const {
 
 AccParabolicVField::AccParabolicVField(double gamma0, double R0, double Rz0) : gamma0_(gamma0), R0_(R0), Rz0_(Rz0) {}
 
-Vector3d AccParabolicVField::v(const Vector3d &point) const {
+Vector3d AccParabolicVField::vf(const Vector3d &point) const {
     double x = point[0];
     double y = point[1];
     double z = point[2];
@@ -176,9 +166,9 @@ Vector3d AccParabolicVField::v(const Vector3d &point) const {
 // gamma_border0 - speed at z=R0 at radius=R0_border
 // Rz0 - radius of parabaloid at z=1pc
 ShearedAccParabolicVField::ShearedAccParabolicVField(double gamma_axis0, double gamma_border0, double R0, double Rz0) :
-        gamma_axis0_(gamma_axis0), gamma_border0_(gamma_border0), R0_(R0), Rz0_(Rz0) {}
+    gamma_axis0_(gamma_axis0), gamma_border0_(gamma_border0), R0_(R0), Rz0_(Rz0) {}
 
-Vector3d ShearedAccParabolicVField::v(const Vector3d &point) const {
+Vector3d ShearedAccParabolicVField::vf(const Vector3d &point) const {
     double x = point[0];
     double y = point[1];
     double z = point[2];
@@ -214,10 +204,12 @@ Vector3d ShearedAccParabolicVField::v(const Vector3d &point) const {
     }
     return result;
 }
+
+
 //ConstParabolicConstConeVField::ConstParabolicConstConeVField(double gamma, double R0, double z0) :
 //z0_(z0), conev(gamma), parav(gamma, R0) {}
 //
-//Vector3d ConstParabolicConstConeVField::v(const Vector3d &point) const {
+//Vector3d ConstParabolicConstConeVField::vf(const Vector3d &point) const {
 //    if (point[2] > z0_) {
 //        return conev.v(point);
 //    }
@@ -236,12 +228,12 @@ AccParabolicConstConeVField::AccParabolicConstConeVField(double gamma0, double R
 
 }
 
-Vector3d AccParabolicConstConeVField::v(const Vector3d &point) const {
+Vector3d AccParabolicConstConeVField::vf(const Vector3d &point) const {
     if (point[2] > z0_) {
-        return conev.v(point);
+        return conev.vf(point);
     }
     else {
-        return parav.v(point);
+        return parav.vf(point);
     }
 };
 
@@ -264,19 +256,19 @@ ShearedAccParabolicConstConeVField::ShearedAccParabolicConstConeVField(double ga
     std::cout << "Cone theta = " << atan(sqrt(Rz0*Rz0*z0/pc)/z0) << std::endl;
 }
 
-Vector3d ShearedAccParabolicConstConeVField::v(const Vector3d &point) const {
+Vector3d ShearedAccParabolicConstConeVField::vf(const Vector3d &point) const {
     if (point[2] > z0_) {
-        return conev.v(point);
+        return conev.vf(point);
     }
     else {
-        return parav.v(point);
+        return parav.vf(point);
     }
 };
 
 
 SimulationVField::SimulationVField(Delaunay_triangulation *tr) : interp_(tr, 1.0) {}
 
-Vector3d SimulationVField::v(const Vector3d &point) const {
+Vector3d SimulationVField::vf(const Vector3d &point) const {
     double gamma = interp_.interpolated_value(point);
     return Vector3d{0, 0, c * sqrt(1. - 1. / (gamma * gamma))};
 };
