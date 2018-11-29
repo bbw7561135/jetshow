@@ -670,21 +670,22 @@ namespace ph = std::placeholders;
 //
 
 
-void test_velocity() {
-    VField* vfield;
-    // Radius of parabaloid at z0=1pc
-    double r0 = 0.1*pc;
-    double gamma_axis0 = 30;
-    double gamma_border0 = 1;
-    // Z at which the speed on the axis is gamma0_axis
-    double z_at_gamma0 = 1*pc;
-    // Radius of parabaloid at z = 1pc
-    double Rz0 = r0;
-    vfield = new ShearedAccParabolicVField(gamma_axis0, gamma_border0, z_at_gamma0, Rz0);
-    Vector3d point = {0, 0.025*pc, 1*pc};
-    std::cout << vfield->vf(point) << std::endl;
+//void test_velocity() {
+//    VField* vfield;
+//    // Radius of parabaloid at z0=1pc
+//    double r0 = 0.1*pc;
+//    double gamma_axis0 = 30;
+//    double gamma_border0 = 1;
+//    // Z at which the speed on the axis is gamma0_axis
+//    double z_at_gamma0 = 1*pc;
+//    // Radius of parabaloid at z = 1pc
+//    double Rz0 = r0;
+//    vfield = new ShearedAccParabolicVField(gamma_axis0, gamma_border0, z_at_gamma0, Rz0);
+//    Vector3d point = {0, 0.025*pc, 1*pc};
+//    std::cout << vfield->vf(point) << std::endl;
+//
+//}
 
-}
 
 // Testing geometries, composite fields
 //void test_collimations() {
@@ -829,118 +830,129 @@ void test_velocity() {
 //}
 
 
-void test_interpolation() {
-    Delaunay_triangulation tr_v;
-    create_triangulation("vfield_10.txt", &tr_v);
-    SimulationVField vfield(&tr_v);
-
-    size_t n_points = 100;
-    // Grid of r and r_p where to interpolate
-    std::vector<double> r_grid = MyLinearSpacedArray(0., 4*pow(10, 21), 10*n_points);
-    std::vector<double> r_p_grid = MyLinearSpacedArray(0., pow(10, 19), n_points);
-    std::vector<vector<double >> result;
-    for (auto & r: r_grid) {
-        for (auto & r_p : r_p_grid) {
-            Vector3d point1(0, r_p, r);
-            Vector3d point2(0, -r_p, r);
-            Vector3d v1 = vfield.vf(point1);
-            Vector3d v2 = vfield.vf(point2);
-            double gamma1 = sqrt(1./(1.- (v1/c).squaredNorm()));
-            double gamma2 = sqrt(1./(1.- (v2/c).squaredNorm()));
-            result.emplace_back(std::vector<double>{r, r_p, gamma1});
-            result.emplace_back(std::vector<double>{r, -r_p, gamma2});
-        }
-    }
-
-    std::fstream fs;
-    std::string file_length = "interpolated.txt";
-    fs.open(file_length, std::ios::out | std::ios::app);
-
-    if (fs.is_open()) {
-        write_2dvector(fs, result);
-        fs.close();
-    }
-}
+//void test_interpolation() {
+//    Delaunay_triangulation tr_v;
+//    create_triangulation("vfield_10.txt", &tr_v);
+//    SimulationVField vfield(&tr_v);
+//
+//    size_t n_points = 100;
+//    // Grid of r and r_p where to interpolate
+//    std::vector<double> r_grid = MyLinearSpacedArray(0., 4*pow(10, 21), 10*n_points);
+//    std::vector<double> r_p_grid = MyLinearSpacedArray(0., pow(10, 19), n_points);
+//    std::vector<vector<double >> result;
+//    for (auto & r: r_grid) {
+//        for (auto & r_p : r_p_grid) {
+//            Vector3d point1(0, r_p, r);
+//            Vector3d point2(0, -r_p, r);
+//            Vector3d v1 = vfield.vf(point1);
+//            Vector3d v2 = vfield.vf(point2);
+//            double gamma1 = sqrt(1./(1.- (v1/c).squaredNorm()));
+//            double gamma2 = sqrt(1./(1.- (v2/c).squaredNorm()));
+//            result.emplace_back(std::vector<double>{r, r_p, gamma1});
+//            result.emplace_back(std::vector<double>{r, -r_p, gamma2});
+//        }
+//    }
+//
+//    std::fstream fs;
+//    std::string file_length = "interpolated.txt";
+//    fs.open(file_length, std::ios::out | std::ios::app);
+//
+//    if (fs.is_open()) {
+//        write_2dvector(fs, result);
+//        fs.close();
+//    }
+//}
 
 
 void test_full_interpolation() {
     // M87
 //    double los_angle = 0.314;
-    double los_angle = pi/2;
+    // Some blazar -- 2.5 deg
+    double los_angle = 0.0436;
+    // Some blazar -- 5 deg
+//    double los_angle = 0.0872;
     double redshift = 0.00436;
 //    unsigned long int number_of_pixels_along = 500;
-//    unsigned long int number_of_pixels_across = 150;
-    unsigned long int number_of_pixels_along = 1000;
+//    unsigned long int number_of_pixels_across = 100;
+    unsigned long int number_of_pixels_along = 200;
     unsigned long int number_of_pixels_across = 200;
-    double pixel_size_mas = 0.1;
+    double pixel_size_mas = 0.5;
 
 
     // Setting geometry
     // Using simulations
-//    vector< vector<double> > all_points;
+    vector< vector<double> > all_points;
 //    read_from_txt("vfield_10.txt", all_points);
-//    size_t nrows = all_points.size();
-//
-//    std::vector<Point_3> points;
-//    int n_circle = 36;
-//    std::cout << "Reading geometry file with #rows = " << nrows << std::endl;
-//    for (size_t i=0; i<nrows; i++) {
-//        double z = all_points[i][0]/pc;
-//        double r_p = all_points[i][1]/pc;
-//        for (int j=0; j<n_circle; j++) {
-//            double x = r_p*sin(j*2*pi/n_circle);
-//            double y = r_p*cos(j*2*pi/n_circle);
-//            double length_ = sqrt(x*x + y*y + z*z);
-//            points.emplace_back(Point_3(x, y, z));
-//        }
-//    }
-//
-//    Polyhedron P;
-//    CGAL::convex_hull_3(points.begin(), points.end(), P);
-//    Tree tree(faces(P).first, faces(P).second, P);
-//    SimulationGeometry geometry(&tree);
+    read_from_txt("vfield_10_v2.txt", all_points);
+    size_t nrows = all_points.size();
 
-    // Using analytical shapes
-    Vector3d origin = {0., 0., 0.};
-	Vector3d direction = {0., 0., 1.};
-    double cone_half_angle = 0.01;
-    double big_scale = 100*pc;
-    // Radius of parabaloid at z0=1pc
-    double r0 = 0.5*pc;
-    // Distance where collimation stops
-    double z0 = 1.0*pc;
-//    Cone geometry(origin, direction, cone_half_angle, 100);
-    ParabaloidCone geometry(origin, direction, r0, z0, big_scale);
+    std::vector<Point_3> points;
+    int n_circle = 36;
+    std::cout << "Reading geometry file with #rows = " << nrows << std::endl;
+    for (size_t i=0; i<nrows; i++) {
+        double z = all_points[i][0]/pc;
+        double r_p = all_points[i][1]/pc;
+        for (int j=0; j<n_circle; j++) {
+            double x = r_p*sin(j*2*pi/n_circle);
+            double y = r_p*cos(j*2*pi/n_circle);
+            double length_ = sqrt(x*x + y*y + z*z);
+            points.emplace_back(Point_3(x, y, z));
+        }
+    }
+
+    Polyhedron P;
+    CGAL::convex_hull_3(points.begin(), points.end(), P);
+    Tree tree(faces(P).first, faces(P).second, P);
+    SimulationGeometry geometry(&tree);
+
+//    // Using analytical shapes
+//    Vector3d origin = {0., 0., 0.};
+//	Vector3d direction = {0., 0., 1.};
+//    double cone_half_angle = 0.01;
+//    double big_scale = 100*pc;
+//    // Radius of parabaloid at z0=1pc
+//    double r0 = 0.1*pc;
+//    // Distance where collimation stops
+//    double z0 = 3.0*pc;
+////    Cone geometry(origin, direction, cone_half_angle, 100);
+//    ParabaloidCone geometry(origin, direction, r0, z0, big_scale);
 
 
     // Setting VectorBField
     // Using simulations
-//    Delaunay_triangulation tr_p;
-//    Delaunay_triangulation tr_fi;
+    Delaunay_triangulation tr_p;
+    Delaunay_triangulation tr_fi;
 //    create_triangulation("bfield_p_10.txt", &tr_p);
 //    create_triangulation("bfield_fi_10.txt", &tr_fi);
-//    SimulationBField bfield(&tr_p, &tr_fi, false);
-    // Using analytical expressions
-//    RadialConicalBField bfield(0.1, 1, true);
-    RandomScalarBFieldZ bfield(1, 1.35);
+    create_triangulation("bfield_p_10_v2.txt", &tr_p);
+    create_triangulation("bfield_fi_10_v2.txt", &tr_fi);
+    SimulationBField bfield(&tr_p, &tr_fi, false);
+//    // Using analytical expressions
+////    RadialConicalBField bfield(0.1, 1, true);
+////    RandomScalarBFieldZ bfield(1, 1.35);
+//    CompositeRandomScalarBFieldZ bfield(1, 0.5, 1, z0);
 
 
     // Setting N_field
     // Using simulations
-//    Delaunay_triangulation tr_n;
+    Delaunay_triangulation tr_n;
 //    create_triangulation("nfield_10.txt", &tr_n);
-//    SimulationNField nfield(&tr_n, true);
-    // Using analytical expressions
-    BKNField nfield(1000, 2, true);
+    create_triangulation("nfield_10_v2.txt", &tr_n);
+    SimulationNField nfield(&tr_n, true);
+//    // Using analytical expressions
+//    BKNField nfield(1000, 2, true);
+//    CompositeBKNField nfield(1000, 1, 2, z0, true);
 
 
     // Setting V-field
     // Using simulations
-//    Delaunay_triangulation tr_v;
+    Delaunay_triangulation tr_v;
 //    create_triangulation("vfield_10.txt", &tr_v);
-//    SimulationVField vfield(&tr_v);
-    // Using analytical expressions
-    ConstCentralVField vfield(10);
+    create_triangulation("vfield_10_v2.txt", &tr_v);
+    SimulationVField vfield(&tr_v);
+//    // Using analytical expressions
+////    ConstCentralVField vfield(10);
+//    AccParabolicConstConeVField vfield(10, r0, z0);
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
 
@@ -964,7 +976,7 @@ void test_full_interpolation() {
     double tau_n_min = 0.1;
     double dt_max_pc = 0.001;
     double dt_max = pc*dt_max_pc;
-    double tau_min_log10 = -6.0;
+    double tau_min_log10 = -10.0;
     double tau_min = pow(10.,tau_min_log10);
     int n = 100;
     int n_tau_max = 2000;

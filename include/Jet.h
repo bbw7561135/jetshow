@@ -10,8 +10,9 @@
 
 class Jet {
 public:
-//    Jet(BaseGeometry* geo, VField* vfield, VectorBField* bField, NField* nField);
-    Jet(BaseGeometry* geo, VField* vfield, ScalarBField* bField, NField* nField);
+    // Need VectorBField for simulations output
+    Jet(BaseGeometry* geo, VField* vfield, VectorBField* bField, NField* nField);
+//    Jet(BaseGeometry* geo, VField* vfield, ScalarBField* bField, NField* nField);
 
 
     // Absorption coefficient in ``point`` of the jet in the observer (lab)
@@ -51,8 +52,8 @@ public:
 private:
     BaseGeometry* geometry_;
     VField* vfield_;
-//    VectorBField* bfield_;
-    ScalarBField* bfield_;
+    VectorBField* bfield_;
+//    ScalarBField* bfield_;
     NField* nfield_;
 };
 
