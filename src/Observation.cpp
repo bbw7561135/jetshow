@@ -32,7 +32,7 @@ void Observation::run(int n, double tau_max, double dt_max, double tau_min,
 	  // Don't need countr-jet side
 //      for (unsigned long int k = image_size.second/2-50; k < image_size.second; ++k) {
         for (unsigned long int k = 0; k < image_size.second; ++k) {
-        	std::cout << "Pixel " << j << ", " << k << std::endl;
+        	//std::cout << "Pixel " << j << ", " << k << std::endl;
 			auto &ray = rays[j*image_size.second+k];
         	auto &pxl = pixels[j*image_size.second+k];
         	observe_single_pixel(ray, pxl, tau_min, tau_max, n, dt_max, output_type);

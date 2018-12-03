@@ -65,7 +65,7 @@ private:
 
 
 // B-Field like ``RandomScalar`` that depends on z-coordinate only
-class RandomScalarBFieldZ : public ScalarBField {
+class BFRandomScalarBFieldZ : public ScalarBField {
 public:
 		RandomScalarBFieldZ(double b_0, double m_b);
 		double bf(const Vector3d &point) const override;
