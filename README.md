@@ -1,12 +1,12 @@
 ## jetshow
-Full Stokes (_IQUV_) synchrotron radiation transfer in inhomogeneous AGN jet
-model (a.k.a. Blandford & Königl jet model - DOI:10.1086/157262).
+Full Stokes (_IQUV_) synchrotron radiation transfer in inhomogeneous AGN jets. The fields can be specified both
+analytically as C++ classes and as the results of the simulations (i.e. on some grid).
 
 
 ## Installation and building
 
-Possibly you need to install ``git``, ``cmake``, ``boost`` and ``Eigen`` (C++
-libraries).
+Possibly you need to install ``git``, ``cmake``, ``boost``, ``Eigen`` and ``CGAL`` (for interpolation of simulations
+results).
 
 ``git clone https://ipashchenko@bitbucket.org/ipashchenko/jetshow.git``
 
@@ -19,6 +19,8 @@ libraries).
 ``make``
 
 ## Using
+
+### Warning: Currently choosing a model should be done in ``main.cpp`` file. Configuration via ``json``-config file is highly likely broken now.
 
 Configuration is managed via ``config.json`` file which is explained below.
 After building and optional editing of this file we ran executable:
@@ -34,7 +36,7 @@ value of linear polarization.](https://www.dropbox.com/s/adr38w9f6ay2j8b/bk_jet.
 
 
 
-## Parameters of ``config.json``
+## Parameters of ``config.json`` (outdated)
  
  ``observation`` describes observer-related parameters such as
  frequency, angle of jet axis to observer LOS, redshift
