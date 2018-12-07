@@ -173,26 +173,37 @@ double getBprime(double &b, Vector3d &v) {
 }
 
 
-double comoving_transfer_distance(double z, double H0, double omega_M,
-																	double omega_V) {
-	Ctd ctd(z);
+double comoving_transfer_distance(double z, double H0, double omega_M, double omega_V, double gamma_nu) {
+	Ctd ctd(z, H0, omega_M, omega_V, gamma_nu);
 	double ctd_state = 0.0;
 	using namespace boost::numeric::odeint;
-	integrate<double>(ctd, ctd_state, 0., z, 0.00001);
-	double result = (100./H0) * 3. * pow(10., 9.) * ctd_state;
+	integrate<double>(ctd, ctd_state, 0., z, 0.00000000001);
+	double result = (299792.458/H0) * pow(10., 6.) * ctd_state;
 	return result;
 }
 
+// This uses adaptive integration as the Astropy version with the same tolerances.
+double comoving_transfer_distance2(double z, double H0, double omega_M, double omega_V, double gamma_nu) {
+    Ctd ctd(z, H0, omega_M, omega_V, gamma_nu);
+    double ctd_state = 0.0;
+
+    using namespace boost::numeric::odeint;
+    typedef runge_kutta_dopri5<double> stepper_type;
+    auto stepper = stepper_type();
+    integrate_adaptive(make_controlled(1.49e-8, 1.49e-8, stepper_type()), ctd, ctd_state, 0.0, z, 1E-09);
+
+    double result = (299792.458/H0) * pow(10., 6.) * ctd_state;
+    return result;
+}
+
 double pc_to_mas(double z) {
-	double d_a = comoving_transfer_distance(z)/(1.+z);
-//	double d_a = da_old(z);
+	double d_a = comoving_transfer_distance2(z)/(1.+z);
 	double angle_rads = 1./d_a;
 	return rad_to_mas*angle_rads;
 }
 
 double mas_to_pc(double z) {
-//	double d_a = da_old(z);
-	double d_a = comoving_transfer_distance(z)/(1.+z);
+	double d_a = comoving_transfer_distance2(z)/(1.+z);
 	return mas_to_rad*d_a;
 }
 
@@ -226,10 +237,10 @@ write_vector(std::ostream &os, std::vector<double> &v, double scale) {
 
 
 double pixel_solid_angle(double pixel_size_mas, double z) {
-	double pixel_size_pc = pixel_size_mas * mas_to_pc(z);
-//	double d_a = da_old(z);
-	double d_a = comoving_transfer_distance(z)/(1.+z);
-	return pixel_size_pc*pixel_size_pc/(d_a*d_a);
+	//double pixel_size_pc = pixel_size_mas * mas_to_pc(z);
+	//double d_a = comoving_transfer_distance(z)/(1.+z);
+	//return pixel_size_pc*pixel_size_pc/(d_a*d_a);
+	return pixel_size_mas*pixel_size_mas*mas_to_rad*mas_to_rad;
 
 }
 
@@ -359,12 +370,11 @@ double da_old(double z, double H0, double q0) {
 }
 
 
-Ctd::Ctd(double z, double H0, double omega_M, double omega_V) : z(z), H0(H0),
-																																omega_M(omega_M),
-																																omega_V(omega_V) {}
+Ctd::Ctd(double z, double H0, double omega_M, double omega_V, double gamma_nu) : z(z), H0(H0), omega_M(omega_M), omega_V(omega_V), gamma_nu(gamma_nu) {}
 
 void Ctd::operator()(const double &x, double &dxdt, const double t) {
-	dxdt = pow(omega_M*(1.+t*t*t)+omega_V, -0.5);
+	dxdt = pow((omega_M + (1.+t)*gamma_nu)*(1.+t)*(1.+t)*(1.+t)+omega_V, -0.5);
+	//dxdt = pow(omega_M*(1.+t*t*t)+omega_V, -0.5);
 };
 
 

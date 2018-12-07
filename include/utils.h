@@ -154,20 +154,24 @@ double getBprime(double &b, Vector3d &v);
 
 class Ctd {
 public:
-		Ctd(double z, double H0=73., double omega_M=0.3, double omega_V=0.7);
-		void operator() (const double &x, double &dxdt, const double t);
-		double z;
-		double H0;
-		double omega_M;
-		double omega_V;
+	//From astropy.cosmology.WMAP9
+	Ctd(double z, double H0=69.32, double omega_M=0.2865, double omega_V=0.7134130719051658,
+			double gamma_nu=8.69280948342326e-05);
+	void operator() (const double &x, double &dxdt, const double t);
+	double z;
+	double H0;
+	double omega_M;
+	double omega_V;
+	double gamma_nu;
 };
 
 // Given redshift ``z``, Hubble constant ``H_0`` [km/s/Mpc] and density
 // parameters ``omega_M`` and ``omega_V``, returns comoving transverse distance
 // (see arXiv:astro-ph/9905116v4 formula 14). Angular diameter distance is
 // factor (1 + z) lower and luminosity distance is the same factor higher.
-double comoving_transfer_distance(double z, double H0=73., double omega_M=0.3,
-																  double omega_V=0.7);
+double comoving_transfer_distance(double z, double H0=69.32, double omega_M=0.2865, double omega_V=0.7134130719051658, double gamma_nu=8.69280948342326e-05);
+
+double comoving_transfer_distance2(double z, double H0=69.32, double omega_M=0.2865, double omega_V=0.7134130719051658, double gamma_nu=8.69280948342326e-05);
 
 
 double da_old(double z, double H0=50., double q0=0.05);
