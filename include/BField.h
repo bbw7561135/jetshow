@@ -55,24 +55,24 @@ public:
 
 class RandomScalarBField : public ScalarBField {
 public:
-		RandomScalarBField(double b_0, double m_b);
-		double bf(const Vector3d &point) const override;
+    RandomScalarBField(double b_0, double m_b);
+    double bf(const Vector3d &point) const override;
 
 private:
-		double b_0_;
-		double m_b_;
+    double b_0_;
+    double m_b_;
 };
 
 
 // B-Field like ``RandomScalar`` that depends on z-coordinate only
-class BFRandomScalarBFieldZ : public ScalarBField {
+class RandomScalarBFieldZ : public ScalarBField {
 public:
-		RandomScalarBFieldZ(double b_0, double m_b);
-		double bf(const Vector3d &point) const override;
+    RandomScalarBFieldZ(double b_0, double m_b);
+    double bf(const Vector3d &point) const override;
 
 private:
-		double b_0_;
-		double m_b_;
+    double b_0_;
+    double m_b_;
 };
 
 
@@ -103,11 +103,11 @@ private:
 // B-Field like ``ConstCylinder`` that depends on z-coordinate only
 class ConstCylinderBFieldZ : public VectorBField {
 public:
-		ConstCylinderBFieldZ (double b_0, double n_b, bool in_plasma_frame) ;
-		Vector3d bf(const Vector3d &point) const override ;
+    ConstCylinderBFieldZ (double b_0, double n_b, bool in_plasma_frame) ;
+    Vector3d bf(const Vector3d &point) const override ;
 private:
-		double b_0_;
-		double n_b_;
+    double b_0_;
+    double n_b_;
 
 };
 
@@ -124,11 +124,11 @@ private:
 
 class ToroidalBField : public VectorBField {
 public:
-		ToroidalBField(double b_0, double n_b, bool in_plasma_frame) ;
-		Vector3d bf(const Vector3d &point) const override ;
+    ToroidalBField(double b_0, double n_b, bool in_plasma_frame) ;
+    Vector3d bf(const Vector3d &point) const override ;
 private:
-		double b_0_;
-		double n_b_;
+    double b_0_;
+    double n_b_;
 };
 
 
@@ -166,33 +166,33 @@ private:
 // plasma frame (physically motivated?)
 class RandomVectorBField : public VectorBField {
 public:
-		RandomVectorBField(VectorBField* bfield, double rnd_fraction);
-		virtual Vector3d direction(const Vector3d &point) const = 0 ;
-		Vector3d bf(const Vector3d &point) const override ;
+    RandomVectorBField(VectorBField* bfield, double rnd_fraction);
+    virtual Vector3d direction(const Vector3d &point) const = 0 ;
+    Vector3d bf(const Vector3d &point) const override ;
 
 protected:
-		VectorBField* bfield_;
-		double rnd_fraction_;
+    VectorBField* bfield_;
+    double rnd_fraction_;
 };
 
 
 class CellsRandomVectorBField : public RandomVectorBField {
 public:
-		CellsRandomVectorBField(Cells* cells, VectorBField* bfield, double rnd_fraction);
-		Vector3d direction(const Vector3d &point) const override ;
+    CellsRandomVectorBField(Cells* cells, VectorBField* bfield, double rnd_fraction);
+    Vector3d direction(const Vector3d &point) const override ;
 
 private:
-		Cells* cells_;
+    Cells* cells_;
 };
 
 
 class PointsRandomVectorBField : public RandomVectorBField {
 public:
-		PointsRandomVectorBField(VectorBField* bfield, double rnd_fraction, unsigned int seed);
-		Vector3d direction(const Vector3d &point) const override ;
+    PointsRandomVectorBField(VectorBField* bfield, double rnd_fraction, unsigned int seed);
+    Vector3d direction(const Vector3d &point) const override ;
 
 private:
-		mutable std::vector<boost::variate_generator<gen_type, boost::uniform_on_sphere<double>>> randoms_on_sphere;
+    mutable std::vector<boost::variate_generator<gen_type, boost::uniform_on_sphere<double>>> randoms_on_sphere;
 };
 
 
