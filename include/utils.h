@@ -14,22 +14,22 @@
 using Eigen::Vector3d;
 
 
-const double mas_to_rad = 4.8481368*1E-9;
-const double rad_to_mas = 1./mas_to_rad;
+const double mas_to_rad = 4.84813681109536e-09;
+const double rad_to_mas = 206264806.24709633;
 // Parsec [cm]
-const double pc = 3.0857*1E+18;
+const double pc = 3.0856775814671913e+18;
 // Mass of electron [g]
-const double m_e = 9.109382*1E-28;
+const double m_e = 9.10938356e-28;
 // Mass of proton [g]
-const double m_p = 1.672621*1E-24;
+const double m_p = 1.672621898e-24;
 // Charge of electron [C]
- const double q_e = 4.8*1E-10;
+ const double q_e = 4.80320467299766e-10;
 //const double q_e = 1.6*1E-19;
 // Charge of proton [C]
- const double q_p = 4.8*1E-10;
+ const double q_p = q_e;
 //const double q_p = 1.6*1E-19;
 // Speed of light [cm / s]
-const double c = 3.*1E+10;
+const double c = 29979245800.0;
 // Jy in cgc
 const double to_jy = 1E+23;
 // pi
