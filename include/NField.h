@@ -36,6 +36,17 @@ private:
 };
 
 
+class BKNFieldZ: public NField {
+public:
+    BKNFieldZ(double n_0, double n_n, bool in_plasma_frame);
+    double nf(const Vector3d &point) const override;
+private:
+    double n_0_;
+    double n_n_;
+
+};
+
+
 class CompositeBKNField: public NField {
 public:
     CompositeBKNField(double n_0, double n_n_inner, double n_n_outer, double z0, bool in_plasma_frame);
