@@ -29,7 +29,8 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     double n_prime = nfield_->nf_plasma_frame(point, gamma);
     auto n_los_prime = get_n_los_prime(n_los, v);
     auto nu_prime = nu/D;
-    auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime);
+    double s = 3.2;
+    auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime, s);
 
     if (std::isnan(k_i_prime)) {
         std::cout << "Nan k_i_prime!" << std::endl;
@@ -230,8 +231,8 @@ double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
     double n_prime = nfield_->nf_plasma_frame(point, gamma);
     auto n_los_prime = get_n_los_prime(n_los, v);
     auto nu_prime = nu/D;
-
-    auto eta_i_prime = eta_i(b_prime, n_los_prime, nu_prime, n_prime);
+    double s = 3.2;
+    auto eta_i_prime = eta_i(b_prime, n_los_prime, nu_prime, n_prime, s);
     return eta_i_prime*D*D;
 }
 
