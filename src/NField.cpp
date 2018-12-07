@@ -30,6 +30,15 @@ double BKNField::nf(const Vector3d &point) const {
 }
 
 
+BKNFieldZ::BKNFieldZ (double n_0, double n_n, bool in_plasma_frame) :
+        NField(in_plasma_frame), n_0_(n_0), n_n_(n_n) {};
+
+double BKNFieldZ::nf(const Vector3d &point) const {
+    double z = abs(point[2]);
+    return n_0_*pow(z/pc, -n_n_);
+}
+
+
 CompositeBKNField::CompositeBKNField(double n_0, double n_n_inner, double n_n_outer, double z0, bool in_plasma_frame) :
     NField(in_plasma_frame), inner_field_(n_0, n_n_inner, in_plasma_frame), outer_field_(n_0, n_n_outer, in_plasma_frame), z0_(z0) {};
 
