@@ -1009,33 +1009,37 @@ namespace ph = std::placeholders;
 
 
 void run_analytical() {
-    double los_angle = pi/12;
-    double redshift = 0.1;
-    unsigned long int number_of_pixels_along = 1000;
-    unsigned long int number_of_pixels_across = 400;
-    double pixel_size_mas = 0.001;
-
+    // 38 deg
+    //double los_angle = 0.66323;
+    double los_angle = pi/2;
+    //double redshift = 0.0165;
+    double redshift = 0.5;
+    unsigned long int number_of_pixels_along = 5000;
+    unsigned long int number_of_pixels_across = 1000;
+    double pixel_size_mas = 0.0005;
 
     // Setting geometry
     Vector3d origin = {0., 0., 0.};
 	Vector3d direction = {0., 0., 1.};
-    double cone_half_angle = 0.1;
+    // 3.7 deg
+    double cone_half_angle = 0.064577;
     double big_scale = 100*pc;
     Cone geometry(origin, direction, cone_half_angle, 100);
 
     // Setting BField
-    RandomScalarBFieldZ bfield(1.0, 1.0);
+    RandomScalarBFieldZ bfield(10, 1.0);
 
     // Setting N_field
-    BKNField nfield(5000, 2, true);
+    BKNFieldZ nfield(10000, 2, true);
 
     // Setting V-field
-    ConstCentralVField vfield(10);
+    ConstFlatVField vfield(2.25);
 
     Jet bkjet(&geometry, &vfield, &bfield, &nfield);
 
     auto image_size = std::make_pair(number_of_pixels_across, number_of_pixels_along);
     auto pc_in_mas = mas_to_pc(redshift);
+    std::cout << "pc_in_mas " << pc_in_mas << std::endl;
     auto pixel_size = pixel_size_mas*pc_in_mas*pc;
     auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, redshift);
 
@@ -1050,7 +1054,7 @@ void run_analytical() {
     Observation observation(&bkjet, &imagePlane, nu);
 
     string step_type = "adaptive";
-    double tau_max = 100.0;
+    double tau_max = 10000.0;
     double tau_n_min = 0.1;
     double dt_max_pc = 0.001;
     double dt_max = pc*dt_max_pc;
