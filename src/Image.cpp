@@ -66,7 +66,9 @@ Image::Image(pair<unsigned long int, unsigned long int> image_size, double pixel
 // E.g. dr_min_pc=13.8pc, pix_size_pc=0.00864909 (0.1mas), theta_LOS=0.314 => ~500
 // The same but LOS = 2.5 deg => ~70
 Vector3d Image::getCoordinate(unsigned long int i, unsigned long int j) {
-    return Vector3d{0, i-image_size_.first/2.+0.5, j+0.5+0.0};
+    //return Vector3d{0, i-image_size_.first/2.+0.5, j+0.5+0.0};
+    // To compare with analytical jetmodel
+    return Vector3d{0, i-image_size_.first/2., j+0.0};
 }
 
 Vector3d Image::getScaledCoordinate(unsigned long int i, unsigned long int j) {
