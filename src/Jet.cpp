@@ -2,7 +2,7 @@
 #include <math.h>
 
 // Use VectorBField for simulations output
-Jet::Jet(BaseGeometry *newgeo, VField *newvfield, ScalarBField *newbField,
+Jet::Jet(BaseGeometry *newgeo, VField *newvfield, VectorBField *newbField,
          NField *newnField) {
     geometry_ = newgeo;
     vfield_ = newvfield;
@@ -29,7 +29,7 @@ double Jet::getKI(Vector3d &point, Vector3d &n_los, double nu) {
     double n_prime = nfield_->nf_plasma_frame(point, gamma);
     auto n_los_prime = get_n_los_prime(n_los, v);
     auto nu_prime = nu/D;
-    double s = 3.2;
+    double s = 3.42;
     auto k_i_prime = k_i(b_prime, n_los_prime, nu_prime, n_prime, s);
 
     if (std::isnan(k_i_prime)) {
@@ -231,7 +231,7 @@ double Jet::getEtaI(Vector3d &point, Vector3d &n_los, double nu) {
     double n_prime = nfield_->nf_plasma_frame(point, gamma);
     auto n_los_prime = get_n_los_prime(n_los, v);
     auto nu_prime = nu/D;
-    double s = 3.2;
+    double s = 3.42;
     auto eta_i_prime = eta_i(b_prime, n_los_prime, nu_prime, n_prime, s);
     return eta_i_prime*D*D;
 }
