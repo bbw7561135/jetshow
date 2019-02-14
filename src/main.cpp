@@ -32,6 +32,7 @@
 #include <Cells.h>
 
 
+
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Delaunay_triangulation_2.h>
@@ -59,6 +60,9 @@ using namespace boost::numeric::odeint;
 typedef std::chrono::high_resolution_clock Clock;
 //namespace pt = boost::property_tree;
 namespace ph = std::placeholders;
+
+
+
 
 
 //void test_observations_rnd_bfield() {
@@ -1008,34 +1012,135 @@ namespace ph = std::placeholders;
 //}
 
 
-void run_analytical() {
-    // 38 deg
-    //double los_angle = 0.66323;
-    double los_angle = pi/2;
-    //double redshift = 0.0165;
-    double redshift = 0.5;
-    unsigned long int number_of_pixels_along = 5000;
-    unsigned long int number_of_pixels_across = 1000;
-    double pixel_size_mas = 0.0005;
+//void run_analytical() {
+//    // 38 deg
+//    //double los_angle = 0.66323;
+//    double los_angle = pi/2;
+//    //double redshift = 0.0165;
+//    double redshift = 0.5;
+//    unsigned long int number_of_pixels_along = 5000;
+//    unsigned long int number_of_pixels_across = 1000;
+//    double pixel_size_mas = 0.0005;
+//
+//    // Setting geometry
+//    Vector3d origin = {0., 0., 0.};
+//	Vector3d direction = {0., 0., 1.};
+//    // 3.7 deg
+//    double cone_half_angle = 0.064577;
+//    double big_scale = 100*pc;
+//    Cone geometry(origin, direction, cone_half_angle, 100);
+//
+//    // Setting BField
+//    RandomScalarBFieldZ bfield(10, 1.0);
+//
+//    // Setting N_field
+//    BKNFieldZ nfield(10000, 2, true);
+//
+//    // Setting V-field
+//    ConstFlatVField vfield(2.25);
+//
+//    Jet bkjet(&geometry, &vfield, &bfield, &nfield);
+//
+//    auto image_size = std::make_pair(number_of_pixels_across, number_of_pixels_along);
+//    auto pc_in_mas = mas_to_pc(redshift);
+//    std::cout << "pc_in_mas " << pc_in_mas << std::endl;
+//    auto pixel_size = pixel_size_mas*pc_in_mas*pc;
+//    auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, redshift);
+//
+//    ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
+//    std::cout << "Setting pixel size pc " << pixel_size/pc << std::endl;
+//
+//    // Setting observed frequency
+//    double nu = 15.4;
+//    nu *= 1E+09;
+//    nu *= (1.+redshift);
+//
+//    Observation observation(&bkjet, &imagePlane, nu);
+//
+//    string step_type = "adaptive";
+//    double tau_max = 10000.0;
+//    double tau_n_min = 0.1;
+//    double dt_max_pc = 0.001;
+//    double dt_max = pc*dt_max_pc;
+//    double tau_min_log10 = -10.0;
+//    double tau_min = pow(10.,tau_min_log10);
+//    int n = 100;
+//    int n_tau_max = 2000;
+//    std::string calculate = "I";
+//
+//
+//    observation.run(n, tau_max, dt_max, tau_min, step_type, calculate,
+//                    n_tau_max, tau_n_min, tau_max);
+//    string value = "tau";
+//    auto image = observation.getImage(value);
+//    std::fstream fs;
+//    std::string file_tau = "map_tau.txt";
+//    fs.open(file_tau, std::ios::out | std::ios::app);
+//
+//    if (fs.is_open())
+//    {
+//        write_2dvector(fs, image);
+//        fs.close();
+//    }
+//
+//    value = "I";
+//    image = observation.getImage(value);
+//    std::string file_i = "map_i.txt";
+//    fs.open(file_i, std::ios::out | std::ios::app);
+//    double scale = 1E-23*(1.+redshift)*(1.+redshift)*(1.+redshift)/pix_solid_angle;
+//
+//    if (fs.is_open())
+//    {
+//        // Scaling to Jy
+//        write_2dvector(fs, image, scale);
+//        fs.close();
+//    }
+//
+//    value = "l";
+//    image = observation.getImage(value);
+//    std::string file_length = "map_l.txt";
+//    fs.open(file_length, std::ios::out | std::ios::app);
+//
+//    if (fs.is_open()) {
+//        write_2dvector(fs, image, pc);
+//        fs.close();
+//    }
+//}
+
+
+std::pair<vector<vector<double>>, vector<vector<double>>> run_analytical_params(double los_angle, double redshift,
+        unsigned long int number_of_pixels_along, unsigned long int number_of_pixels_across, double pixel_size_mas,
+        double cone_half_angle, double B_1, double m, double K_1, double n, double Gamma, double nu_observed_ghz,
+        double tau_max, bool central_vfield=true);
+
+std::pair<vector<vector<double>>, vector<vector<double>>>
+run_analytical_params(double los_angle, double redshift, unsigned long int number_of_pixels_along,
+                      unsigned long int number_of_pixels_across, double pixel_size_mas, double cone_half_angle,
+                      double B_1, double m, double K_1, double n, double Gamma, double nu_observed_ghz, double tau_max,
+                      bool central_vfield) {
 
     // Setting geometry
     Vector3d origin = {0., 0., 0.};
-	Vector3d direction = {0., 0., 1.};
-    // 3.7 deg
-    double cone_half_angle = 0.064577;
+    Vector3d direction = {0., 0., 1.};
     double big_scale = 100*pc;
     Cone geometry(origin, direction, cone_half_angle, 100);
 
     // Setting BField
-    RandomScalarBFieldZ bfield(10, 1.0);
+    RandomScalarBFieldZ bfield(B_1, m);
+    //ToroidalBField bfield(B_1, m, true);
 
     // Setting N_field
-    BKNFieldZ nfield(10000, 2, true);
+    BKNFieldZ nfield(K_1, n, true);
 
     // Setting V-field
-    ConstFlatVField vfield(2.25);
+    VField* vfield;
+    if (central_vfield) {
+        vfield = new ConstCentralVField(Gamma);
+    } else {
+        vfield = new ConstFlatVField(Gamma);
+    }
 
-    Jet bkjet(&geometry, &vfield, &bfield, &nfield);
+    Jet bkjet(&geometry, vfield, &bfield, &nfield);
 
     auto image_size = std::make_pair(number_of_pixels_across, number_of_pixels_along);
     auto pc_in_mas = mas_to_pc(redshift);
@@ -1047,61 +1152,43 @@ void run_analytical() {
     std::cout << "Setting pixel size pc " << pixel_size/pc << std::endl;
 
     // Setting observed frequency
-    double nu = 15.4;
-    nu *= 1E+09;
-    nu *= (1.+redshift);
+    nu_observed_ghz *= 1E+09;
+    nu_observed_ghz *= (1.+redshift);
 
-    Observation observation(&bkjet, &imagePlane, nu);
+    Observation observation(&bkjet, &imagePlane, nu_observed_ghz);
 
     string step_type = "adaptive";
-    double tau_max = 10000.0;
     double tau_n_min = 0.1;
     double dt_max_pc = 0.001;
     double dt_max = pc*dt_max_pc;
     double tau_min_log10 = -10.0;
     double tau_min = pow(10.,tau_min_log10);
-    int n = 100;
+    int n_ = 100;
     int n_tau_max = 2000;
     std::string calculate = "I";
 
 
-    observation.run(n, tau_max, dt_max, tau_min, step_type, calculate,
+    observation.run(n_, tau_max, dt_max, tau_min, step_type, calculate,
                     n_tau_max, tau_n_min, tau_max);
     string value = "tau";
-    auto image = observation.getImage(value);
-    std::fstream fs;
-    std::string file_tau = "map_tau.txt";
-    fs.open(file_tau, std::ios::out | std::ios::app);
-
-    if (fs.is_open())
-    {
-        write_2dvector(fs, image);
-        fs.close();
-    }
+    auto image_tau = observation.getImage(value);
 
     value = "I";
-    image = observation.getImage(value);
-    std::string file_i = "map_i.txt";
-    fs.open(file_i, std::ios::out | std::ios::app);
+    auto image_i = observation.getImage(value);
     double scale = 1E-23*(1.+redshift)*(1.+redshift)*(1.+redshift)/pix_solid_angle;
 
-    if (fs.is_open())
+    for (int i = 0; i < image_i.size(); ++i)
     {
-        // Scaling to Jy
-        write_2dvector(fs, image, scale);
-        fs.close();
+        for (int j = 0; j < image_i[i].size(); ++j)
+        {
+            image_i[i][j] = image_i[i][j]/scale;
+        }
     }
 
-    value = "l";
-    image = observation.getImage(value);
-    std::string file_length = "map_l.txt";
-    fs.open(file_length, std::ios::out | std::ios::app);
-
-    if (fs.is_open()) {
-        write_2dvector(fs, image, pc);
-        fs.close();
-    }
+    auto result = std::make_pair(image_tau, image_i);
+    return result;
 }
+
 
 
 int main() {
@@ -1110,7 +1197,32 @@ int main() {
 	start = std::clock();
 
     //run_on_simulations();
-    run_analytical();
+    //run_analytical();
+    auto result = run_analytical_params(0.663225, 0.0165, 1800*2, 576*2, 0.005/2*(15.35/15.35), 0.06832789, exp(-2.1052), 0.95306,
+                                        exp(8.672), 1.9061, 1.90256, 15.35, 100000, false);
+    std::cout << "DONE" << std::endl;
+    auto image_tau = result.first;
+    auto image_i = result.second;
+
+    std::fstream fs;
+    std::string file_tau = "map_tau_num_tangled_flat_u.txt";
+    fs.open(file_tau, std::ios::out | std::ios::app);
+
+    if (fs.is_open())
+    {
+        write_2dvector(fs, image_tau);
+        fs.close();
+    }
+
+    std::string file_i = "map_i_num_tangled_flat_u.txt";
+    fs.open(file_i, std::ios::out | std::ios::app);
+
+    if (fs.is_open())
+    {
+        write_2dvector(fs, image_i);
+        fs.close();
+    }
+
 
 	std::cout << "CPU Time: "
 						<< (std::clock() - start) / (double) (CLOCKS_PER_SEC)
