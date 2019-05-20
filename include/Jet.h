@@ -13,7 +13,7 @@ public:
     // Need VectorBField for simulations output
     //Jet(BaseGeometry* geo, VField* vfield, VectorBField* bField, NField* nField);
     // Need ScalarBField for analytical Blandford-Konigle
-    Jet(BaseGeometry* geo, VField* vfield, VectorBField* bField, NField* nField);
+    Jet(BaseGeometry* geo, VField* vfield, ScalarBField* bField, NField* nField);
 
 
     // Absorption coefficient in ``point`` of the jet in the observer (lab)
@@ -54,7 +54,7 @@ private:
     BaseGeometry* geometry_;
     VField* vfield_;
     // Need VectorBField for simulations output
-    VectorBField* bfield_;
+    ScalarBField* bfield_;
     // Need ScalarBField for analytical Blandford-Konigle
     //ScalarBField* bfield_;
     NField* nfield_;

@@ -2,7 +2,7 @@
 #include <math.h>
 
 // Use VectorBField for simulations output
-Jet::Jet(BaseGeometry *newgeo, VField *newvfield, VectorBField *newbField,
+Jet::Jet(BaseGeometry *newgeo, VField *newvfield, ScalarBField *newbField,
          NField *newnField) {
     geometry_ = newgeo;
     vfield_ = newvfield;
