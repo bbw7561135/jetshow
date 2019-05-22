@@ -66,10 +66,12 @@ namespace ph = std::placeholders;
 // Pybind11
 namespace py = pybind11;
 
+//std::pair<vector<vector<double>>, vector<vector<double>>>
 vector<vector<double>>
 get_i_image(double los_angle, double redshift, unsigned long int number_of_pixels_along,
-            unsigned long int number_of_pixels_across, double pixel_size_mas, double cone_half_angle, double B_1,
-            double m, double K_1, double n, double Gamma, double nu_observed_ghz, double tau_max, bool central_vfield) {
+            unsigned long int number_of_pixels_across, double pixel_size_mas_start,
+            double pixel_size_mas_stop, double cone_half_angle, double B_1, double m, double K_1,
+            double n, double Gamma, double nu_observed_ghz, double tau_max, bool central_vfield) {
 
     // Setting geometry
     Vector3d origin = {0., 0., 0.};
@@ -79,6 +81,7 @@ get_i_image(double los_angle, double redshift, unsigned long int number_of_pixel
 
     // Setting BField
     RandomScalarBFieldZ bfield(B_1, m);
+    //ToroidalBField bfield(B_1, m, true);
 
     // Setting N_field
     BKNFieldZ nfield(K_1, n, true);
@@ -96,18 +99,48 @@ get_i_image(double los_angle, double redshift, unsigned long int number_of_pixel
     auto image_size = std::make_pair(number_of_pixels_across, number_of_pixels_along);
     auto pc_in_mas = mas_to_pc(redshift);
     std::cout << "pc_in_mas " << pc_in_mas << std::endl;
-    auto pixel_size = pixel_size_mas*pc_in_mas*pc;
-    auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, redshift);
 
-    ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
-    std::cout << "Setting pixel size pc " << pixel_size/pc << std::endl;
+    // Log10 of pixel size in cm
+    auto lg_pixel_size_start = log10(pixel_size_mas_start*pc_in_mas*pc);
+    auto lg_pixel_size_stop = log10(pixel_size_mas_stop*pc_in_mas*pc);
 
-    // Setting observed frequency
+
+    ImagePlane imagePlane(image_size, lg_pixel_size_start, lg_pixel_size_stop, los_angle);
+    std::cout << "Setting pixel size pc from " << pow(10.0, lg_pixel_size_start)/pc << " to " << pow(10.0, lg_pixel_size_stop)/pc << std::endl;
+
+    // Array of pixel sizes in cm
+    auto pixel_sizes = imagePlane.getPixelSizes();
+    // Array of pixel solid angles in rad*rad
+    std::vector<std::vector<double>> pixel_solid_angles;
+    pixel_solid_angles.resize(pixel_sizes.size());
+
+    for(unsigned long i=0; i < pixel_sizes.size(); i++) {
+        pixel_solid_angles[i].resize(pixel_sizes[0].size());
+        for(unsigned long j=0; j < pixel_sizes[0].size(); j++) {
+            // Divide by ``pc_in_mas*pc`` to bring ``cm`` to ``mas`` at source redshift
+            pixel_solid_angles[i][j] = (pixel_sizes[i][j]/(pc_in_mas*pc))*(pixel_sizes[i][j]/(pc_in_mas*pc))*mas_to_rad*mas_to_rad;
+        }
+    }
+
+    // Array of scale factors. Divide resulting image on this to obtain flux density in Jy. Accounts for cosmological
+    // scaling of intensity
+    std::vector<std::vector<double>> scales;
+    scales.resize(pixel_sizes.size());
+    for(unsigned long i=0; i < pixel_sizes.size(); i++) {
+        scales[i].resize(pixel_sizes[0].size());
+        for(unsigned long j=0; j < pixel_sizes[0].size(); j++) {
+            scales[i][j] = 1E-23*(1.+redshift)*(1.+redshift)*(1.+redshift)/pixel_solid_angles[i][j];
+        }
+    }
+
+
+    // Setting observed frequency to the BH frame in Hz
     nu_observed_ghz *= 1E+09;
     nu_observed_ghz *= (1.+redshift);
 
     Observation observation(&bkjet, &imagePlane, nu_observed_ghz);
 
+    // Transfer-specific parameters
     string step_type = "adaptive";
     double tau_n_min = 0.1;
     double dt_max_pc = 0.001;
@@ -121,17 +154,22 @@ get_i_image(double los_angle, double redshift, unsigned long int number_of_pixel
 
     observation.run(n_, tau_max, dt_max, tau_min, step_type, calculate,
                     n_tau_max, tau_n_min, tau_max);
-    string value = "I";
-    auto image_i = observation.getImage(value);
-    double scale = 1E-23*(1.+redshift)*(1.+redshift)*(1.+redshift)/pix_solid_angle;
+    string value = "tau";
+    auto image_tau = observation.getImage(value);
 
-    for (int i = 0; i < image_i.size(); ++i)
+    value = "I";
+    auto image_i = observation.getImage(value);
+
+    for (unsigned long int i = 0; i < image_i.size(); ++i)
     {
-        for (int j = 0; j < image_i[i].size(); ++j)
+        for (unsigned long int j = 0; j < image_i[i].size(); ++j)
         {
-            image_i[i][j] = image_i[i][j]/scale;
+            image_i[i][j] = image_i[i][j]/scales[i][j];
         }
     }
+
+    //auto result = std::make_pair(image_tau, image_i);
+    //return result;
     return image_i;
 }
 
@@ -146,6 +184,7 @@ using namespace pybind11::literals; // for _a literal to define arguments
 m.doc() = "Radiative transfer for BK models"; // optional module docstring
 
 m.def("get_i_image", &get_i_image, "Obtain Stokes I image with random B-field", "los_angle"_a, "redshift"_a,
-"number_of_pixels_along"_a, "number_of_pixels_across"_a, "pixel_size_mas"_a, "cone_half_angle"_a, "B_1"_a,
-"m"_a, "K_1"_a, "n"_a, "Gamma"_a, "nu_observed_ghz"_a, "tau_max"_a=10000., "central_vfield"_a=false);
+"number_of_pixels_along"_a, "number_of_pixels_across"_a, "pixel_size_mas_start"_a, "pixel_size_mas_stop"_a,
+"cone_half_angle"_a, "B_1"_a, "m"_a, "K_1"_a, "n"_a, "Gamma"_a, "nu_observed_ghz"_a, "tau_max"_a=10000.,
+"central_vfield"_a=false);
 }
