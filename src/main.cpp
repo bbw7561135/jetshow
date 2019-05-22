@@ -30,26 +30,27 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <Cells.h>
+//#include "logspace.h"
 
 
-
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Delaunay_triangulation_2.h>
-#include <CGAL/Triangulation_vertex_base_with_info_2.h>
-#include <CGAL/Interpolation_traits_2.h>
-#include <CGAL/natural_neighbor_coordinates_2.h>
-#include <CGAL/interpolation_functions.h>
-#include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
-
-typedef CGAL::Simple_cartesian<double>                                   K_;
-typedef K_::Point_2                                                Point_;
-typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
-typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
-typedef CGAL::Delaunay_triangulation_2<K_, Tds>                    Delaunay_triangulation;
-typedef K_::FT                                               Coord_type;
-typedef std::vector<Coord_type >                            Scalar_vector;
-typedef CGAL::Barycentric_coordinates::Triangle_coordinates_2<K_> Triangle_coordinates;
+// FIXME: Do not need this in analytical runs
+//#include <CGAL/Simple_cartesian.h>
+//#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+//#include <CGAL/Delaunay_triangulation_2.h>
+//#include <CGAL/Triangulation_vertex_base_with_info_2.h>
+//#include <CGAL/Interpolation_traits_2.h>
+//#include <CGAL/natural_neighbor_coordinates_2.h>
+//#include <CGAL/interpolation_functions.h>
+//#include <CGAL/Barycentric_coordinates_2/Triangle_coordinates_2.h>
+//
+//typedef CGAL::Simple_cartesian<double>                                   K_;
+//typedef K_::Point_2                                                Point_;
+//typedef CGAL::Triangulation_vertex_base_with_info_2<double, K_>      Vb;
+//typedef CGAL::Triangulation_data_structure_2<Vb>                  Tds;
+//typedef CGAL::Delaunay_triangulation_2<K_, Tds>                    Delaunay_triangulation;
+//typedef K_::FT                                               Coord_type;
+//typedef std::vector<Coord_type >                            Scalar_vector;
+//typedef CGAL::Barycentric_coordinates::Triangle_coordinates_2<K_> Triangle_coordinates;
 
 
 using Eigen::Vector3d;
@@ -1109,15 +1110,15 @@ namespace ph = std::placeholders;
 
 
 std::pair<vector<vector<double>>, vector<vector<double>>> run_analytical_params(double los_angle, double redshift,
-        unsigned long int number_of_pixels_along, unsigned long int number_of_pixels_across, double pixel_size_mas,
-        double cone_half_angle, double B_1, double m, double K_1, double n, double Gamma, double nu_observed_ghz,
-        double tau_max, bool central_vfield=true);
+        unsigned long int number_of_pixels_along, unsigned long int number_of_pixels_across,
+        double pixel_size_mas_start, double pixel_size_mas_stop, double cone_half_angle, double B_1, double m,
+        double K_1, double n, double Gamma, double nu_observed_ghz, double tau_max, bool central_vfield=true);
 
 std::pair<vector<vector<double>>, vector<vector<double>>>
 run_analytical_params(double los_angle, double redshift, unsigned long int number_of_pixels_along,
-                      unsigned long int number_of_pixels_across, double pixel_size_mas, double cone_half_angle,
-                      double B_1, double m, double K_1, double n, double Gamma, double nu_observed_ghz, double tau_max,
-                      bool central_vfield) {
+                      unsigned long int number_of_pixels_across, double pixel_size_mas_start,
+                      double pixel_size_mas_stop, double cone_half_angle, double B_1, double m, double K_1,
+                      double n, double Gamma, double nu_observed_ghz, double tau_max, bool central_vfield) {
 
     // Setting geometry
     Vector3d origin = {0., 0., 0.};
@@ -1145,18 +1146,48 @@ run_analytical_params(double los_angle, double redshift, unsigned long int numbe
     auto image_size = std::make_pair(number_of_pixels_across, number_of_pixels_along);
     auto pc_in_mas = mas_to_pc(redshift);
     std::cout << "pc_in_mas " << pc_in_mas << std::endl;
-    auto pixel_size = pixel_size_mas*pc_in_mas*pc;
-    auto pix_solid_angle = pixel_solid_angle(pixel_size_mas, redshift);
 
-    ImagePlane imagePlane(image_size, pixel_size, pixel_size, los_angle);
-    std::cout << "Setting pixel size pc " << pixel_size/pc << std::endl;
+    // Log10 of pixel size in cm
+    auto lg_pixel_size_start = log10(pixel_size_mas_start*pc_in_mas*pc);
+    auto lg_pixel_size_stop = log10(pixel_size_mas_stop*pc_in_mas*pc);
 
-    // Setting observed frequency
+
+    ImagePlane imagePlane(image_size, lg_pixel_size_start, lg_pixel_size_stop, los_angle);
+    std::cout << "Setting pixel size pc from " << pow(10.0, lg_pixel_size_start)/pc << " to " << pow(10.0, lg_pixel_size_stop)/pc << std::endl;
+
+    // Array of pixel sizes in cm
+    auto pixel_sizes = imagePlane.getPixelSizes();
+    // Array of pixel solid angles in rad*rad
+    std::vector<std::vector<double>> pixel_solid_angles;
+    pixel_solid_angles.resize(pixel_sizes.size());
+
+    for(unsigned long i=0; i < pixel_sizes.size(); i++) {
+        pixel_solid_angles[i].resize(pixel_sizes[0].size());
+        for(unsigned long j=0; j < pixel_sizes[0].size(); j++) {
+            // Divide by ``pc_in_mas*pc`` to bring ``cm`` to ``mas`` at source redshift
+            pixel_solid_angles[i][j] = (pixel_sizes[i][j]/(pc_in_mas*pc))*(pixel_sizes[i][j]/(pc_in_mas*pc))*mas_to_rad*mas_to_rad;
+        }
+    }
+
+    // Array of scale factors. Divide resulting image on this to obtain flux density in Jy. Accounts for cosmological
+    // scaling of intensity
+    std::vector<std::vector<double>> scales;
+    scales.resize(pixel_sizes.size());
+    for(unsigned long i=0; i < pixel_sizes.size(); i++) {
+        scales[i].resize(pixel_sizes[0].size());
+        for(unsigned long j=0; j < pixel_sizes[0].size(); j++) {
+            scales[i][j] = 1E-23*(1.+redshift)*(1.+redshift)*(1.+redshift)/pixel_solid_angles[i][j];
+        }
+    }
+
+
+    // Setting observed frequency to the BH frame in Hz
     nu_observed_ghz *= 1E+09;
     nu_observed_ghz *= (1.+redshift);
 
     Observation observation(&bkjet, &imagePlane, nu_observed_ghz);
 
+    // Transfer-specific parameters
     string step_type = "adaptive";
     double tau_n_min = 0.1;
     double dt_max_pc = 0.001;
@@ -1175,13 +1206,12 @@ run_analytical_params(double los_angle, double redshift, unsigned long int numbe
 
     value = "I";
     auto image_i = observation.getImage(value);
-    double scale = 1E-23*(1.+redshift)*(1.+redshift)*(1.+redshift)/pix_solid_angle;
 
     for (int i = 0; i < image_i.size(); ++i)
     {
         for (int j = 0; j < image_i[i].size(); ++j)
         {
-            image_i[i][j] = image_i[i][j]/scale;
+            image_i[i][j] = image_i[i][j]/scales[i][j];
         }
     }
 
@@ -1189,6 +1219,215 @@ run_analytical_params(double los_angle, double redshift, unsigned long int numbe
     return result;
 }
 
+
+//void check_logspace() {
+//    std::vector<double> logspace;
+//    logspace = pyLogspace(-1, 1, 10);
+//    for(auto el: logspace) {
+//        std::cout << el << std::endl;
+//    }
+//}
+
+
+//void check_image_building() {
+//
+//    auto image_size = std::make_pair(6, 12);
+//    double pixel_size_start = -1;
+//    double pixel_size_stop = 1;
+//
+//    std::vector<std::vector<double>> pixel_sizes_;
+//    std::vector<std::vector<double>> pixel_center_coordinates_along_;
+//    std::vector<std::vector<double>> pixel_center_coordinates_across_;
+//
+//
+//    // Create array of pixel sizes
+//    auto pixel_sizes_along = pyLogspace(pixel_size_start, pixel_size_stop, image_size.second);
+//
+//    //for(auto el: pixel_sizes_along) {
+//    //    std::cout << el << std::endl;
+//    //}
+//
+//
+//    pixel_sizes_.reserve(image_size.first);
+//    for (int i=0; i < image_size.first; ++i) {
+//        pixel_sizes_.push_back(pixel_sizes_along);
+//    }
+//
+//    for (int i = 0; i < image_size.first; i++) {
+//        for (int j = 0; j < image_size.second; j++) {
+//            std::cout << pixel_sizes_[i][j] << " ";
+//            std::cout << std::endl;
+//
+//        }
+//    }
+//
+//
+//    // Create array of pixel center coordinates (n_across, n_along) for direction ALONG the jet
+//    std::vector<double> cumsum_along;
+//    cumsum_along.reserve(pixel_sizes_along.size());
+//    std::partial_sum(pixel_sizes_along.begin(), pixel_sizes_along.end(), cumsum_along.begin());
+//    for(int i = 0; i<pixel_sizes_along.size(); ++i) {
+//        cumsum_along[i] = cumsum_along[i] - 0.5*pixel_sizes_along[i];
+//    }
+//
+//
+//    for (int i=0; i < image_size.second; ++i) {
+//        std::cout << cumsum_along[i] << std::endl;
+//    }
+//
+//    pixel_center_coordinates_along_.reserve(image_size.first);
+//    for (int i=0; i < image_size.first; ++i) {
+//        pixel_center_coordinates_along_[i].reserve(image_size.second);
+//        for (int j=0; j < image_size.second; ++j) {
+//            pixel_center_coordinates_along_[i][j] = cumsum_along[j];
+//        }
+//    }
+//
+//    std::cout << "Coordinates along = " << std::endl;
+//    for (int i=0; i < image_size.first; ++i) {
+//        std::cout << "Print i=" << i << std::endl;
+//        for (int j=0; j < image_size.second; ++j) {
+//            std::cout << pixel_center_coordinates_along_[i][j] << " ";
+//        }
+//        std::cout << std::endl;
+//    }
+//    std::cout << std::endl;
+//
+//
+//
+//    // Create array of pixel center coordinates (n_across, n_along) for direction ACROSS the jet
+//    std::vector<std::vector<double>> cumsum_across;
+//    // In each of the n_along arrays will be cumsums of the pixel coordinates in transverse direction
+//    cumsum_across.reserve(image_size.second);
+//    std::vector<double> pixel_sizes_transverse(image_size.first/2, 1.0);
+//
+//
+//    // Going along the jet with larger and larger pixel sizes
+//    for (int i=0; i < image_size.second; ++i) {
+//        // Array of the constant pixel sizes across  [j] the jet at given distance [i] from center
+//        for (int j=0; j < image_size.first/2; ++j) {
+//            pixel_sizes_transverse[j] = pixel_sizes_along[i]*pixel_sizes_transverse[j];
+//        }
+//        cumsum_across[i].reserve(image_size.first/2);
+//        std::partial_sum(pixel_sizes_transverse.begin(), pixel_sizes_transverse.end(), cumsum_across[i].begin());
+//
+//        for(int k = 0; k<pixel_sizes_transverse.size(); ++k) {
+//            cumsum_across[i][k] = cumsum_across[i][k] - 0.5*pixel_sizes_transverse[k];
+//        }
+//
+//        // Get ready for next transverse slice
+//        for (int j=0; j < image_size.first/2; ++j) {
+//            pixel_sizes_transverse[j] = 1.0;
+//        }
+//    }
+//
+//    // Flip
+//    std::vector<std::vector<double> > trans_vec(image_size.first/2, std::vector<double>(image_size.second));
+//    for (int i = 0; i < image_size.second; i++)
+//    {
+//        for (int j = 0; j < image_size.first/2; j++)
+//        {
+//            trans_vec[j][i] = cumsum_across[i][j];
+//        }
+//    }
+//
+//    // Negative coordinates
+//    std::vector<std::vector<double> > trans_vec_neg(image_size.first/2, std::vector<double>(image_size.second));
+//    for (int i = 0; i < image_size.second; i++)
+//    {
+//        for (int j = 0; j < image_size.first/2; j++)
+//        {
+//            trans_vec_neg[j][i] = -trans_vec[j][i];
+//        }
+//    }
+//
+//    // Flip positive coordinates
+//    std::vector<std::vector<double> > trans_vec_flip(image_size.first/2, std::vector<double>(image_size.second));
+//    for (int i = 0; i < image_size.second; i++)
+//    {
+//        for (int j = 0; j < image_size.first/2; j++)
+//        {
+//            trans_vec_flip[j][i] = trans_vec[image_size.first/2-j-1][i];
+//        }
+//    }
+//
+//    // Concatenate flipped positive coordinates with negative
+//    //std::vector<std::vector<double> > result;
+//    pixel_center_coordinates_across_ = trans_vec_flip;
+//    pixel_center_coordinates_across_.insert(pixel_center_coordinates_across_.end(), trans_vec_neg.begin(), trans_vec_neg.end() );
+//
+//
+//    std::cout << "Coordinates across = " << std::endl;
+//    for (int i=0; i < image_size.first; ++i) {
+//        std::cout << "Print i=" << i << std::endl;
+//        for (int j=0; j < image_size.second; ++j) {
+//            std::cout << pixel_center_coordinates_across_[i][j] << " ";
+//        }
+//        std::cout << std::endl;
+//    }
+//
+//
+//    //// Print out what happened
+//    //std::cout << "Across sizes" << std::endl;
+//    //for (int i=0; i < image_size.second; ++i) {
+//    //    std::cout << "Along slice #" << i << std::endl;
+//    //
+//    //    // Array of the constant pixel sizes across  [j] the jet at given distance [i] from center
+//    //    for (int j = 0; j < image_size.first/2; ++j) {
+//    //        std::cout << cumsum_across[i][j] << " ";
+//    //    }
+//    //    std::cout << std::endl;
+//    //}
+//
+//    //std::cout << "Along sizes" << std::endl;
+//    //for (int i=0; i < image_size.second; ++i) {
+//    //    std::cout << "Across slice #" << i << std::endl;
+//    //    // Array of the constant pixel sizes across  [i] the jet at any transverse distance from axes.
+//    //    std::cout << cumsum_along[i] << " ";
+//    //    }
+//
+//    //std::cout << "Along sizes" << std::endl;
+//    //for (int i=0; i < image_size.first; ++i) {
+//    //    std::cout << "Along slice #" << i << std::endl;
+//    //
+//    //    // Array of the constant pixel sizes across  [j] the jet at given distance [i] from center
+//    //    for (int j = 0; j < image_size.second; ++j) {
+//    //        std::cout << pixel_center_coordinates_along_[i][j] << " ";
+//    //    }
+//    //    std::cout << std::endl;
+//    //}
+//
+//}
+
+
+//void check_image_plane() {
+//
+//    double redshift = 0.1;
+//    double pixel_size_mas_start = 0.01;
+//    double pixel_size_mas_stop = 1;
+//    auto pc_in_mas = mas_to_pc(redshift);
+//    std::cout << "pc_in_mas " << pc_in_mas << std::endl;
+//    auto lg_pixel_size_start = log10(pixel_size_mas_start*pc_in_mas*pc);
+//    auto lg_pixel_size_stop = log10(pixel_size_mas_stop*pc_in_mas*pc);
+//
+//    unsigned long int number_of_pixels_across = 6;
+//    unsigned long int number_of_pixels_along = 12;
+//    double los_angle = 3.1415926/2.0;
+//    auto image_size = std::make_pair(number_of_pixels_across, number_of_pixels_along);
+//
+//    //Image image(image_size, pixel_size_start, pixel_size_stop);
+//    //std::vector<Pixel>& pixels = image.getPixels();
+//
+//    ImagePlane imagePlane(image_size, lg_pixel_size_start, lg_pixel_size_stop, los_angle);
+//    std::vector<Pixel>& pixels = imagePlane.getPixels();
+//    std::vector<Ray>& rays = imagePlane.getRays();
+//}
+
+
+//int main() {
+//    //check_image_building();
+//    //check_image_plane();
+//}
 
 
 int main() {
@@ -1198,8 +1437,8 @@ int main() {
 
     //run_on_simulations();
     //run_analytical();
-    auto result = run_analytical_params(0.663225, 0.0165, 1800*2, 576*2, 0.005/2*(15.35/15.35), 0.06832789, exp(-2.1052), 0.95306,
-                                        exp(8.672), 1.9061, 1.90256, 15.35, 100000, false);
+    auto result = run_analytical_params(0.663225, 0.0165, 500, 60, 0.001, 0.1, 0.06832789, 0.1, 1.0, 10000., 2.0, 5.0,
+        15.35, 100000, false);
     std::cout << "DONE" << std::endl;
     auto image_tau = result.first;
     auto image_i = result.second;
