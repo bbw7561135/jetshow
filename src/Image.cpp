@@ -56,33 +56,36 @@ Image::Image(pair<unsigned long int, unsigned long int> image_size,
     // Create array of pixel sizes
     auto pixel_sizes_along = pyLogspace(lg_pixel_size_start_cm, lg_pixel_size_stop_cm, image_size.second);
 
+    //for (auto el: pixel_sizes_along) {
+    //    std::cout << el << " ";
+    //}
+    //std::cout << std::endl;
+
     pixel_sizes_.reserve(image_size.first);
-    for (int i=0; i < image_size.first; ++i) {
+    for (unsigned long int i=0; i < image_size.first; ++i) {
         pixel_sizes_.push_back(pixel_sizes_along);
     }
-
 
     // Create array of pixel center coordinates (n_across, n_along) for direction ALONG the jet
     std::vector<double> cumsum_along;
     cumsum_along.reserve(pixel_sizes_along.size());
     std::partial_sum(pixel_sizes_along.begin(), pixel_sizes_along.end(), cumsum_along.begin());
-    for(int i = 0; i<pixel_sizes_along.size(); ++i) {
+    for(unsigned long int i = 0; i<pixel_sizes_along.size(); ++i) {
         cumsum_along[i] = cumsum_along[i] - 0.5*pixel_sizes_along[i];
     }
 
 
-    for (int i=0; i < image_size.second; ++i) {
-        std::cout << cumsum_along[i] << std::endl;
-    }
+    //for (unsigned long int i=0; i < image_size.second; ++i) {
+    //    std::cout << cumsum_along[i] << std::endl;
+    //}
 
     pixel_center_coordinates_along_.resize(image_size.first);
-    for (int i=0; i < image_size.first; ++i) {
+    for (unsigned long int i=0; i < image_size.first; ++i) {
         pixel_center_coordinates_along_[i].resize(image_size.second);
-        for (int j=0; j < image_size.second; ++j) {
+        for (unsigned long int j=0; j < image_size.second; ++j) {
             pixel_center_coordinates_along_[i][j] = cumsum_along[j];
         }
     }
-
 
     //// Debug print along
     //std::cout << "Coordinates along = " << std::endl;
@@ -100,34 +103,33 @@ Image::Image(pair<unsigned long int, unsigned long int> image_size,
     // Create array of pixel center coordinates (n_across, n_along) for direction ACROSS the jet
     std::vector<std::vector<double>> cumsum_across;
     // In each of the n_along arrays will be cumsums of the pixel coordinates in transverse direction
-    cumsum_across.reserve(image_size.second);
+    cumsum_across.resize(image_size.second);
     std::vector<double> pixel_sizes_transverse(image_size.first/2, 1.0);
 
-
     // Going along the jet with larger and larger pixel sizes
-    for (int i=0; i < image_size.second; ++i) {
+    for (unsigned long int i=0; i < image_size.second; ++i) {
         // Array of the constant pixel sizes across  [j] the jet at given distance [i] from center
-        for (int j=0; j < image_size.first/2; ++j) {
-            pixel_sizes_transverse[j] = pixel_sizes_along[i]*pixel_sizes_transverse[j];
+        for (unsigned long int j=0; j < image_size.first/2; ++j) {
+            pixel_sizes_transverse.at(j) = pixel_sizes_along.at(i)*pixel_sizes_transverse.at(j);
         }
-        cumsum_across[i].reserve(image_size.first/2);
+        cumsum_across.at(i).resize(image_size.first/2);
         std::partial_sum(pixel_sizes_transverse.begin(), pixel_sizes_transverse.end(), cumsum_across[i].begin());
 
-        for(int k = 0; k<pixel_sizes_transverse.size(); ++k) {
-            cumsum_across[i][k] = cumsum_across[i][k] - 0.5*pixel_sizes_transverse[k];
+        for(unsigned long int k = 0; k<pixel_sizes_transverse.size(); ++k) {
+            cumsum_across.at(i).at(k) = cumsum_across.at(i).at(k) - 0.5*pixel_sizes_transverse.at(k);
         }
 
         // Get ready for next transverse slice
-        for (int j=0; j < image_size.first/2; ++j) {
-            pixel_sizes_transverse[j] = 1.0;
+        for (unsigned long int j=0; j < image_size.first/2; ++j) {
+            pixel_sizes_transverse.at(j) = 1.0;
         }
     }
 
     // Flip
     std::vector<std::vector<double> > trans_vec(image_size.first/2, std::vector<double>(image_size.second));
-    for (int i = 0; i < image_size.second; i++)
+    for (unsigned long int i = 0; i < image_size.second; i++)
     {
-        for (int j = 0; j < image_size.first/2; j++)
+        for (unsigned long int j = 0; j < image_size.first/2; j++)
         {
             trans_vec[j][i] = cumsum_across[i][j];
         }
@@ -135,9 +137,9 @@ Image::Image(pair<unsigned long int, unsigned long int> image_size,
 
     // Negative coordinates
     std::vector<std::vector<double> > trans_vec_neg(image_size.first/2, std::vector<double>(image_size.second));
-    for (int i = 0; i < image_size.second; i++)
+    for (unsigned long int i = 0; i < image_size.second; i++)
     {
-        for (int j = 0; j < image_size.first/2; j++)
+        for (unsigned long int j = 0; j < image_size.first/2; j++)
         {
             trans_vec_neg[j][i] = -trans_vec[j][i];
         }
@@ -145,9 +147,9 @@ Image::Image(pair<unsigned long int, unsigned long int> image_size,
 
     // Flip positive coordinates
     std::vector<std::vector<double> > trans_vec_flip(image_size.first/2, std::vector<double>(image_size.second));
-    for (int i = 0; i < image_size.second; i++)
+    for (unsigned long int i = 0; i < image_size.second; i++)
     {
-        for (int j = 0; j < image_size.first/2; j++)
+        for (unsigned long int j = 0; j < image_size.first/2; j++)
         {
             trans_vec_flip[j][i] = trans_vec[image_size.first/2-j-1][i];
         }
@@ -179,7 +181,6 @@ Image::Image(pair<unsigned long int, unsigned long int> image_size,
             pixels_.push_back(std::move(pxl));
         }
     }
-
 
 }
 
