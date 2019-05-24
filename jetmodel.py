@@ -1,25 +1,28 @@
 from abc import ABC
 import functools
-from astropy import units as u, constants as const, cosmology
+from astropy import units as u, cosmology
 import numpy as np
 from fourier import FINUFFT_NUNU
 from pyjetshow import get_i_image as get_i_image_tangled
-from pyjetshow_toroidal import get_i_image as get_i_image_toroidal
+# FIXME: Compiled for Python 3.6.
+# from pyjetshow_toroidal import get_i_image as get_i_image_toroidal
 
 
 class JetModelZoom(ABC):
     cosmo = cosmology.WMAP9
 
-    def __init__(self, nu, redshift, pixsize_array=None, stokes="I", tau_max=10**5, central_vfield=True,
-                 tangled_bfield=True, ft_class=FINUFFT_NUNU):
+    def __init__(self, nu, redshift, n_along, n_across, lg_pixel_size_mas_min, lg_pixel_size_mas_max, stokes="I",
+                 tau_max=10**5, central_vfield=True, tangled_bfield=True, ft_class=FINUFFT_NUNU):
         self.nu = nu
         self.z = redshift
+        self.lg_pixel_size_mas_min = lg_pixel_size_mas_min
+        self.lg_pixel_size_mas_max = lg_pixel_size_mas_max
+        self.n_along = n_along
+        self.n_across = n_across
+        resolutions = np.logspace(lg_pixel_size_mas_min, lg_pixel_size_mas_max, n_along)
         # 2D array of u.angle pixsizes
-        self.pixsize_array = pixsize_array
-        if pixsize_array is not None:
-            assert pixsize_array.ndim == 2, "Array with pixel sizes must be 2D!"
-            assert pixsize_array.unit.physical_type == "angle", "pixsize_array" \
-                                                                " should be angle!"
+        self.pixsize_array = np.tile(resolutions, n_across).reshape(n_across, n_along).T*u.mas
+
         self.stokes = stokes
         self.ft_class = ft_class
         self.ft_instance = None
@@ -31,7 +34,10 @@ class JetModelZoom(ABC):
         if tangled_bfield:
             self.get_i_image = get_i_image_tangled
         else:
-            self.get_i_image = get_i_image_toroidal
+            raise Exception("Only random B field...")
+        self._image_i = None
+        self._image_tau = None
+        self._updated_params = False
 
     def calculate_grid(self):
         """
@@ -81,13 +87,29 @@ class JetModelZoom(ABC):
         self.gamma = np.exp(Gamma)
         self.m = np.exp(m)
         self.n = np.exp(n)
+        self._updated_params = True
+
+    def run(self):
+        result = self.get_i_image(self.theta, self.z, self.n_along, self.n_across,
+                                                          10**self.lg_pixel_size_mas_min, 10**self.lg_pixel_size_mas_max,
+                                                          self.phi, self.B1, self.m, self.K1, self.n, self.gamma,
+                                                          (self.nu/u.GHz).value, self.tau_max, self.central_vfield)
+        self._image_tau = np.atleast_2d(result[0])
+        self._image_i = np.atleast_2d(result[1])
+        self._updated_params = False
 
     def image(self):
-        return np.atleast_2d(self.get_i_image(self.theta, self.z, self.npix[0], self.npix[1],
-                                              self.pixsize.value, self.phi, self.B1,
-                                              self.m, self.K1, self.n, self.gamma,
-                                              (self.nu/u.GHz).value, self.tau_max,
-                                              self.central_vfield))
+        if self._updated_params:
+            print("Parameters are updated => running transfer")
+            self.run()
+        else:
+            print("Parameters are the same => returning old image")
+        return self._image_i
+
+    def image_tau(self):
+        if self._updated_params:
+            self.run()
+        return self._image_tau
 
     def ft(self, uv):
         mas_to_rad = u.mas.to(u.rad)
@@ -122,20 +144,9 @@ class JetModelZoom(ABC):
         """
         return (self.pixsize_array * self.ang_to_dist).to(u.pc).value
 
-    @property
-    @functools.lru_cache()
-    def T_to_flux(self):
-        """
-        2D array of coefficients for each pixel or single value if
-        ``pixsize_array`` is None.
-        """
-        omega = self.pixsize_array**2
-        mul = (u.K / ((const.c / self.nu)**2 / (2 * const.k_B * omega)) / u.rad**2).to(u.Jy).value
-        return mul
-
     def plot_contours(self, nlevels=15, outfile=None):
         # Factor that accounts non-uniform pixel size in plotting
-        # FIXME: self.image have fluxes already fixed by T_to_flux
+        # FIXME: self.image have fluxes already fixed in C++ code?
         factor = (self.pixsize_array/np.min(self.pixsize_array))**2
         image = self.image()/factor.T
         import matplotlib.pyplot as plt
@@ -197,8 +208,9 @@ class JetModelZoom(ABC):
 
 
 if __name__ == "__main__":
-    resolutions = np.logspace(-3, -1, 10)
-    pixsize_array = np.tile(resolutions, 6).reshape(6, 10).T*u.mas
-    cosmo = cosmology.WMAP9
-    z = 0.0165
-    print((pixsize_array*cosmo.kpc_proper_per_arcmin(z)).to(u.pc))
+
+    jm = JetModelZoom(15.4*u.GHz, 0.0165, 500, 60, -3, -1, central_vfield=False)
+    jm.set_params_vec(np.array([0.0, 0.0, 0.0, 0.663225, 0.068, np.log(0.1), np.log(10000), np.log(2.0), np.log(1.0), np.log(2.0)]))
+    import matplotlib.pyplot as plt
+    fig = jm.plot()
+    plt.show()
