@@ -1207,9 +1207,9 @@ run_analytical_params(double los_angle, double redshift, unsigned long int numbe
     value = "I";
     auto image_i = observation.getImage(value);
 
-    for (int i = 0; i < image_i.size(); ++i)
+    for (unsigned long int i = 0; i < image_i.size(); ++i)
     {
-        for (int j = 0; j < image_i[i].size(); ++j)
+        for (unsigned long int j = 0; j < image_i[i].size(); ++j)
         {
             image_i[i][j] = image_i[i][j]/scales[i][j];
         }
