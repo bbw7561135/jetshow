@@ -63,11 +63,10 @@ using namespace boost::numeric::odeint;
 namespace ph = std::placeholders;
 
 
-// Pybind11
 namespace py = pybind11;
 
-//std::pair<vector<vector<double>>, vector<vector<double>>>
-vector<vector<double>>
+// Image must be scaled by ((pixsize_array/min(pixsize_array))**2).T to convert to intensity (
+std::pair<vector<vector<double>>, vector<vector<double>>>
 get_i_image(double los_angle, double redshift, unsigned long int number_of_pixels_along,
             unsigned long int number_of_pixels_across, double pixel_size_mas_start,
             double pixel_size_mas_stop, double cone_half_angle, double B_1, double m, double K_1,
@@ -93,6 +92,7 @@ get_i_image(double los_angle, double redshift, unsigned long int number_of_pixel
     } else {
         vfield = new ConstFlatVField(Gamma);
     }
+    //ConstCentralVField vfield(Gamma);
 
     Jet bkjet(&geometry, vfield, &bfield, &nfield);
 
@@ -168,9 +168,8 @@ get_i_image(double los_angle, double redshift, unsigned long int number_of_pixel
         }
     }
 
-    //auto result = std::make_pair(image_tau, image_i);
-    //return result;
-    return image_i;
+    std::pair<vector<vector<double>>, vector<vector<double>>> result = std::make_pair(image_tau, image_i);
+    return result;
 }
 
 
@@ -183,8 +182,21 @@ PYBIND11_MODULE(pyjetshow, m) {
 using namespace pybind11::literals; // for _a literal to define arguments
 m.doc() = "Radiative transfer for BK models"; // optional module docstring
 
-m.def("get_i_image", &get_i_image, "Obtain Stokes I image with random B-field", "los_angle"_a, "redshift"_a,
-"number_of_pixels_along"_a, "number_of_pixels_across"_a, "pixel_size_mas_start"_a, "pixel_size_mas_stop"_a,
-"cone_half_angle"_a, "B_1"_a, "m"_a, "K_1"_a, "n"_a, "Gamma"_a, "nu_observed_ghz"_a, "tau_max"_a=10000.,
-"central_vfield"_a=false);
+m.def("get_i_image", &get_i_image, "Obtain Stokes I image with random B-field",
+    "los_angle"_a,
+    "redshift"_a,
+    "number_of_pixels_along"_a,
+    "number_of_pixels_across"_a,
+    "pixel_size_mas_start"_a,
+    "pixel_size_mas_stop"_a,
+    "cone_half_angle"_a,
+    "B_1"_a,
+    "m"_a,
+    "K_1"_a,
+    "n"_a,
+    "Gamma"_a,
+    "nu_observed_ghz"_a,
+    "tau_max"_a=10000.,
+    "central_vfield"_a=false);
 }
+
