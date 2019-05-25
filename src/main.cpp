@@ -1112,13 +1112,13 @@ namespace ph = std::placeholders;
 std::pair<vector<vector<double>>, vector<vector<double>>> run_analytical_params(double los_angle, double redshift,
         unsigned long int number_of_pixels_along, unsigned long int number_of_pixels_across,
         double pixel_size_mas_start, double pixel_size_mas_stop, double cone_half_angle, double B_1, double m,
-        double K_1, double n, double Gamma, double nu_observed_ghz, double tau_max, bool central_vfield=true);
+        double K_1, double n, double s, double Gamma, double nu_observed_ghz, double tau_max, bool central_vfield=true);
 
 std::pair<vector<vector<double>>, vector<vector<double>>>
 run_analytical_params(double los_angle, double redshift, unsigned long int number_of_pixels_along,
                       unsigned long int number_of_pixels_across, double pixel_size_mas_start,
                       double pixel_size_mas_stop, double cone_half_angle, double B_1, double m, double K_1,
-                      double n, double Gamma, double nu_observed_ghz, double tau_max, bool central_vfield) {
+                      double n, double s, double Gamma, double nu_observed_ghz, double tau_max, bool central_vfield) {
 
     // Setting geometry
     Vector3d origin = {0., 0., 0.};
@@ -1131,7 +1131,7 @@ run_analytical_params(double los_angle, double redshift, unsigned long int numbe
     //ToroidalBField bfield(B_1, m, true);
 
     // Setting N_field
-    BKNFieldZ nfield(K_1, n, true);
+    BKNFieldZ nfield(K_1, n, true, s);
 
     // Setting V-field
     VField* vfield;
@@ -1437,8 +1437,8 @@ int main() {
 
     //run_on_simulations();
     //run_analytical();
-    auto result = run_analytical_params(0.663225, 0.0165, 500, 60, 0.001, 0.1, 0.06832789, 0.1, 1.0, 10000., 2.0, 5.0,
-        15.35, 100000, false);
+    auto result = run_analytical_params(0.663225, 0.0165, 500, 60, 0.001, 0.1, 0.06832789, 0.1, 1.0, 10000., 2.0, 2.5,
+        5.0, 15.35, 100000, false);
     std::cout << "DONE" << std::endl;
     auto image_tau = result.first;
     auto image_i = result.second;

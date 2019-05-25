@@ -91,21 +91,22 @@ class JetModelZoom(ABC):
         return 0, s0, -s1/2, s1/2
 
     @property
-    def nparams(self): return 10
+    def nparams(self): return 11
 
     def set_params_vec(self, vec):
-        self.dx, self.dy, self.rot, self.theta, self.phi, B1, K1, Gamma, m, n = vec
+        self.dx, self.dy, self.rot, self.theta, self.phi, B1, K1, Gamma, m, n, s = vec
         self.B1 = np.exp(B1)
         self.K1 = np.exp(K1)
         self.gamma = np.exp(Gamma)
         self.m = np.exp(m)
         self.n = np.exp(n)
+        self.s = np.exp(s)
         self._updated_params = True
 
     def run(self):
         result = self.get_i_image(self.theta, self.z, self.n_along, self.n_across,
                                                           10**self.lg_pixel_size_mas_min, 10**self.lg_pixel_size_mas_max,
-                                                          self.phi, self.B1, self.m, self.K1, self.n, self.gamma,
+                                                          self.phi, self.B1, self.m, self.K1, self.n, self.s, self.gamma,
                                                           (self.nu/u.GHz).value, self.tau_max, self.central_vfield)
         self._image_tau = np.atleast_2d(result[0])
         self._image_i = np.atleast_2d(result[1])
@@ -223,7 +224,8 @@ class JetModelZoom(ABC):
 if __name__ == "__main__":
 
     jm = JetModelZoom(15.4*u.GHz, 0.0165, 500, 60, -3, -1, central_vfield=False)
-    jm.set_params_vec(np.array([0.0, 0.0, 0.0, 0.663225, 0.068, np.log(0.1), np.log(10000), np.log(2.0), np.log(1.0), np.log(2.0)]))
+    jm.set_params_vec(np.array([0.0, 0.0, 0.0, 0.663225, 0.068, np.log(0.1), np.log(10000), np.log(2.0), np.log(1.0),
+                                np.log(2.0), np.log(2.5)]))
     import matplotlib.pyplot as plt
     fig = jm.plot()
     plt.show()

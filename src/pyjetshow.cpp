@@ -70,7 +70,7 @@ std::pair<vector<vector<double>>, vector<vector<double>>>
 get_i_image(double los_angle, double redshift, unsigned long int number_of_pixels_along,
             unsigned long int number_of_pixels_across, double pixel_size_mas_start,
             double pixel_size_mas_stop, double cone_half_angle, double B_1, double m, double K_1,
-            double n, double Gamma, double nu_observed_ghz, double tau_max, bool central_vfield) {
+            double n, double s, double Gamma, double nu_observed_ghz, double tau_max, bool central_vfield) {
 
     // Setting geometry
     Vector3d origin = {0., 0., 0.};
@@ -83,7 +83,7 @@ get_i_image(double los_angle, double redshift, unsigned long int number_of_pixel
     //ToroidalBField bfield(B_1, m, true);
 
     // Setting N_field
-    BKNFieldZ nfield(K_1, n, true);
+    BKNFieldZ nfield(K_1, n, true, s);
 
     // Setting V-field
     VField* vfield;
@@ -194,6 +194,7 @@ m.def("get_i_image", &get_i_image, "Obtain Stokes I image with random B-field",
     "m"_a,
     "K_1"_a,
     "n"_a,
+    "s"_a,
     "Gamma"_a,
     "nu_observed_ghz"_a,
     "tau_max"_a=10000.,

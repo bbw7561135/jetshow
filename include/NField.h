@@ -11,15 +11,17 @@ class NField {
 public:
     virtual double nf(const Vector3d &point) const = 0;
     double nf_plasma_frame(const Vector3d &point, double &gamma) const;
+    double get_s() const;
 
 protected:
-    explicit NField(bool in_plasma_frame);
+    explicit NField(bool in_plasma_frame, double s);
     bool in_plasma_frame_;
+    double s_;
 };
 
 class ConstNField: public NField {
 public:
-    ConstNField(double n, bool in_plasma_frame);
+    ConstNField(double n, bool in_plasma_frame, double s);
     double nf(const Vector3d &point) const override;
 private:
     double n_;
@@ -27,7 +29,7 @@ private:
 
 class BKNField: public NField {
 public:
-    BKNField(double n_0, double n_n, bool in_plasma_frame);
+    BKNField(double n_0, double n_n, bool in_plasma_frame, double s);
     double nf(const Vector3d &point) const override;
 private:
     double n_0_;
@@ -38,7 +40,7 @@ private:
 
 class BKNFieldZ: public NField {
 public:
-    BKNFieldZ(double n_0, double n_n, bool in_plasma_frame);
+    BKNFieldZ(double n_0, double n_n, bool in_plasma_frame, double s);
     double nf(const Vector3d &point) const override;
 private:
     double n_0_;
@@ -49,7 +51,8 @@ private:
 
 class CompositeBKNField: public NField {
 public:
-    CompositeBKNField(double n_0, double n_n_inner, double n_n_outer, double z0, bool in_plasma_frame);
+    CompositeBKNField(double n_0, double n_n_inner, double n_n_outer, double z0, bool in_plasma_frame,
+        double s);
     double nf(const Vector3d &point) const override;
 
 private:
@@ -61,7 +64,7 @@ private:
 
 class SimulationNField: public NField {
 public:
-    SimulationNField(Delaunay_triangulation *tr, bool in_plasma_frame);
+    SimulationNField(Delaunay_triangulation *tr, bool in_plasma_frame, double s);
     double nf(const Vector3d &point) const override;
 
 private:
