@@ -39,6 +39,22 @@ class JetModelZoom(ABC):
         self._image_tau = None
         self._updated_params = False
 
+    def plot_resolutions(self):
+        import matplotlib.pyplot as plt
+        fig, axes = plt.subplots(1, 1)
+        axes.plot(np.cumsum(self.pixsize_array[:, 0]),
+                  np.cumsum(self.pixsize_array[:, :int(self.n_across/2)], axis=1)[:, -1])
+        axes.set_xlabel("Along distance, mas")
+        axes.set_ylabel("Across distance, mas")
+        axes.set_aspect("equal")
+        return fig
+
+    def halfphi_app_max(self):
+        """
+        Maximum half opening-angle [rad] that can be imaged with given resolution.
+        """
+        return np.arctan(np.sum(self.pixsize_array[-1, :int(self.n_across/2)]) / np.sum(self.pixsize_array[:, 0]))
+
     def calculate_grid(self):
         """
         Calculate grid of ``(r_ob, d)`` - each point is in the center of the
@@ -66,11 +82,8 @@ class JetModelZoom(ABC):
 
     @property
     def imgsize(self):
-        if self.pixsize_array is None:
-            return self.pixsize * self.npix[0], self.pixsize * self.npix[1]
-        else:
-            return np.max(np.cumsum(self.pixsize_array, axis=0)), \
-                   np.max(np.cumsum(self.pixsize_array, axis=1))
+        return np.max(np.cumsum(self.pixsize_array, axis=0)), \
+               np.max(np.cumsum(self.pixsize_array, axis=1))
 
     @property
     def img_extent(self):
