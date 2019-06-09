@@ -15,6 +15,7 @@ class JetModelZoom(ABC):
                  tau_max=10**5, central_vfield=True, tangled_bfield=True, ft_class=FINUFFT_NUNU):
         self.nu = nu
         self.z = redshift
+        self.stokes = stokes
         self.lg_pixel_size_mas_min = lg_pixel_size_mas_min
         self.lg_pixel_size_mas_max = lg_pixel_size_mas_max
         self.n_along = n_along
@@ -59,26 +60,30 @@ class JetModelZoom(ABC):
         """
         Calculate grid of ``(r_ob, d)`` - each point is in the center of the
         corresponding pixel. Thus, ``JetModelZoom.ft`` method should not shift
-        phases on a half of a pixel
+        phases on a half of a pixel. ``r_ob`` and ``d`` are in parsecs.
         """
-        if self.pixsize_array is None:
-            assert self.npix[0] % 2 == 0 and self.npix[1] % 2 == 0
-            pc_x = (np.arange(0, self.npix[0])+0.5)*self.pix_to_pc
-            pc_y = (np.arange(-self.npix[1]//2, self.npix[1]//2)+0.5)*self.pix_to_pc
-            self.r_ob, self.d = np.meshgrid(pc_x, pc_y)
-            self.r_ob = self.r_ob.T
-            # FIXME: In analogy with older convention we need ``-`` here
-            self.d = -self.d.T[:, ::-1]
-        else:
-            pc_x = np.cumsum(self.pix_to_pc, axis=0)-self.pix_to_pc/2
-            pc_y_up = self.pix_to_pc[:, :self.pix_to_pc.shape[1]//2][::-1]
-            pc_y_low = self.pix_to_pc[:, self.pix_to_pc.shape[1]//2:]
-            pc_y_up = (np.cumsum(pc_y_up, axis=1) - pc_y_up/2)[::-1]
-            pc_y_low = np.cumsum(pc_y_low, axis=1) - pc_y_low/2
-            pc_y = np.hstack((pc_y_up[:, ::-1], -pc_y_low))
-            self.r_ob = pc_x
-            # FIXME: In analogy with older convention we need ``-`` here
-            self.d = -pc_y
+        pc_x = np.cumsum(self.pix_to_pc, axis=0)-self.pix_to_pc/2
+        pc_y_up = self.pix_to_pc[:, :self.pix_to_pc.shape[1]//2][::-1]
+        pc_y_low = self.pix_to_pc[:, self.pix_to_pc.shape[1]//2:]
+        pc_y_up = (np.cumsum(pc_y_up, axis=1) - pc_y_up/2)[::-1]
+        pc_y_low = np.cumsum(pc_y_low, axis=1) - pc_y_low/2
+        pc_y = np.hstack((pc_y_up[:, ::-1], -pc_y_low))
+        self.r_ob = pc_x
+        # FIXME: In analogy with older convention we need ``-`` here
+        self.d = -pc_y
+
+    
+    @property
+    def pc_to_mas(self):
+        return (u.pc/self.ang_to_dist).to(u.mas)
+
+    @property
+    def r_ob_mas(self):
+        return self.r_ob*self.pc_to_mas
+
+    @property
+    def d_mas(self):
+        return self.d*self.pc_to_mas
 
     @property
     def imgsize(self):
@@ -119,6 +124,11 @@ class JetModelZoom(ABC):
         else:
             print("Parameters are the same => returning old image")
         return self._image_i
+    
+    def image_intensity(self):
+        # Factor that accounts non-uniform pixel size in plotting
+        factor = (self.pixsize_array/np.min(self.pixsize_array))**2
+        return self.image()/factor.T
 
     def image_tau(self):
         if self._updated_params:
@@ -154,7 +164,7 @@ class JetModelZoom(ABC):
     @functools.lru_cache()
     def pix_to_pc(self):
         """
-        2D array of pixel sizes in parsecs or single value.
+        2D array of pixel sizes in parsecs.
         """
         return (self.pixsize_array * self.ang_to_dist).to(u.pc).value
 
